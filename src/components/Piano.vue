@@ -1,16 +1,75 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted, onUnmounted } from 'vue';
+import { Note } from 'tonal';
+import { WebMidi } from 'webmidi';
+import type { NoteMessageEvent, Input } from 'webmidi';
 
-const octaves = ref(8);
+const ctx = ref<AudioContext>(new AudioContext());
+const playing = ref<Map<string, OscillatorNode>>(new Map());
+const midiIn = ref<Input>();
+const midiChannels = ref<number[]>([1]);
 const keys = computed(() => {
-  const vals: string[] = [];
-  for (let o = 0; o < octaves.value; o++) {
-    for (const key of ['A', 'As', 'B', 'C', 'Cs', 'D', 'Ds', 'E', 'F', 'Fs', 'G', 'Gs']) {
+  const vals: string[] = ['A0', 'As0', 'B0'];
+  for (let o = 1; o <= 7; o++) {
+    for (const key of ['C', 'Cs', 'D', 'Ds', 'E', 'F', 'Fs', 'G', 'Gs', 'A', 'As', 'B']) {
       vals.push(`${key}${o}`);
     }
   }
+  vals.push('C8');
   return vals;
 });
+
+function play(key: string) {
+  if ((key in (playing.value ?? {}))) return;
+  const frequency = Note.freq(key) ?? 0;
+  const osc = new OscillatorNode(ctx.value, { frequency });
+  osc.connect(ctx.value.destination);
+  osc.start(0);
+  playing.value.set(key, osc);
+}
+
+function stop(key: string) {
+  const osc = playing.value.get(key);
+  if (osc) {
+    osc.stop(0);
+    playing.value.delete(key);
+  }
+}
+
+function scrollTo(key: string, behavior: ScrollBehavior = "auto") {
+  document.getElementById(key)?.scrollIntoView({ behavior, inline: "center" });
+}
+
+function getNoteName(n: number) {
+  return keys.value[n - 21].replace('s', '#');
+}
+
+async function initMidi() {
+  await WebMidi.enable();
+
+  if (WebMidi.inputs.length > 0) {
+    console.log('midi inputs', WebMidi.inputs);
+    midiIn.value = WebMidi.inputs[0];
+    midiIn.value.addListener("noteon", (e: NoteMessageEvent) => {
+      play(getNoteName(e.note.number));
+    }, {channels: midiChannels.value});
+    midiIn.value.addListener("noteoff", (e: NoteMessageEvent) => {
+      stop(getNoteName(e.note.number));
+    }, {channels: midiChannels.value});
+  } else {
+    console.log('no midi inputs');
+  }
+}
+
+onMounted(async () => {
+  scrollTo("C4");
+  await initMidi();
+});
+
+onUnmounted(() => {
+  midiIn.value?.removeListener();
+});
+
 </script>
 
 <template>
@@ -20,14 +79,19 @@ const keys = computed(() => {
       :id="key"
       :key="key"
       :class="`key ${key.substring(0, key.length - 1)} ${key.includes('s') ? 'black' : 'white'}`"
+      @mousedown="play(key)"
+      @mouseup="stop(key)"
+      @mouseout="stop(key)"
     >
-      <label>{{ key.replace('s', '#') }}</label>
+      <label>
+        {{ key.replace('s', '#') }}<br />
+      </label>
     </li>
   </ul>
 </template>
 
 <style scoped lang="scss">
-$kbdWidth: 90vw;
+$kbdWidth: 100%;
 $kbdHeight: 160px;
 $blackKeyWidth: 30px;
 $whiteKeyHeight: 100%;
@@ -102,7 +166,7 @@ ul {
       width: 100%;
       position: relative;
       color: #aaa;
-      display: none;
+      // display: none;
     }
     &.black label {
       top: calc(100% - $labelMargin);

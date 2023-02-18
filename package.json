@@ -10,7 +10,6 @@
     "lint": "eslint src --ext .ts,.vue"
   },
   "dependencies": {
-    "@tonaljs/midi": "^4.9.0",
     "@vueuse/core": "^9.12.0",
     "audio-node-suite": "^1.1.2",
     "axios": "^1.3.3",
@@ -20,9 +19,11 @@
     "pixi.js": "^7.1.2",
     "sass": "^1.58.2",
     "simple-audio-worklet": "^1.0.1",
+    "tonal": "^4.14.0",
     "vite-svg-loader": "^4.0.0",
     "vue": "^3.2.45",
-    "vue-drag-resize": "^1.5.4"
+    "vue-drag-resize": "^1.5.4",
+    "webmidi": "^3.1.4"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.52.0",
