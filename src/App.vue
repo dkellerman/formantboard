@@ -4,9 +4,34 @@ import VowelChart from './components/VowelChart.vue';
 </script>
 
 <template>
-  <h1>VocalBoard</h1>
-  <Piano />
-  <VowelChart />
+  <nav>
+    <h3>VocalBoard</h3>
+  </nav>
+  <main>
+    <Piano />
+    <!-- <VowelChart /> -->
+  </main>
 </template>
 
-<style scoped></style>
+<style scoped lang="scss">
+nav {
+  background: aliceblue;
+  padding: 0;
+  margin: 0;
+
+  h3,
+  h3 a {
+    width: 100%;
+    padding: 0;
+    margin: 3px;
+    text-align: center !important;
+    border: 0;
+    color: forestgreen;
+    font-weight: bold;
+    font-variant: small-caps;
+  }
+}
+main {
+  height: 100vh;
+}
+</style>

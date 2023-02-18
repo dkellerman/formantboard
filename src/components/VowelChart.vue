@@ -108,7 +108,8 @@ function select(vowel: string) {
 
 <style scoped>
 svg {
-  transform: scale(0.3);
+  transform: scale(0.2);
+  margin-top: -300px;
   @font-face {
     font-family: 'Doulos SIL';
     src: url('https://fonts.cdnfonts.com/css/doulos-sil') format('truetype');
