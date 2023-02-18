@@ -29,6 +29,11 @@ const keys = computed(() => {
 <style scoped lang="scss">
 $kbdWidth: 90vw;
 $kbdHeight: 160px;
+$blackKeyWidth: 30px;
+$whiteKeyHeight: 100%;
+$whiteKeyWidth: 50px;
+$blackKeyHeight: 57%;
+$labelMargin: 20px;
 
 ul {
   display: flex;
@@ -49,7 +54,10 @@ ul {
     position: relative;
 
     &.white {
-      min-width: 50px;
+      width: $whiteKeyWidth;
+      min-width: $whiteKeyWidth;
+      max-width: $whiteKeyWidth;
+      height: $whiteKeyHeight;
       color: #000;
       border-left: 1px solid #bbb;
       border-bottom: 1px solid #bbb;
@@ -64,17 +72,19 @@ ul {
         background: linear-gradient(to bottom,#fff 0%,#e9e9e9 100%)
       }
       &.A, &.C, &.D, &.F, &.G {
-        margin-right: -30px;
+        margin-right: -1 * $blackKeyWidth;
       }
     }
 
     &.black {
-      min-width: 30px;
+      width: $blackKeyWidth;
+      min-width: $blackKeyWidth;
+      max-width: $blackKeyWidth;
       background-color: #000;
       color: #fff;
-      height: 55%;
+      height: $blackKeyHeight;
       position: relative;
-      right: -15px;
+      right: -1 * $blackKeyWidth / 2;
       z-index: 2;
       border: 1px solid #000;
       border-radius: 0 0 3px 3px;
@@ -92,14 +102,18 @@ ul {
       width: 100%;
       position: relative;
       color: #aaa;
+      display: none;
     }
     &.black label {
-      top: 60px;
+      top: calc(100% - $labelMargin);
       left: calc(50% - 11px);
     }
     &.white label {
-      top: 130px;
+      top: calc(100% - $labelMargin);
       left: calc(50% - 7px);
+    }
+    &.C label {
+      display: initial;
     }
   }
 }
