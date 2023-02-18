@@ -1,29 +1,41 @@
 <script setup lang="ts">
+import { computed, ref } from 'vue';
 
-const KEYS: string[] = [];
-for (let o = 0; o < 8; o++) {
-  for (const key of ['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#']) {
-    KEYS.push(`${key}${o}`);
+const octaves = ref(8);
+const keys = computed(() => {
+  const vals: string[] = [];
+  for (let o = 0; o < octaves.value; o++) {
+    for (const key of ['A', 'As', 'B', 'C', 'Cs', 'D', 'Ds', 'E', 'F', 'Fs', 'G', 'Gs']) {
+      vals.push(`${key}${o}`);
+    }
   }
-}
-
+  return vals;
+});
 </script>
 
 <template>
   <ul class="keys">
-    <li v-for="(key, idx) of KEYS" :id="key" :key="key" :class="`key ${key.substring(0, key.length - 1)} ${key.includes('#') ? 'black' : 'white'}`">
-      <label>{{ key }}</label>
+    <li
+      v-for="key of keys"
+      :id="key"
+      :key="key"
+      :class="`key ${key.substring(0, key.length - 1)} ${key.includes('s') ? 'black' : 'white'}`"
+    >
+      <label>{{ key.replace('s', '#') }}</label>
     </li>
   </ul>
 </template>
 
 <style scoped lang="scss">
+$kbdWidth: 90vw;
+$kbdHeight: 160px;
+
 ul {
   display: flex;
   flex-direction: row;
   align-items: flex-start;
-  height: 160px;
-  width: 90vw;
+  height: $kbdHeight;
+  width: $kbdWidth;
   overflow: scroll;
 
   li {
@@ -35,21 +47,6 @@ ul {
     border: 1px solid #000;
     font-size: small;
     position: relative;
-    label {
-      text-align: center;
-      height: 100%;
-      width: 100%;
-      position: relative;
-      color: #aaa;
-    }
-    &.black label {
-      top: 60px;
-      left: calc(50% - 11px);
-    }
-    &.white label {
-      top: 130px;
-      left: calc(50% - 7px);
-    }
 
     &.white {
       min-width: 50px;
@@ -70,6 +67,7 @@ ul {
         margin-right: -30px;
       }
     }
+
     &.black {
       min-width: 30px;
       background-color: #000;
@@ -78,14 +76,30 @@ ul {
       position: relative;
       right: -15px;
       z-index: 2;
-      border:1px solid #000;
-      border-radius:0 0 3px 3px;
-      box-shadow:-1px -1px 2px rgba(255,255,255,0.2) inset,0 -5px 2px 3px rgba(0,0,0,0.6) inset,0 2px 4px rgba(0,0,0,0.5);
-      background:linear-gradient(45deg,#222 0%,#555 100%);
-      &:active {
-        box-shadow:-1px -1px 2px rgba(255,255,255,0.2) inset,0 -2px 2px 3px rgba(0,0,0,0.6) inset,0 1px 2px rgba(0,0,0,0.5);
-        background:linear-gradient(to right,#444 0%,#222 100%)
+      border: 1px solid #000;
+      border-radius: 0 0 3px 3px;
+      box-shadow: -1px -1px 2px rgba(255,255,255,0.2) inset,0 -5px 2px 3px rgba(0,0,0,0.6) inset,0 2px 4px rgba(0,0,0,0.5);
+      background: linear-gradient(45deg,#222 0%,#555 100%);
+      &:active, .active {
+        box-shadow: -1px -1px 2px rgba(255,255,255,0.2) inset,0 -2px 2px 3px rgba(0,0,0,0.6) inset,0 1px 2px rgba(0,0,0,0.5);
+        background: linear-gradient(to right,#444 0%,#222 100%)
       }
+    }
+
+    label {
+      text-align: center;
+      height: 100%;
+      width: 100%;
+      position: relative;
+      color: #aaa;
+    }
+    &.black label {
+      top: 60px;
+      left: calc(50% - 11px);
+    }
+    &.white label {
+      top: 130px;
+      left: calc(50% - 7px);
     }
   }
 }
