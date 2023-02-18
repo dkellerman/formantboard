@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import Piano from './components/Piano.vue';
-import VowelChart from './components/VowelChart.vue';
 </script>
 
 <template>
@@ -9,7 +8,6 @@ import VowelChart from './components/VowelChart.vue';
   </nav>
   <main>
     <Piano />
-    <!-- <VowelChart /> -->
   </main>
 </template>
 
