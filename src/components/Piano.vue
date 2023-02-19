@@ -6,7 +6,7 @@ import { WebMidi, Input } from 'webmidi';
 import type { NoteMessageEvent } from 'webmidi';
 import { Vowel } from '../types';
 import { useSettings } from '../stores/useSettings';
-import { VocalNode } from '../nodes';
+import { VocalNode } from '../nodes/VocalNode';
 
 const KEYS = ['C', 'Cs', 'D', 'Ds', 'E', 'F', 'Fs', 'G', 'Gs', 'A', 'As', 'B'];
 const ctx = ref<AudioContext>(new AudioContext({ latencyHint: 'interactive' }));

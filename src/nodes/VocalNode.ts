@@ -1,4 +1,4 @@
-import { Settings, Vowel } from './types';
+import { Settings, Vowel } from '../types';
 
 export class VocalNode {
   _output?: AudioNode;
