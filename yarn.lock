@@ -3051,6 +3051,11 @@ vue-tsc@^1.0.24:
     "@volar/vue-language-core" "1.1.2"
     "@volar/vue-typescript" "1.1.2"
 
+vue3-touch-events@^4.1.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/vue3-touch-events/-/vue3-touch-events-4.1.0.tgz#053500d1e9ab4870efcd5de29530641064d0a7d5"
+  integrity sha512-fZKusOiBJzDPsY34tXYl/Wo9c2ONzBuQmF0+oHqVWr+TDbf90CgMWLHZsTv1KaShXjt+oeLow7BDVBpXW6lfXQ==
+
 vue@^3.2.45:
   version "3.2.47"
   resolved "https://registry.yarnpkg.com/vue/-/vue-3.2.47.tgz#3eb736cbc606fc87038dbba6a154707c8a34cff0"

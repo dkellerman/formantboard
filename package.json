@@ -23,6 +23,7 @@
     "vite-svg-loader": "^4.0.0",
     "vue": "^3.2.45",
     "vue-drag-resize": "^1.5.4",
+    "vue3-touch-events": "^4.1.0",
     "webmidi": "^3.1.4"
   },
   "devDependencies": {
@@ -31,10 +32,7 @@
     "@vitejs/plugin-vue": "^4.0.0",
     "@vue/eslint-config-typescript": "^11.0.2",
     "eslint": "^8.34.0",
-    "eslint-config-prettier": "^8.6.0",
-    "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-vue": "^9.9.0",
-    "prettier": "^2.8.4",
     "typescript": "^4.9.3",
     "unplugin-auto-import": "^0.14.3",
     "vite": "^4.1.0",
