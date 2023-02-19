@@ -5,9 +5,20 @@ import { WebMidi } from 'webmidi';
 import type { NoteMessageEvent, Input } from 'webmidi';
 
 const ctx = ref<AudioContext>(new AudioContext());
-const playing = ref<Map<string, OscillatorNode>>(new Map());
+const playing = ref<Map<string, [OscillatorNode, GainNode]>>(new Map());
 const midiIn = ref<Input>();
 const midiChannels = ref<number[]>([1]);
+const fadeInTime = ref(0.01);
+const fadeOutTime = ref(0.1);
+const tilt = ref(-6);
+const formants = ref([
+  [800, 6],
+  [1200, 6],
+  [2500, 6],
+  [2700, 6],
+  [2900, 0],
+]);
+
 const keys = computed(() => {
   const vals: string[] = ['A0', 'As0', 'B0'];
   for (let o = 1; o <= 7; o++) {
@@ -19,30 +30,52 @@ const keys = computed(() => {
   return vals;
 });
 
+
 function play(key: string, velocity = 1.0) {
   if (key in (playing.value ?? {})) return;
+  activateKey(key);
+
   const frequency = Note.freq(key) ?? 0;
-  const osc = new OscillatorNode(ctx.value, { frequency });
-  const g = new GainNode(ctx.value, { gain: velocity });
-  osc.connect(g);
+  const osc = new OscillatorNode(ctx.value, { frequency, type: 'sawtooth' });
+  const lp = new BiquadFilterNode(ctx.value, { type: 'lowpass', frequency, Q: tilt.value });
+  const g = new GainNode(ctx.value, { gain: 0 });
+
+  const formantNodes = [];
+  for (const [ffreq, Q] of formants.value) {
+    const f = new BiquadFilterNode(ctx.value, {
+      type: 'peaking',
+      frequency: ffreq,
+      Q,
+    });
+    formantNodes.push(f);
+    f.connect(g);
+  }
+
+  osc.connect(lp);
+  lp.connect(formantNodes[0]);
+  for (const f of formantNodes) f.connect(formantNodes[formantNodes.indexOf(f) + 1] ?? g);
   g.connect(ctx.value.destination);
   osc.start(0);
-  playing.value.set(key, osc);
-  activateKey(key);
+  g.gain.setTargetAtTime(velocity, ctx.value.currentTime, fadeInTime.value);
+  playing.value.set(key, [osc, g]);
 }
 
 function stop(key: string) {
-  const osc = playing.value.get(key);
+  const [osc, g] = playing.value.get(key) as [OscillatorNode, GainNode];
   if (osc) {
-    osc.stop(0);
+    deactivateKey(key);
+    g.gain.linearRampToValueAtTime(0, ctx.value.currentTime + fadeOutTime.value);
+    osc.stop(ctx.value.currentTime + fadeOutTime.value);
     playing.value.delete(key);
   }
-  deactivateKey(key);
 }
 
 function activateKey(key: string) {
-  getKeyByName(key)?.classList.add('active');
-  // scrollTo(key, "auto");
+  const k = getKeyByName(key);
+  if (k) {
+    k.classList.add('active');
+    (k as any).scrollIntoViewIfNeeded?.(false);
+  }
 }
 
 function deactivateKey(key: string) {

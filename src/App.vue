@@ -30,7 +30,6 @@ nav {
   }
 }
 main {
-  height: 100vh;
   padding: 30px;
 }
 </style>
