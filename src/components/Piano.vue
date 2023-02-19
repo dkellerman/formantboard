@@ -15,7 +15,8 @@ const KEY_KEYS = 'qwertyuiopasdfghjklzxcvbnm'.split('');
 const ctx = ref<AudioContext>(new AudioContext({ latencyHint: 'interactive' }));
 const playing = ref<Record<string, VocalNode>>({});
 const vowel = ref(Vowel.a);
-const octave = ref<number>(4);
+const octave = ref(4);
+const zoom = ref(1);
 const dragging = ref(false);
 const { settings } = storeToRefs(useSettings());
 
@@ -128,11 +129,20 @@ onMounted(async () => {
   onKeyStroke(['ArrowLeft'], () => {
     octave.value = Math.max(0, octave.value - 1);
     scrollTo(`C${octave.value}`);
-  }, { eventName: 'keydown'});
+  }, { eventName: 'keyup'});
   onKeyStroke(['ArrowRight'], () => {
     octave.value = Math.min(7, octave.value + 1);
     scrollTo(`C${octave.value}`);
-  }, { eventName: 'keydown'});
+  }, { eventName: 'keyup'});
+  onKeyStroke(['+', '='], () => {
+    zoom.value = Math.min(5, zoom.value * 1.5);
+  }, { eventName: 'keyup'});
+  onKeyStroke(['-', '_'], () => {
+    zoom.value = Math.max(0.3, zoom.value * .5);
+  }, { eventName: 'keyup'});
+  onKeyStroke(['0', ')'], () => {
+    zoom.value = 1;
+  }, { eventName: 'keyup'});
 });
 
 onUnmounted(() => {
@@ -169,7 +179,6 @@ onUnmounted(() => {
 $kbdWidth: 100%;
 $kbdHeight: 160px;
 $blackKeyWidth: 30px;
-$whiteKeyHeight: 100%;
 $whiteKeyWidth: 50px;
 $blackKeyHeight: 57%;
 $labelMargin: 20px;
@@ -178,8 +187,8 @@ ul {
   display: flex;
   flex-direction: row;
   align-items: flex-start;
-  height: $kbdHeight;
-  width: $kbdWidth;
+  height: calc($kbdHeight * v-bind(zoom));
+  width: calc($kbdWidth * v-bind(zoom));
   overflow: scroll;
 
   li {
@@ -193,10 +202,11 @@ ul {
     position: relative;
 
     &.white {
-      width: $whiteKeyWidth;
-      min-width: $whiteKeyWidth;
-      max-width: $whiteKeyWidth;
-      height: $whiteKeyHeight;
+      $w: calc($whiteKeyWidth * v-bind(zoom));
+      width: $w;
+      min-width: $w;
+      max-width: $w;
+      height: 100%;
       color: #000;
       border-left: 1px solid #bbb;
       border-bottom: 1px solid #bbb;
@@ -216,19 +226,20 @@ ul {
       &.F,
       &.G,
       &.A {
-        margin-right: -1 * $blackKeyWidth;
+        margin-right: calc(-1 * ($blackKeyWidth * v-bind(zoom)));
       }
     }
 
     &.black {
-      width: $blackKeyWidth;
-      min-width: $blackKeyWidth;
-      max-width: $blackKeyWidth;
+      $w: calc($blackKeyWidth * v-bind(zoom));
+      width: $w;
+      min-width: $w;
+      max-width: $w;
       background-color: #000;
       color: #fff;
       height: $blackKeyHeight;
       position: relative;
-      right: -1 * $blackKeyWidth / 2;
+      right: calc((-1 * $w) / 2);
       z-index: 2;
       border: 1px solid #000;
       border-radius: 0 0 3px 3px;
