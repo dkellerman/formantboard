@@ -9,6 +9,7 @@ import { useSettings } from '../stores/useSettings';
 import { VocalNode } from '../nodes/VocalNode';
 
 const KEYS = ['C', 'Cs', 'D', 'Ds', 'E', 'F', 'Fs', 'G', 'Gs', 'A', 'As', 'B'];
+
 const ctx = ref<AudioContext>(new AudioContext({ latencyHint: 'interactive' }));
 const playing = ref<Record<string, VocalNode>>({});
 const vowel = ref(Vowel.a);
@@ -57,24 +58,24 @@ function play(keyName: string, velocity = 1.0) {
   if (key in (playing.value ?? {})) return;
   activateKey(key);
 
-  const voc = new VocalNode(ctx.value, {
+  const vocNode = new VocalNode(ctx.value, {
     ...settings.value,
     frequency: Note.freq(key) ?? 0,
     velocity,
     vowel: vowel.value,
   });
-  voc.connect(ctx.value.destination);
-  voc.start();
-  playing.value[key] = voc;
+  vocNode.connect(ctx.value.destination);
+  vocNode.start();
+  playing.value[key] = vocNode;
 }
 
 function stop(keyName: string) {
   console.log('stop', keyName);
   const key = keyName.replace('s', '#');
-  const voc = playing.value[key];
-  if (voc) {
+  const vocNode = playing.value[key];
+  if (vocNode) {
     deactivateKey(key);
-    voc.stop();
+    vocNode.stop();
     delete playing.value[key];
   }
 }
@@ -132,6 +133,8 @@ onUnmounted(() => {
       "
       @mouseenter.prevent="dragging && play(key)"
       @mouseout.prevent="stop(key)"
+      v-touch:tap="() => dragging && play(key)"
+      v-touch:release="() => stop(key)"
     >
       <label> {{ key.replace('s', '#') }}<br> </label>
     </li>
