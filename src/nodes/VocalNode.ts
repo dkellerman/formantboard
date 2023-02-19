@@ -42,7 +42,9 @@ export class VocalNode {
 
     this._oscillator.connect(this._tilter);
     this._tilter.connect(this._formants[0]);
-    for (const f of this._formants) f.connect(this._formants[this._formants.indexOf(f) + 1] ?? this._gain);
+    for (const f of this._formants) {
+      f.connect(this._formants[this._formants.indexOf(f) + 1] ?? this._gain);
+    }
     this._gain.connect(this._compressor);
   }
 

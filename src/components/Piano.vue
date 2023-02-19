@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { storeToRefs } from 'pinia';
+import { onKeyStroke } from '@vueuse/core';
 import { Note } from 'tonal';
 import { WebMidi, Input } from 'webmidi';
 import type { NoteMessageEvent } from 'webmidi';
@@ -9,10 +10,12 @@ import { useSettings } from '../stores/useSettings';
 import { VocalNode } from '../nodes/VocalNode';
 
 const KEYS = ['C', 'Cs', 'D', 'Ds', 'E', 'F', 'Fs', 'G', 'Gs', 'A', 'As', 'B'];
+const KEY_KEYS = 'qwertyuiopasdfghjklzxcvbnm'.split('');
 
 const ctx = ref<AudioContext>(new AudioContext({ latencyHint: 'interactive' }));
 const playing = ref<Record<string, VocalNode>>({});
 const vowel = ref(Vowel.a);
+const octave = ref<number>(4);
 const dragging = ref(false);
 const { settings } = storeToRefs(useSettings());
 
@@ -106,9 +109,30 @@ const getKeyByName = (keyName: string) => {
   return document.getElementById(key);
 };
 
+function getKeyFromEvent(event: KeyboardEvent) {
+  const startIdx = Math.max(keys.value.indexOf(`C${octave.value}`) - 12, 0);
+  const keyIdx = KEY_KEYS.indexOf(event.key);
+  return keys.value[startIdx + keyIdx];
+}
+
 onMounted(async () => {
-  scrollTo('C4');
   await WebMidi.enable();
+
+  scrollTo('C4', 'auto');
+
+  // play key with qwerty keyboard
+  onKeyStroke(KEY_KEYS, (event) => play(getKeyFromEvent(event)), { eventName: 'keydown' });
+  onKeyStroke(KEY_KEYS, (event) => stop(getKeyFromEvent(event)), { eventName: 'keyup' });
+
+  // octave up/down
+  onKeyStroke(['ArrowLeft'], () => {
+    octave.value = Math.max(0, octave.value - 1);
+    scrollTo(`C${octave.value}`);
+  }, { eventName: 'keydown'});
+  onKeyStroke(['ArrowRight'], () => {
+    octave.value = Math.min(7, octave.value + 1);
+    scrollTo(`C${octave.value}`);
+  }, { eventName: 'keydown'});
 });
 
 onUnmounted(() => {

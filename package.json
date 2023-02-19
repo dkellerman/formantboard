@@ -10,6 +10,7 @@
     "lint": "eslint src --ext .ts,.vue"
   },
   "dependencies": {
+    "@vueuse/components": "^9.13.0",
     "@vueuse/core": "^9.12.0",
     "audio-node-suite": "^1.1.2",
     "axios": "^1.3.3",
