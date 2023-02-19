@@ -4,7 +4,11 @@ import { Note } from 'tonal';
 import { WebMidi } from 'webmidi';
 import type { NoteMessageEvent, Input } from 'webmidi';
 
-const ctx = ref<AudioContext>(new AudioContext());
+const ctx = ref<AudioContext>(new AudioContext({
+  latencyHint: 'interactive',
+  sampleRate: 22050,
+}));
+
 const playing = ref<Map<string, [OscillatorNode, GainNode]>>(new Map());
 const midiIn = ref<Input>();
 const midiChannels = ref<number[]>([1]);
@@ -51,10 +55,19 @@ function play(key: string, velocity = 1.0) {
     f.connect(g);
   }
 
+  const compressor = new DynamicsCompressorNode(ctx.value, {
+    threshold: -24,
+    knee: 30,
+    ratio: 12,
+    attack: 0.003,
+    release: 0.25,
+  });
+
   osc.connect(lp);
   lp.connect(formantNodes[0]);
   for (const f of formantNodes) f.connect(formantNodes[formantNodes.indexOf(f) + 1] ?? g);
-  g.connect(ctx.value.destination);
+  g.connect(compressor);
+  compressor.connect(ctx.value.destination);
   osc.start(0);
   g.gain.setTargetAtTime(velocity, ctx.value.currentTime, fadeInTime.value);
   playing.value.set(key, [osc, g]);
