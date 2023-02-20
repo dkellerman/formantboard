@@ -5,7 +5,6 @@ import { onKeyStroke } from '@vueuse/core';
 import { Note } from 'tonal';
 import { WebMidi, Input } from 'webmidi';
 import type { NoteMessageEvent } from 'webmidi';
-import { Vowel } from '../types';
 import { useSettings } from '../stores/useSettings';
 import { VocalNode } from '../nodes/VocalNode';
 
@@ -15,7 +14,6 @@ const ZOOM = { rate: .25, min: .25, max: 4 };
 
 const ctx = ref<AudioContext>(new AudioContext({ latencyHint: 'interactive' }));
 const playing = ref<Record<string, VocalNode>>({});
-const vowel = ref(Vowel.a);
 const octave = ref(4);
 const zoom = ref(1);
 const dragging = ref(false);
@@ -67,7 +65,6 @@ function play(keyName: string, velocity = 1.0) {
     ...settings.value,
     frequency: Note.freq(key) ?? 0,
     velocity,
-    vowel: vowel.value,
   });
   vocNode.connect(ctx.value.destination);
   vocNode.start();
@@ -127,11 +124,11 @@ onMounted(async () => {
   onKeyStroke(KEY_KEYS, (event) => stop(getKeyFromEvent(event)), { eventName: 'keyup' });
 
   // octave up/down
-  onKeyStroke(['ArrowLeft'], () => {
+    onKeyStroke(['<'], () => {
     octave.value = Math.max(0, octave.value - 1);
     scrollTo(`C${octave.value}`);
   }, { eventName: 'keyup'});
-  onKeyStroke(['ArrowRight'], () => {
+  onKeyStroke(['>'], () => {
     octave.value = Math.min(7, octave.value + 1);
     scrollTo(`C${octave.value}`);
   }, { eventName: 'keyup'});
@@ -168,8 +165,6 @@ onUnmounted(() => {
       "
       @mouseenter.prevent="dragging && play(key)"
       @mouseout.prevent="stop(key)"
-      v-touch:tap="() => play(key)"
-      v-touch:release="() => stop(key)"
     >
       <label> {{ key.replace('s', '#') }}<br> </label>
     </li>

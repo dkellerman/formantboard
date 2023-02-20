@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Piano from './components/Piano.vue';
+import SettingsPanel from './components/SettingsPanel.vue';
 </script>
 
 <template>
@@ -7,6 +8,7 @@ import Piano from './components/Piano.vue';
     <h3>VocalBoard</h3>
   </nav>
   <main>
+    <SettingsPanel />
     <Piano />
   </main>
 </template>
@@ -31,5 +33,8 @@ nav {
 }
 main {
   padding: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 </style>

@@ -1,12 +1,12 @@
-import { Settings, Vowel } from '../types';
+import { FormantSpec, Settings, Vowel } from '../types';
 
 export class VocalNode {
-  _output?: AudioNode;
-  _oscillator: OscillatorNode;
-  _tilter: BiquadFilterNode;
-  _gain: GainNode;
+  _harmonics: OscillatorNode[] = [];
+  _harmonicsGain: GainNode;
   _formants: BiquadFilterNode[];
-  _compressor: DynamicsCompressorNode;
+  _formantsGain: GainNode;
+  _gain: GainNode;
+  _output?: AudioNode;
 
   constructor(
     public ctx: AudioContext,
@@ -16,57 +16,69 @@ export class VocalNode {
       vowel: Vowel;
     }
   ) {
-    const { frequency, formants, tilt, vowel } = params;
-    this._oscillator = new OscillatorNode(ctx, { frequency, type: 'sawtooth' });
-    this._tilter = new BiquadFilterNode(ctx, { type: 'lowpass', frequency, Q: tilt });
+    const { frequency, formantSpecs, tilt, vowel } = params;
+    [this._harmonics, this._harmonicsGain] = this._makeHarmonics(frequency, tilt);
+    [this._formants, this._formantsGain] = this._makeFormants(formantSpecs[vowel]);
     this._gain = new GainNode(ctx, { gain: 0 });
+    this._harmonicsGain.connect(this._formantsGain);
+    this._formantsGain.connect(this._gain);
+  }
 
-    this._formants = [];
-    for (const formant of formants[vowel]) {
-      const f = new BiquadFilterNode(ctx, {
-        type: 'peaking',
-        frequency: formant.frequency,
-        Q: formant.Q,
+  _makeHarmonics(frequency: number, tilt: number): [OscillatorNode[], GainNode] {
+    const harmonicsGain = new GainNode(this.ctx, { gain: 1 });
+    const harmonics: OscillatorNode[] = [];
+    while (harmonics.length < 40) {
+      const f = frequency * (harmonics.length + 1);
+      if (f > 22050) break;
+      const h = new OscillatorNode(this.ctx, {
+        type: 'sine',
+        frequency: f,
       });
-      this._formants.push(f);
-      f.connect(this._gain);
+      const hGain = (10 ** (tilt / 20)) ** harmonics.length;
+      const g = new GainNode(this.ctx, { gain: hGain });
+      h.connect(g);
+      g.connect(harmonicsGain);
+      harmonics.push(h);
     }
+    return [harmonics, harmonicsGain];
+  }
 
-    this._compressor = new DynamicsCompressorNode(ctx, {
-      threshold: -24,
-      knee: 30,
-      ratio: 12,
-      attack: 0.003,
-      release: 0.25,
-    });
+  _makeFormants(formantSpecs: Array<FormantSpec>): [BiquadFilterNode[], GainNode] {
+    const formantsGain = new GainNode(this.ctx, { gain: 1 });
+    const formants: BiquadFilterNode[] = [];
 
-    this._oscillator.connect(this._tilter);
-    this._tilter.connect(this._formants[0]);
-    for (const f of this._formants) {
-      f.connect(this._formants[this._formants.indexOf(f) + 1] ?? this._gain);
+    for (const formantSpec of formantSpecs) {
+      if (!formantSpec.on) continue;
+      const formant = new BiquadFilterNode(this.ctx, {
+        type: 'peaking',
+        frequency: formantSpec.frequency,
+        Q: formantSpec.Q,
+      });
+      formants.push(formant);
+      formant.connect(formantsGain);
     }
-    this._gain.connect(this._compressor);
+    return [formants, formantsGain];
   }
 
   start(t = 0) {
     const { velocity, onsetTime } = this.params;
-    this._oscillator.start(t);
+    for (const h of this._harmonics) h.start(t);
     this._gain.gain.setTargetAtTime(velocity, this.ctx.currentTime, onsetTime);
   }
 
   stop() {
     const { decayTime } = this.params;
     this._gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + decayTime);
-    this._oscillator.stop(this.ctx.currentTime + decayTime);
+    for (const h of this._harmonics) h.stop(this.ctx.currentTime + decayTime);
   }
 
   connect(destination: AudioNode) {
     this._output = destination;
-    this._compressor.connect(destination);
+    this._gain.connect(destination);
   }
 
   disconnect() {
-    this._compressor.disconnect();
+    this._gain.disconnect();
     this._output = undefined;
   }
 }
