@@ -10,7 +10,6 @@ import SettingsPanel from './components/SettingsPanel.vue';
 
   <main>
     <Piano />
-    <div class="divider" />
     <SettingsPanel />
   </main>
 </template>
@@ -24,7 +23,7 @@ nav {
   h3,
   h3 a {
     width: 100%;
-    text-align: center;
+    text-align: left;
     padding: 0;
     margin: 3px 25px;
     border: 0;
@@ -33,18 +32,19 @@ nav {
     font-variant: small-caps;
   }
 }
+
 main {
   padding: 30px 20px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  .divider {
-    width: 100%;
-    border-bottom: 1px solid #ddd;
-    margin-bottom: 30px;
-  }
+  width: 100%;
   .piano {
-    margin-bottom: 60px;
+    margin: auto;
+  }
+  .settings {
+    margin-top: 60px;
+    width: 75vw;
   }
 }
 </style>

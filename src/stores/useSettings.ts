@@ -10,10 +10,10 @@ export const useSettings = defineStore('settings', () => {
     tilt: -3,
     vowel: Vowel.ɑ,
     vibrato: {
-      rate: 4,
-      extent: .75,
+      rate: 5,
+      extent: 1,
       jitter: 0.1,
-      onsetTime: .75,
+      onsetTime: .5,
       on: true,
     },
     formantSpecs: {

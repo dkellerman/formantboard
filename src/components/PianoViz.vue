@@ -19,6 +19,7 @@ function initPixi() {
     view: canvas.value,
     width: canvas.value?.scrollWidth,
     height: canvas.value?.scrollHeight,
+    background: 'white',
     antialias: true,
   });
   graphics.value = new PIXI.Graphics();
@@ -81,10 +82,10 @@ onMounted(() => {
 <style scoped lang="scss">
 #canvas {
   width: calc(1px * v-bind(pianoFullWidth));
-  height: 128px;
-  background: #010101;
+  height: 80px;
   margin: 0;
   padding: 0;
   margin-bottom: -10px;
+  border: 1px dotted #999;
 }
 </style>
