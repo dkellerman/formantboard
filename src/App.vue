@@ -31,9 +31,5 @@ nav {
 }
 main {
   padding: 30px;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: stretch;
 }
 </style>
