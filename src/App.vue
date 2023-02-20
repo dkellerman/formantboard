@@ -35,6 +35,6 @@ main {
   padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 25px;
+  gap: 40px;
 }
 </style>

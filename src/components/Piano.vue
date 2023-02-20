@@ -7,6 +7,7 @@ import { WebMidi, Input } from 'webmidi';
 import type { NoteMessageEvent } from 'webmidi';
 import { useSettings } from '../stores/useSettings';
 import { VocalNode } from '../nodes/VocalNode';
+import PianoBar from './PianoBar.vue';
 import { Vowel } from '../types';
 
 const KEYS = ['C', 'Cs', 'D', 'Ds', 'E', 'F', 'Fs', 'G', 'Gs', 'A', 'As', 'B'];
@@ -18,6 +19,8 @@ const playing = ref<Record<string, VocalNode>>({});
 const octave = ref(4);
 const zoom = ref(1);
 const dragging = ref(false);
+const harmonics = ref<[number, number][]>();
+
 const { settings } = storeToRefs(useSettings());
 
 const keys = computed(() => {
@@ -35,12 +38,9 @@ const midiIn = computed<Input | null>((): Input | null => {
 
   if (WebMidi.inputs.length > 0) {
     const input = midiInDeviceId ? WebMidi.getInputById(midiInDeviceId) : WebMidi.inputs[0];
-    input.addListener(
-      'noteon',
-      (e: NoteMessageEvent) => {
-        play(getNoteName(e.note.number), e.note.attack);
-      },
-      { channels: midiInChannel ?? undefined }
+    input.addListener('noteon', (e: NoteMessageEvent) => {
+      play(getNoteName(e.note.number), e.note.attack);
+    }, { channels: midiInChannel ?? undefined }
     );
     input.addListener(
       'noteoff',
@@ -61,7 +61,6 @@ function play(keyName: string, velocity = 1.0) {
   const key = keyName.replace('s', '#');
   if (key in (playing.value ?? {})) return;
 
-
   const vocNode = new VocalNode(ctx.value, {
     ...settings.value,
     frequency: Note.freq(key) ?? 0,
@@ -72,6 +71,7 @@ function play(keyName: string, velocity = 1.0) {
 
   console.log('play', keyName, '=>', `${Date.now() - t}ms`);
   playing.value[key] = vocNode;
+  harmonics.value = vocNode._harmonics.map(h => [h.frequency.value, 1]);
   activateKey(key);
 }
 
@@ -124,8 +124,8 @@ onMounted(async () => {
   scrollToKey('C4');
 
   // handle keyboard keys
-  onKeyStroke(KB_KEYS, (event) => play(getKeyFromEvent(event)), { eventName: 'keydown' });
-  onKeyStroke(KB_KEYS, (event) => stop(getKeyFromEvent(event)), { eventName: 'keyup' });
+  onKeyStroke(KB_KEYS, (event) => !event.metaKey && play(getKeyFromEvent(event)), { eventName: 'keydown' });
+  onKeyStroke(KB_KEYS, (event) => !event.metaKey && stop(getKeyFromEvent(event)), { eventName: 'keyup' });
   onKeyStroke([','], () => {
     octave.value = Math.max(0, octave.value - 1);
     scrollToKey(`C${octave.value}`);
@@ -167,26 +167,30 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <ul class="keys">
-    <li
-      v-for="key of keys"
-      :id="key"
-      :key="key"
-      :class="`key ${key.substring(0, key.length - 1)} ${key.includes('s') ? 'black' : 'white'}`"
-      @mousedown.prevent="
-        dragging = true;
-        play(key);
-      "
-      @mouseup.prevent="
-        dragging = false;
-        stop(key);
-      "
-      @mouseenter.prevent="dragging && play(key)"
-      @mouseout.prevent="stop(key)"
+  <div class="piano">
+    <PianoBar
+      :harmonics="harmonics ?? []"
+      :formant-specs="settings.formantSpecs[settings.vowel] ?? []"
+    />
+
+    <ul
+      class="keys"
+      ref="piano"
     >
-      <label> {{ key.replace('s', '#') }}<br> </label>
-    </li>
-  </ul>
+      <li
+        v-for="key of keys"
+        :id="key"
+        :key="key"
+        :class="`key ${key.substring(0, key.length - 1)} ${key.includes('s') ? 'black' : 'white'}`"
+        @mousedown.prevent="() => { dragging = true; play(key); }"
+        @mouseup.prevent="() => { dragging = false; stop(key); }"
+        @mouseenter.prevent="() => { dragging && play(key) }"
+        @mouseout.prevent="() => stop(key)"
+      >
+        <label>{{ key.replace('s', '#') }}</label>
+      </li>
+    </ul>
+  </div>
 </template>
 
 <style scoped lang="scss">
@@ -196,13 +200,16 @@ $whiteKeyWidth: 25px;
 $blackKeyHeight: 57%;
 $labelMargin: 20px;
 
+.piano {
+  overflow: scroll;
+  width: calc(52 * $whiteKeyWidth * v-bind(zoom));
+}
+
 ul {
   display: flex;
   flex-direction: row;
   align-items: flex-start;
   height: calc($kbdHeight * v-bind(zoom));
-  width: 100%;
-  overflow: scroll;
   padding: 0;
   margin: 0;
 

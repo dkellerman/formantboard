@@ -1,9 +1,10 @@
-import { createApp } from 'vue';
 import 'papercss/dist/paper.min.css';
 import './style.scss';
-import App from './App.vue';
+
+import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import Vue3TouchEvents from 'vue3-touch-events';
+import App from './App.vue';
 
 const store = createPinia();
 
