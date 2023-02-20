@@ -25,26 +25,22 @@ const { settings } = storeToRefs(useSettings());
       <label>{{ settings.tilt }}</label>
     </fieldset>
 
-    <fieldset>
-      <legend>Formants</legend>
-      <table>
-        <tr
-          v-for="(fspec, i) in settings.formantSpecs[settings.vowel]"
-          :key="`F${i}`"
+    <fieldset
+      v-for="(fspec, i) in settings.formantSpecs[settings.vowel]"
+      :key="`F${i+1}`"
+    >
+      <legend>
+        <input
+          type="checkbox"
+          v-model="fspec.on"
         >
-          <td>
-            <input
-              type="checkbox"
-              v-model="fspec.on"
-            >
-          </td>
-          <td>{{ `F${i}` }}:</td>
-          <td>
-            {{ Math.round(fspec.frequency - (fspec.frequency * fspec.Q)) }} -
-            {{ Math.round(fspec.frequency + (fspec.frequency * fspec.Q)) }}hz
-          </td>
-        </tr>
-      </table>
+        {{ `F${i+1}` }}
+      </legend>
+
+      <label>
+        {{ Math.round(fspec.frequency - (fspec.frequency * fspec.Q)) }} -
+        {{ Math.round(fspec.frequency + (fspec.frequency * fspec.Q)) }}hz
+      </label>
     </fieldset>
   </section>
 </template>
@@ -53,7 +49,10 @@ const { settings } = storeToRefs(useSettings());
 section {
   display: flex;
   flex-direction: row;
-  align-items: flex-end;
+  flex-wrap: wrap;
+  align-items: stretch;
+  justify-content: flex-start;
+  width: 100%;
   gap: 20px;
   fieldset {
     display: flex;
@@ -61,6 +60,10 @@ section {
     align-items: center;
     gap: 10px;
     font-size: medium;
+    border: 1px solid #ccc;
+    input, label {
+      display: inline-block;
+    }
   }
 }
 </style>
