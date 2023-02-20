@@ -8,11 +8,6 @@ export enum Vowel {
   ʊ = 'ʊ', // as in "foot"
   u = 'u', // as in "goose"
   ə = 'ə', // as in "sofa"
-  eɪ = 'eɪ', // as in "face"
-  aɪ = 'aɪ', // as in "price"
-  oʊ = 'oʊ', // as in "goat"
-  aʊ = 'aʊ', // as in "mouth"
-  ɔɪ = 'ɔɪ', // as in "choice"
 }
 
 export type FormantSpec = {

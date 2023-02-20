@@ -7,6 +7,7 @@ import { WebMidi, Input } from 'webmidi';
 import type { NoteMessageEvent } from 'webmidi';
 import { useSettings } from '../stores/useSettings';
 import { VocalNode } from '../nodes/VocalNode';
+import { Vowel } from '../types';
 
 const KEYS = ['C', 'Cs', 'D', 'Ds', 'E', 'F', 'Fs', 'G', 'Gs', 'A', 'As', 'B'];
 const KEY_KEYS = 'qwertyuiopasdfghjklzxcvbnm'.split('');
@@ -56,10 +57,10 @@ const midiIn = computed<Input | null>((): Input | null => {
 });
 
 function play(keyName: string, velocity = 1.0) {
-  console.log('play', keyName, velocity);
+  const t = Date.now();
   const key = keyName.replace('s', '#');
   if (key in (playing.value ?? {})) return;
-  activateKey(key);
+
 
   const vocNode = new VocalNode(ctx.value, {
     ...settings.value,
@@ -68,7 +69,10 @@ function play(keyName: string, velocity = 1.0) {
   });
   vocNode.connect(ctx.value.destination);
   vocNode.start();
+
+  console.log('play', keyName, '=>', `${Date.now() - t}ms`);
   playing.value[key] = vocNode;
+  activateKey(key);
 }
 
 function stop(keyName: string) {
@@ -119,28 +123,42 @@ onMounted(async () => {
 
   scrollTo('C4', 'auto');
 
-  // play key with qwerty keyboard
+  // handle keys
   onKeyStroke(KEY_KEYS, (event) => play(getKeyFromEvent(event)), { eventName: 'keydown' });
   onKeyStroke(KEY_KEYS, (event) => stop(getKeyFromEvent(event)), { eventName: 'keyup' });
-
-  // octave up/down
-    onKeyStroke(['<'], () => {
+  onKeyStroke([','], () => {
     octave.value = Math.max(0, octave.value - 1);
     scrollTo(`C${octave.value}`);
-  }, { eventName: 'keyup'});
-  onKeyStroke(['>'], () => {
+  });
+  onKeyStroke(['.'], () => {
     octave.value = Math.min(7, octave.value + 1);
     scrollTo(`C${octave.value}`);
-  }, { eventName: 'keyup'});
+  });
   onKeyStroke(['+', '='], () => {
     zoom.value = Math.min(ZOOM.max, zoom.value * (1 + ZOOM.rate));
-  }, { eventName: 'keyup'});
+  });
   onKeyStroke(['-', '_'], () => {
     zoom.value = Math.max(ZOOM.min, zoom.value * (1 - ZOOM.rate));
-  }, { eventName: 'keyup'});
+  });
   onKeyStroke(['0', ')'], () => {
     zoom.value = 1;
-  }, { eventName: 'keyup'});
+  });
+  onKeyStroke(['1', '2', '3', '4', '5', '6'], (event) => {
+    const f = Number(event.key) - 1;
+    const fspec = settings.value.formantSpecs[settings.value.vowel][f];
+    if (fspec) fspec.on = !fspec.on;
+  });
+  onKeyStroke(['*'], () => {
+    const all = settings.value.formantSpecs[settings.value.vowel];
+    const val = all.find((f) => !f.on) ? true : false;
+    for (const fspec of all) fspec.on = val;
+  });
+  onKeyStroke(['<', '>'], (event) => {
+    const vowels = Object.values(Vowel);
+    const idx = vowels.indexOf(settings.value.vowel);
+    const step = event.key === '>' ? 1 : -1;
+    if (vowels[idx + step]) settings.value.vowel = vowels[idx + step];
+  });
 });
 
 onUnmounted(() => {

@@ -3,6 +3,8 @@ import { FormantSpec, Settings, Vowel } from '../types';
 export class VocalNode {
   _harmonics: OscillatorNode[] = [];
   _harmonicsGain: GainNode;
+  _tube: BiquadFilterNode;
+  _tubeGain: GainNode;
   _formants: BiquadFilterNode[];
   _formantsGain: GainNode;
   _gain: GainNode;
@@ -19,9 +21,16 @@ export class VocalNode {
     const { frequency, formantSpecs, tilt, vowel } = params;
     [this._harmonics, this._harmonicsGain] = this._makeHarmonics(frequency, tilt);
     [this._formants, this._formantsGain] = this._makeFormants(formantSpecs[vowel]);
+    [this._tube, this._tubeGain] = this._makeTube(frequency);
     this._gain = new GainNode(ctx, { gain: 0 });
-    this._harmonicsGain.connect(this._formantsGain);
-    this._formantsGain.connect(this._gain);
+    this._harmonicsGain.connect(this._tube);
+
+    if (this._formants.length > 0) {
+      for (const f of this._formants) this._tubeGain.connect(f);
+      this._formantsGain.connect(this._gain);
+    } else {
+      this._tubeGain.connect(this._gain);
+    }
   }
 
   _makeHarmonics(frequency: number, tilt: number): [OscillatorNode[], GainNode] {
@@ -41,6 +50,17 @@ export class VocalNode {
       harmonics.push(h);
     }
     return [harmonics, harmonicsGain];
+  }
+
+  _makeTube(frequency: number): [BiquadFilterNode, GainNode] {
+    const tube = new BiquadFilterNode(this.ctx, {
+      type: 'bandpass',
+      frequency,
+      Q: 1,
+    });
+    const tubeGain = new GainNode(this.ctx, { gain: 1 });
+    tube.connect(tubeGain);
+    return [tube, tubeGain];
   }
 
   _makeFormants(formantSpecs: Array<FormantSpec>): [BiquadFilterNode[], GainNode] {

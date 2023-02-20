@@ -13,11 +13,6 @@ const WORDS: Record<Vowel, string> = {
   [Vowel.ʊ]: "foot",
   [Vowel.u]: "goose",
   [Vowel.ə]: "sofa",
-  [Vowel.eɪ]: "face",
-  [Vowel.aɪ]: "price",
-  [Vowel.oʊ]: "goat",
-  [Vowel.aʊ]: "mouth",
-  [Vowel.ɔɪ]: "choice",
 };
 
 const { settings } = storeToRefs(useSettings());
