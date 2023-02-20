@@ -11,6 +11,7 @@ import { VocalNode } from '../nodes/VocalNode';
 
 const KEYS = ['C', 'Cs', 'D', 'Ds', 'E', 'F', 'Fs', 'G', 'Gs', 'A', 'As', 'B'];
 const KEY_KEYS = 'qwertyuiopasdfghjklzxcvbnm'.split('');
+const ZOOM = { rate: .25, min: .25, max: 4 };
 
 const ctx = ref<AudioContext>(new AudioContext({ latencyHint: 'interactive' }));
 const playing = ref<Record<string, VocalNode>>({});
@@ -135,10 +136,10 @@ onMounted(async () => {
     scrollTo(`C${octave.value}`);
   }, { eventName: 'keyup'});
   onKeyStroke(['+', '='], () => {
-    zoom.value = Math.min(5, zoom.value * 1.5);
+    zoom.value = Math.min(ZOOM.max, zoom.value * (1 + ZOOM.rate));
   }, { eventName: 'keyup'});
   onKeyStroke(['-', '_'], () => {
-    zoom.value = Math.max(0.3, zoom.value * .5);
+    zoom.value = Math.max(ZOOM.min, zoom.value * (1 - ZOOM.rate));
   }, { eventName: 'keyup'});
   onKeyStroke(['0', ')'], () => {
     zoom.value = 1;
@@ -176,7 +177,6 @@ onUnmounted(() => {
 </template>
 
 <style scoped lang="scss">
-$kbdWidth: 100%;
 $kbdHeight: 160px;
 $blackKeyWidth: 30px;
 $whiteKeyWidth: 50px;
@@ -188,7 +188,7 @@ ul {
   flex-direction: row;
   align-items: flex-start;
   height: calc($kbdHeight * v-bind(zoom));
-  width: calc($kbdWidth * v-bind(zoom));
+  width: 100%;
   overflow: scroll;
 
   li {
