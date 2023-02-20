@@ -8,8 +8,9 @@ import SettingsPanel from './components/SettingsPanel.vue';
     <h3>FormantBoard</h3>
   </nav>
   <main>
-    <SettingsPanel />
     <Piano />
+    <hr>
+    <SettingsPanel />
   </main>
 </template>
 
@@ -21,10 +22,10 @@ nav {
 
   h3,
   h3 a {
+    text-align: center;
     width: 100%;
     padding: 0;
-    margin: 3px;
-    text-align: center !important;
+    margin: 3px 25px;
     border: 0;
     color: forestgreen;
     font-weight: bold;
@@ -32,9 +33,10 @@ nav {
   }
 }
 main {
-  padding: 20px;
+  padding: 30px 20px;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 40px;
 }
 </style>

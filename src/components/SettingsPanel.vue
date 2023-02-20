@@ -15,14 +15,50 @@ const { settings } = storeToRefs(useSettings());
 
     <fieldset>
       <legend>Tilt</legend>
-      <input
-        type="range"
-        v-model="settings.tilt"
-        min="-20"
-        max="6"
-        step=".25"
-      >
-      <label>{{ settings.tilt }}</label>
+      <div>
+        <input
+          type="range"
+          v-model="settings.tilt"
+          min="-20"
+          max="6"
+          step=".25"
+        >
+        <label>{{ settings.tilt }}</label>
+      </div>
+    </fieldset>
+
+    <fieldset class="stack">
+      <legend>
+        <input
+          type="checkbox"
+          v-model="settings.vibrato.on"
+        >
+        Vibrato
+      </legend>
+
+      <div>
+        <label>Rate</label>
+        <input
+          type="range"
+          v-model="settings.vibrato.rate"
+          min="0"
+          max="8"
+          step=".25"
+        >
+        <label>{{ settings.vibrato.rate }}</label>
+      </div>
+
+      <div>
+        <label>Extent</label>
+        <input
+          type="range"
+          v-model="settings.vibrato.extent"
+          min="0"
+          max="3"
+          step=".25"
+        >
+        <label>{{ settings.vibrato.extent }}</label>
+      </div>
     </fieldset>
 
     <fieldset
@@ -50,8 +86,8 @@ section {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  align-items: stretch;
-  justify-content: flex-start;
+  align-items: flex-start;
+  justify-content: center;
   width: 100%;
   gap: 20px;
   fieldset {
@@ -63,9 +99,17 @@ section {
       zoom: 1.4;
       vertical-align: -3px;
     }
+    &.stack {
+      flex-direction: column;
+    }
+    div {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 15px;
+    }
     display: flex;
     flex-direction: row;
-    align-items: center;
     gap: 10px;
     font-size: medium;
     border: 1px solid #ccc;

@@ -1,8 +1,10 @@
-import { FormantSpec, Settings, Vowel } from '../types';
+import { FormantSpec, Settings, Vibrato, Vowel } from '../types';
 
 export class VocalNode {
   _harmonics: OscillatorNode[] = [];
   _harmonicsGain: GainNode;
+  _vibratoNode: OscillatorNode;
+  _vibratoGain: GainNode;
   _tube: BiquadFilterNode;
   _tubeGain: GainNode;
   _formants: BiquadFilterNode[];
@@ -20,6 +22,8 @@ export class VocalNode {
   ) {
     const { frequency, formantSpecs, tilt, vowel } = params;
     [this._harmonics, this._harmonicsGain] = this._makeHarmonics(frequency, tilt);
+    [this._vibratoNode, this._vibratoGain] = this._makeVibrato(params.vibrato);
+    for (const h of this._harmonics) this._vibratoGain.connect(h.frequency);
     [this._formants, this._formantsGain] = this._makeFormants(formantSpecs[vowel]);
     [this._tube, this._tubeGain] = this._makeTube(frequency);
     this._gain = new GainNode(ctx, { gain: 0 });
@@ -80,9 +84,27 @@ export class VocalNode {
     return [formants, formantsGain];
   }
 
-  start(t = 0) {
-    const { velocity, onsetTime } = this.params;
+  _makeVibrato(vibrato: Vibrato): [OscillatorNode, GainNode] {
+    const vibNode = new OscillatorNode(this.ctx, { frequency: vibrato.rate });
+    const vibGain = new GainNode(this.ctx, { gain: vibrato.extent });
+    vibNode.connect(vibGain);
+    return [vibNode, vibGain];
+  }
+
+  start(t = this.ctx.currentTime) {
+    const { velocity, onsetTime, vibrato } = this.params;
     for (const h of this._harmonics) h.start(t);
+
+    if (vibrato.on) {
+      const vf = this._vibratoNode.frequency.value;
+      const vg = this._vibratoGain.gain.value;
+      this._vibratoNode.start();
+      this._vibratoGain.gain.value = 0;
+      this._vibratoNode.frequency.value = 0;
+      this._vibratoNode.frequency.linearRampToValueAtTime(vf, t + vibrato.onsetTime);
+      this._vibratoGain.gain.linearRampToValueAtTime(vg, t + vibrato.onsetTime);
+    }
+
     this._gain.gain.setTargetAtTime(velocity, this.ctx.currentTime, onsetTime);
   }
 
@@ -90,6 +112,13 @@ export class VocalNode {
     const { decayTime } = this.params;
     this._gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + decayTime);
     for (const h of this._harmonics) h.stop(this.ctx.currentTime + decayTime);
+    if (this.params.vibrato.on) {
+      try {
+        this._vibratoNode.stop();
+      } catch (e) {
+        console.warn('nope');
+      }
+    }
   }
 
   connect(destination: AudioNode) {

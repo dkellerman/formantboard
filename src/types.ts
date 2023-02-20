@@ -13,7 +13,15 @@ export enum Vowel {
 export type FormantSpec = {
   frequency: number;
   Q: number;
-  on?: boolean;
+  on: boolean;
+};
+
+export type Vibrato = {
+  rate: number;
+  extent: number;
+  jitter: number;
+  onsetTime: number;
+  on: boolean;
 };
 
 export type Settings = {
@@ -24,4 +32,5 @@ export type Settings = {
   tilt: number;
   formantSpecs: Record<Vowel, Array<FormantSpec>>;
   vowel: Vowel;
+  vibrato: Vibrato;
 };

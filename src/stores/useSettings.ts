@@ -11,6 +11,13 @@ export const useSettings = defineStore('settings', () => {
     decayTime: 0.1,
     tilt: -3,
     vowel: Vowel.ɑ,
+    vibrato: {
+      rate: 4,
+      extent: .75,
+      jitter: 0.1,
+      onsetTime: .75,
+      on: true,
+    },
     formantSpecs: {
       [Vowel.ɑ]: [  // as in "father"
         { frequency: 800, Q: 0.0625, on },
