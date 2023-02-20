@@ -10,7 +10,7 @@ interface Props {
 
 const MAXFREQ = 4186;
 const props = defineProps<Props>();
-const formantSpecs = computed(() => props.formantSpecs?.filter(f => f.on && f.frequency <= MAXFREQ) ?? []);
+const formantSpecs = computed(() => props.formantSpecs?.filter(f => f.frequency <= MAXFREQ) ?? []);
 const harmonics = computed(() => props.harmonics?.filter(([f])=> f <= MAXFREQ) ?? []);
 const mounted = ref(false);
 
@@ -26,7 +26,7 @@ function fstyle(fs: FormantSpec) {
   if (x1 === null || x2 === null) return 'display: none;';
   return [
     `left: ${x1}px`,
-    `width: ${x2 - x1}px`,
+    `width: ${x2 - x1}px`
   ].join(';');
 }
 
@@ -55,8 +55,8 @@ onMounted(() => mounted.value = true);
         </div>
       </li>
       <li
-        class="f"
         v-for="fs, idx of formantSpecs"
+        :class="`f ${fs.on ? 'on' : 'off'}`"
         :style="fstyle(fs)"
         :key="`F${idx + 1}`"
       >
@@ -85,7 +85,7 @@ onMounted(() => mounted.value = true);
       &:before { display: none; }
 
       &.h {
-        top: 5px;
+        top: 10px;
         bottom: 0;
         .line {
           margin-top: -3px;
@@ -100,6 +100,9 @@ onMounted(() => mounted.value = true);
         padding: 2px;
         font-size: small;
         border: 1px solid forestgreen;
+        &.off {
+          background: rgb(223, 171, 171);
+          border: 1px solid darkred;}
       }
     }
   }

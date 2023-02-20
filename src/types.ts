@@ -1,13 +1,13 @@
 export enum Vowel {
-  i = 'i', // as in "fleece"
-  ɪ = 'ɪ', // as in "kit"
-  ɛ = 'ɛ', // as in "dress"
-  æ = 'æ', // as in "trap"
   ɑ = 'ɑ', // as in "father"
-  ɔ = 'ɔ', // as in "thought"
-  ʊ = 'ʊ', // as in "foot"
-  u = 'u', // as in "goose"
+  ɛ = 'ɛ', // as in "dress"
   ə = 'ə', // as in "sofa"
+  æ = 'æ', // as in "trap"
+  ɔ = 'ɔ', // as in "thought"
+  u = 'u', // as in "goose"
+  ʊ = 'ʊ', // as in "foot"
+  ɪ = 'ɪ', // as in "kit"
+  i = 'i', // as in "fleece"
 }
 
 export type FormantSpec = {

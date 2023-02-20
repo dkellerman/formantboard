@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted } from 'vue';
+import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { onKeyStroke } from '@vueuse/core';
 import { Note } from 'tonal';
@@ -20,6 +20,8 @@ const octave = ref(4);
 const zoom = ref(1);
 const dragging = ref(false);
 const harmonics = ref<[number, number][]>();
+const heldKey = ref<string>();
+const playedKey = ref<string>('C4');
 
 const { settings } = storeToRefs(useSettings());
 
@@ -72,10 +74,14 @@ function play(keyName: string, velocity = 1.0) {
   console.log('play', keyName, '=>', `${Date.now() - t}ms`);
   playing.value[key] = vocNode;
   harmonics.value = vocNode._harmonics.map(h => [h.frequency.value, 1]);
+  playedKey.value = key;
   activateKey(key);
 }
 
-function stop(keyName: string) {
+function stop(keyName?: string) {
+  if (!keyName) keyName = heldKey.value;
+  if (!keyName) return;
+
   console.log('stop', keyName);
   const key = keyName.replace('s', '#');
   const vocNode = playing.value[key];
@@ -84,6 +90,17 @@ function stop(keyName: string) {
     delete playing.value[key];
     deactivateKey(key);
   }
+  heldKey.value = undefined;
+}
+
+function hold(keyName: string) {
+  if (keyName === heldKey.value) {
+    stop();
+    return;
+  }
+  stop();
+  play(keyName);
+  heldKey.value = keyName;
 }
 
 function activateKey(key: string) {
@@ -114,9 +131,17 @@ const getKeyByName = (keyName: string) => {
 
 function getKeyFromEvent(event: KeyboardEvent) {
   const startIdx = Math.max(keys.value.indexOf(`C${octave.value}`) - 12, 0);
-  const keyIdx = KB_KEYS.indexOf(event.key);
+  const keyIdx = KB_KEYS.indexOf(event.key.toLowerCase());
   return keys.value[startIdx + keyIdx];
 }
+
+watch([settings.value], () => {
+  if (heldKey.value) {
+    const k = heldKey.value;
+    stop();
+    hold(k);
+  }
+});
 
 onMounted(async () => {
   await WebMidi.enable();
@@ -126,6 +151,13 @@ onMounted(async () => {
   // handle keyboard keys
   onKeyStroke(KB_KEYS, (event) => !event.metaKey && play(getKeyFromEvent(event)), { eventName: 'keydown' });
   onKeyStroke(KB_KEYS, (event) => !event.metaKey && stop(getKeyFromEvent(event)), { eventName: 'keyup' });
+  onKeyStroke(KB_KEYS.map(k => k.toUpperCase()), (event) => {
+    if (!event.metaKey) hold(getKeyFromEvent(event));
+  }, { eventName: 'keydown' });
+  onKeyStroke([' '], () => {
+    if (heldKey.value) stop();
+    else if (playedKey.value) hold(playedKey.value);
+  });
   onKeyStroke([','], () => {
     octave.value = Math.max(0, octave.value - 1);
     scrollToKey(`C${octave.value}`);
@@ -194,7 +226,7 @@ onUnmounted(() => {
 </template>
 
 <style scoped lang="scss">
-$kbdHeight: 100px;
+$kbdHeight: 120px;
 $blackKeyWidth: 15px;
 $whiteKeyWidth: 25px;
 $blackKeyHeight: 57%;

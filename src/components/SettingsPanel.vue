@@ -55,6 +55,14 @@ section {
   width: 100%;
   gap: 20px;
   fieldset {
+    legend {
+      position: relative;
+      top: 3px;
+    }
+    input[type=checkbox] {
+      zoom: 1.4;
+      vertical-align: -3px;
+    }
     display: flex;
     flex-direction: row;
     align-items: center;
