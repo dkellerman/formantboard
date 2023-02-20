@@ -168,8 +168,8 @@ onUnmounted(() => {
       "
       @mouseenter.prevent="dragging && play(key)"
       @mouseout.prevent="stop(key)"
-      v-touch:hold.prevent="() => play(key)"
-      v-touch:release.prevent="() => stop(key)"
+      v-touch:hold="() => play(key)"
+      v-touch:release="() => stop(key)"
     >
       <label> {{ key.replace('s', '#') }}<br> </label>
     </li>
