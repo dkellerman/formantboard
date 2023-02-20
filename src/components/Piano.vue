@@ -10,7 +10,7 @@ import { VocalNode } from '../nodes/VocalNode';
 import { Vowel } from '../types';
 
 const KEYS = ['C', 'Cs', 'D', 'Ds', 'E', 'F', 'Fs', 'G', 'Gs', 'A', 'As', 'B'];
-const KEY_KEYS = 'qwertyuiopasdfghjklzxcvbnm'.split('');
+const KB_KEYS = 'qwertyuiopasdfghjklzxcvbnm'.split('');
 const ZOOM = { rate: .25, min: .25, max: 4 };
 
 const ctx = ref<AudioContext>(new AudioContext({ latencyHint: 'interactive' }));
@@ -80,9 +80,9 @@ function stop(keyName: string) {
   const key = keyName.replace('s', '#');
   const vocNode = playing.value[key];
   if (vocNode) {
-    deactivateKey(key);
     vocNode.stop();
     delete playing.value[key];
+    deactivateKey(key);
   }
 }
 
@@ -99,7 +99,7 @@ function deactivateKey(key: string) {
   getKeyByName(key)?.classList.remove('active');
 }
 
-function scrollTo(key: string, behavior: 'auto' | 'smooth' = 'auto') {
+function scrollToKey(key: string, behavior: 'auto' | 'smooth' = 'auto') {
   getKeyByName(key)?.scrollIntoView({ behavior, inline: 'center' });
 }
 
@@ -114,25 +114,25 @@ const getKeyByName = (keyName: string) => {
 
 function getKeyFromEvent(event: KeyboardEvent) {
   const startIdx = Math.max(keys.value.indexOf(`C${octave.value}`) - 12, 0);
-  const keyIdx = KEY_KEYS.indexOf(event.key);
+  const keyIdx = KB_KEYS.indexOf(event.key);
   return keys.value[startIdx + keyIdx];
 }
 
 onMounted(async () => {
   await WebMidi.enable();
 
-  scrollTo('C4', 'auto');
+  scrollToKey('C4');
 
-  // handle keys
-  onKeyStroke(KEY_KEYS, (event) => play(getKeyFromEvent(event)), { eventName: 'keydown' });
-  onKeyStroke(KEY_KEYS, (event) => stop(getKeyFromEvent(event)), { eventName: 'keyup' });
+  // handle keyboard keys
+  onKeyStroke(KB_KEYS, (event) => play(getKeyFromEvent(event)), { eventName: 'keydown' });
+  onKeyStroke(KB_KEYS, (event) => stop(getKeyFromEvent(event)), { eventName: 'keyup' });
   onKeyStroke([','], () => {
     octave.value = Math.max(0, octave.value - 1);
-    scrollTo(`C${octave.value}`);
+    scrollToKey(`C${octave.value}`);
   });
   onKeyStroke(['.'], () => {
     octave.value = Math.min(7, octave.value + 1);
-    scrollTo(`C${octave.value}`);
+    scrollToKey(`C${octave.value}`);
   });
   onKeyStroke(['+', '='], () => {
     zoom.value = Math.min(ZOOM.max, zoom.value * (1 + ZOOM.rate));
@@ -190,9 +190,9 @@ onUnmounted(() => {
 </template>
 
 <style scoped lang="scss">
-$kbdHeight: 160px;
-$blackKeyWidth: 30px;
-$whiteKeyWidth: 50px;
+$kbdHeight: 100px;
+$blackKeyWidth: 15px;
+$whiteKeyWidth: 25px;
 $blackKeyHeight: 57%;
 $labelMargin: 20px;
 
@@ -203,6 +203,8 @@ ul {
   height: calc($kbdHeight * v-bind(zoom));
   width: 100%;
   overflow: scroll;
+  padding: 0;
+  margin: 0;
 
   li {
     text-indent: 0;

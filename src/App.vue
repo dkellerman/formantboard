@@ -5,7 +5,7 @@ import SettingsPanel from './components/SettingsPanel.vue';
 
 <template>
   <nav>
-    <h3>VocalBoard</h3>
+    <h3>FormantBoard</h3>
   </nav>
   <main>
     <SettingsPanel />
@@ -32,9 +32,9 @@ nav {
   }
 }
 main {
-  padding: 30px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 25px;
 }
 </style>
