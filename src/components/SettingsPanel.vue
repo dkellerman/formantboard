@@ -84,10 +84,11 @@ const { settings } = storeToRefs(useSettings());
 <style scoped lang="scss">
 section {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   flex-wrap: wrap;
+  height: 150px;
   align-items: flex-start;
-  justify-content: center;
+  justify-content: flex-start;
   width: 100%;
   gap: 20px;
   fieldset {

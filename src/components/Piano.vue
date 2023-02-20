@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
+import { computed, ref, onMounted, onUnmounted, watch, provide } from 'vue';
 import { storeToRefs } from 'pinia';
 import { onKeyStroke } from '@vueuse/core';
 import { Note } from 'tonal';
@@ -8,12 +8,14 @@ import type { NoteMessageEvent } from 'webmidi';
 import { useSettings } from '../stores/useSettings';
 import { VocalNode } from '../nodes/VocalNode';
 import PianoBar from './PianoBar.vue';
+import PianoViz from './PianoViz.vue';
 import { Vowel } from '../types';
 
 const KEYS = ['C', 'Cs', 'D', 'Ds', 'E', 'F', 'Fs', 'G', 'Gs', 'A', 'As', 'B'];
 const KB_KEYS = 'qwertyuiopasdfghjklzxcvbnm'.split('');
 const ZOOM = { rate: .25, min: .25, max: 4 };
 
+const { settings } = storeToRefs(useSettings());
 const ctx = ref<AudioContext>(new AudioContext({ latencyHint: 'interactive' }));
 const playing = ref<Record<string, VocalNode>>({});
 const octave = ref(4);
@@ -22,8 +24,6 @@ const dragging = ref(false);
 const harmonics = ref<[number, number][]>();
 const heldKey = ref<string>();
 const playedKey = ref<string>('C4');
-
-const { settings } = storeToRefs(useSettings());
 
 const keys = computed(() => {
   const vals: string[] = ['A0', 'As0', 'B0'];
@@ -143,9 +143,11 @@ watch([settings.value], () => {
   }
 });
 
+const pianoFullWidth = computed(() => 52 * 25 * zoom.value);
+provide('pianoFullWidth', pianoFullWidth);
+
 onMounted(async () => {
   await WebMidi.enable();
-
   scrollToKey('C4');
 
   // handle keyboard keys
@@ -200,6 +202,8 @@ onUnmounted(() => {
 
 <template>
   <div class="piano">
+    <PianoViz />
+
     <PianoBar
       :harmonics="harmonics ?? []"
       :formant-specs="settings.formantSpecs[settings.vowel] ?? []"
@@ -233,8 +237,8 @@ $blackKeyHeight: 57%;
 $labelMargin: 20px;
 
 .piano {
+  width: 100%;
   overflow: scroll;
-  width: calc(52 * $whiteKeyWidth * v-bind(zoom));
 }
 
 ul {

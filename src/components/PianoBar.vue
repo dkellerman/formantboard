@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { FormantSpec } from 'types';
-import { computed, ref, onMounted } from 'vue';
+import { computed, ref, onMounted, inject } from 'vue';
 import { Note } from 'tonal';
 
 interface Props {
@@ -13,6 +13,7 @@ const props = defineProps<Props>();
 const formantSpecs = computed(() => props.formantSpecs?.filter(f => f.frequency <= MAXFREQ) ?? []);
 const harmonics = computed(() => props.harmonics?.filter(([f])=> f <= MAXFREQ) ?? []);
 const mounted = ref(false);
+const pianoFullWidth = inject('pianoFullWidth');
 
 function hstyle(h: [number, number]) {
   const x = getXForFrequency(h[0]);
@@ -69,7 +70,7 @@ onMounted(() => mounted.value = true);
 <style scoped lang="scss">
 .bar {
   height: 60px;
-  width: 100%;
+  width: calc(1px * v-bind(pianoFullWidth));
   border-bottom: 0;
   box-shadow: 2px 0 3px rgba(0, 0, 0, 0.1) inset, -5px 5px 20px rgba(0, 0, 0, 0.2) inset;
   border-radius: 7px 7px 0 0;
