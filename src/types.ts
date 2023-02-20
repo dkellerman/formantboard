@@ -25,8 +25,6 @@ export type Vibrato = {
 };
 
 export type Settings = {
-  midiInDeviceId: string | null;
-  midiInChannel: number | null;
   onsetTime: number;
   decayTime: number;
   tilt: number;

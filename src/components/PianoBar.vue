@@ -33,7 +33,6 @@ function fstyle(fs: FormantSpec) {
 
 function getXForFrequency(freq: number) {
   const note = Note.fromFreqSharps(freq).replace('#', 's');
-  console.log('n', note, document.getElementById(note));
   const rect = document.getElementById(note)?.getBoundingClientRect();
   return rect ? (rect.left + window.scrollX) - 15 : null;
 }

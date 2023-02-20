@@ -5,8 +5,6 @@ import { Settings, Vowel } from '../types';
 export const useSettings = defineStore('settings', () => {
   const on = true;
   const settings = ref<Settings>({
-    midiInDeviceId: null,
-    midiInChannel: null,
     onsetTime: 0.01,
     decayTime: 0.1,
     tilt: -3,

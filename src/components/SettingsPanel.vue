@@ -7,7 +7,7 @@ const { settings } = storeToRefs(useSettings());
 </script>
 
 <template>
-  <section>
+  <section class="settings">
     <fieldset>
       <legend>Vowel</legend>
       <VowelSelector />

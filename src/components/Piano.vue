@@ -1,14 +1,13 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted, watch, provide } from 'vue';
+import { computed, ref, onMounted, watch, provide } from 'vue';
 import { storeToRefs } from 'pinia';
 import { onKeyStroke } from '@vueuse/core';
 import { Note } from 'tonal';
-import { WebMidi, Input } from 'webmidi';
-import type { NoteMessageEvent } from 'webmidi';
 import { useSettings } from '../stores/useSettings';
 import { VocalNode } from '../nodes/VocalNode';
 import PianoBar from './PianoBar.vue';
 import PianoViz from './PianoViz.vue';
+import MidiInput from './MidiInput.vue';
 import { Vowel } from '../types';
 
 const KEYS = ['C', 'Cs', 'D', 'Ds', 'E', 'F', 'Fs', 'G', 'Gs', 'A', 'As', 'B'];
@@ -18,6 +17,7 @@ const ZOOM = { rate: .25, min: .25, max: 4 };
 const { settings } = storeToRefs(useSettings());
 const ctx = ref<AudioContext>(new AudioContext({ latencyHint: 'interactive' }));
 const playing = ref<Record<string, VocalNode>>({});
+const master = ref<GainNode>(new GainNode(ctx.value, { gain: 1 }));
 const octave = ref(4);
 const zoom = ref(1);
 const dragging = ref(false);
@@ -34,30 +34,6 @@ const keys = computed(() => {
   return vals;
 });
 
-const midiIn = computed<Input | null>((): Input | null => {
-  const { midiInDeviceId, midiInChannel } = settings.value;
-  if (!WebMidi.enabled) return null;
-
-  if (WebMidi.inputs.length > 0) {
-    const input = midiInDeviceId ? WebMidi.getInputById(midiInDeviceId) : WebMidi.inputs[0];
-    input.addListener('noteon', (e: NoteMessageEvent) => {
-      play(getNoteName(e.note.number), e.note.attack);
-    }, { channels: midiInChannel ?? undefined }
-    );
-    input.addListener(
-      'noteoff',
-      (e: NoteMessageEvent) => {
-        stop(getNoteName(e.note.number));
-      },
-      { channels: midiInChannel ?? undefined }
-    );
-    return input;
-  }
-
-  console.log('no midi inputs');
-  return null;
-});
-
 function play(keyName: string, velocity = 1.0) {
   const t = Date.now();
   const key = keyName.replace('s', '#');
@@ -68,7 +44,8 @@ function play(keyName: string, velocity = 1.0) {
     frequency: Note.freq(key) ?? 0,
     velocity,
   });
-  vocNode.connect(ctx.value.destination);
+
+  vocNode.connect(master.value);
   vocNode.start();
 
   console.log('play', keyName, '=>', `${Date.now() - t}ms`);
@@ -82,7 +59,6 @@ function stop(keyName?: string) {
   if (!keyName) keyName = heldKey.value;
   if (!keyName) return;
 
-  console.log('stop', keyName);
   const key = keyName.replace('s', '#');
   const vocNode = playing.value[key];
   if (vocNode) {
@@ -147,8 +123,8 @@ const pianoFullWidth = computed(() => 52 * 25 * zoom.value);
 provide('pianoFullWidth', pianoFullWidth);
 
 onMounted(async () => {
-  await WebMidi.enable();
   scrollToKey('C4');
+  master.value.connect(ctx.value.destination);
 
   // handle keyboard keys
   onKeyStroke(KB_KEYS, (event) => !event.metaKey && play(getKeyFromEvent(event)), { eventName: 'keydown' });
@@ -194,15 +170,11 @@ onMounted(async () => {
     if (vowels[idx + step]) settings.value.vowel = vowels[idx + step];
   });
 });
-
-onUnmounted(() => {
-  midiIn.value?.removeListener();
-});
 </script>
 
 <template>
   <div class="piano">
-    <PianoViz />
+    <PianoViz :node="master" />
 
     <PianoBar
       :harmonics="harmonics ?? []"
@@ -227,6 +199,11 @@ onUnmounted(() => {
       </li>
     </ul>
   </div>
+
+  <MidiInput
+    @note-on="(n: number, v: number) => play(getNoteName(n), v)"
+    @note-off="(n: number) => stop(getNoteName(n))"
+  />
 </template>
 
 <style scoped lang="scss">
