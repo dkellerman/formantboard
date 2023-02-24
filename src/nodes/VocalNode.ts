@@ -21,6 +21,7 @@ export class VocalNode {
     }
   ) {
     const { frequency, formantSpecs, tilt, vowel } = params;
+
     [this._harmonics, this._harmonicsGain] = this._makeHarmonics(frequency, tilt);
     [this._vibratoNode, this._vibratoGain] = this._makeVibrato(params.vibrato);
     for (const h of this._harmonics) this._vibratoGain.connect(h.frequency);

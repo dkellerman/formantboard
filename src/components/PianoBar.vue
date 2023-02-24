@@ -54,6 +54,7 @@ onMounted(() => mounted.value = true);
           |
         </div>
       </li>
+
       <li
         v-for="fs, idx of formantSpecs"
         :class="`f ${fs.on ? 'on' : 'off'}`"

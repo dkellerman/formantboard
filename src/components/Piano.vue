@@ -113,9 +113,8 @@ function getKeyFromEvent(event: KeyboardEvent) {
 
 watch([settings.value], () => {
   if (heldKey.value) {
-    const k = heldKey.value;
     stop();
-    hold(k);
+    hold(heldKey.value);
   }
 });
 
@@ -123,8 +122,8 @@ const pianoFullWidth = computed(() => 52 * 25 * zoom.value);
 provide('pianoFullWidth', pianoFullWidth);
 
 onMounted(async () => {
-  scrollToKey('C4');
   master.value.connect(ctx.value.destination);
+  scrollToKey('C4');
 
   // handle keyboard keys
   onKeyStroke(KB_KEYS, (event) => !event.metaKey && play(getKeyFromEvent(event)), { eventName: 'keydown' });

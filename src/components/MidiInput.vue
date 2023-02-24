@@ -24,9 +24,11 @@ function getMidiIn(): Input | null {
     input.addListener('noteon', (e: NoteMessageEvent) => {
       emit('noteOn', e.note.number, e.note.attack);
     }, { channels: midiInChannel.value ?? undefined });
+
     input.addListener('noteoff', (e: NoteMessageEvent) => {
       emit('noteOff', e.note.number);
     }, { channels: midiInChannel.value ?? undefined });
+
     return input;
   }
 
