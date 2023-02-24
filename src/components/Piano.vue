@@ -1,22 +1,13 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, watch, provide } from 'vue';
-import { storeToRefs } from 'pinia';
-import { onKeyStroke } from '@vueuse/core';
-import { Note } from 'tonal';
-import { useSettings } from '../stores/useSettings';
-import { VocalNode } from '../nodes/VocalNode';
-import PianoBar from './PianoBar.vue';
-import PianoViz from './PianoViz.vue';
-import MidiInput from './MidiInput.vue';
-import { Vowel } from '../types';
-
 const KEYS = ['C', 'Cs', 'D', 'Ds', 'E', 'F', 'Fs', 'G', 'Gs', 'A', 'As', 'B'];
 const KB_KEYS = 'qwertyuiopasdfghjklzxcvbnm'.split('');
 const ZOOM = { rate: .25, min: .25, max: 4 };
 
+type VocalNodeType = Omit<typeof VocalNode, 'prototype'> & { stop: () => void }; // TODO
+
 const { settings } = storeToRefs(useSettings());
 const ctx = ref<AudioContext>(new AudioContext({ latencyHint: 'interactive' }));
-const playing = ref<Record<string, VocalNode>>({});
+const playing = ref<Record<string, VocalNodeType>>({});
 const master = ref<GainNode>(new GainNode(ctx.value, { gain: 1 }));
 const octave = ref(4);
 const zoom = ref(1);
@@ -41,7 +32,7 @@ function play(keyName: string, velocity = 1.0) {
 
   const vocNode = new VocalNode(ctx.value, {
     ...settings.value,
-    frequency: Note.freq(key) ?? 0,
+    frequency: getFrequency(key) ?? 0,
     velocity,
   });
 

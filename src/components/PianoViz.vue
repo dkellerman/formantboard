@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref, inject, onMounted, watch } from 'vue';
 import * as PIXI from "pixi.js";
 
 interface Props {

@@ -1,7 +1,4 @@
-<script setup lang="ts">
-import Piano from './components/Piano.vue';
-import SettingsPanel from './components/SettingsPanel.vue';
-</script>
+<script setup lang="ts"></script>
 
 <template>
   <nav>
@@ -9,8 +6,7 @@ import SettingsPanel from './components/SettingsPanel.vue';
   </nav>
 
   <main>
-    <Piano />
-    <SettingsPanel />
+    <router-view />
   </main>
 </template>
 
@@ -39,12 +35,5 @@ main {
   flex-direction: column;
   align-items: flex-start;
   width: 100%;
-  .piano {
-    margin: auto;
-  }
-  .settings {
-    margin-top: 60px;
-    width: 75vw;
-  }
 }
 </style>

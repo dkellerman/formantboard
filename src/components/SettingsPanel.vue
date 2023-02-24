@@ -1,8 +1,4 @@
 <script setup lang="ts">
-import { storeToRefs } from 'pinia';
-import VowelSelector from './VowelSelector.vue';
-import { useSettings } from '../stores/useSettings';
-
 const { settings } = storeToRefs(useSettings());
 </script>
 
@@ -16,47 +12,26 @@ const { settings } = storeToRefs(useSettings());
     <fieldset>
       <legend>Tilt</legend>
       <div>
-        <input
-          type="range"
-          v-model="settings.tilt"
-          min="-20"
-          max="6"
-          step=".25"
-        >
+        <input type="range" v-model="settings.tilt" min="-20" max="6" step=".25" />
         <label>{{ settings.tilt }}</label>
       </div>
     </fieldset>
 
     <fieldset class="stack">
       <legend>
-        <input
-          type="checkbox"
-          v-model="settings.vibrato.on"
-        >
+        <input type="checkbox" v-model="settings.vibrato.on" />
         Vibrato
       </legend>
 
       <div>
         <label>Rate</label>
-        <input
-          type="range"
-          v-model="settings.vibrato.rate"
-          min="0"
-          max="8"
-          step=".25"
-        >
+        <input type="range" v-model="settings.vibrato.rate" min="0" max="8" step=".25" />
         <label>{{ settings.vibrato.rate }}</label>
       </div>
 
       <div>
         <label>Extent</label>
-        <input
-          type="range"
-          v-model="settings.vibrato.extent"
-          min="0"
-          max="3"
-          step=".25"
-        >
+        <input type="range" v-model="settings.vibrato.extent" min="0" max="3" step=".25" />
         <label>{{ settings.vibrato.extent }}</label>
       </div>
     </fieldset>
@@ -66,10 +41,7 @@ const { settings } = storeToRefs(useSettings());
       :key="`F${i+1}`"
     >
       <legend>
-        <input
-          type="checkbox"
-          v-model="fspec.on"
-        >
+        <input type="checkbox" v-model="fspec.on" />
         {{ `F${i+1}` }}
       </legend>
 

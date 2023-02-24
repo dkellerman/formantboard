@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { FormantSpec } from 'types';
-import { computed, ref, onMounted, inject } from 'vue';
-import { Note } from 'tonal';
+import type { FormantSpec } from 'types';
 
 interface Props {
   formantSpecs: FormantSpec[];
@@ -32,7 +30,7 @@ function fstyle(fs: FormantSpec) {
 }
 
 function getXForFrequency(freq: number) {
-  const note = Note.fromFreqSharps(freq).replace('#', 's');
+  const note = getNote(freq).replace('#', 's');
   const rect = document.getElementById(note)?.getBoundingClientRect();
   return rect ? (rect.left + window.scrollX) - 15 : null;
 }

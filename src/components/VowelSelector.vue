@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { storeToRefs } from 'pinia';
-import { useSettings } from '../stores/useSettings';
 import { Vowel } from '../types';
 
 const WORDS: Record<Vowel, string> = {
@@ -21,11 +19,7 @@ const { settings } = storeToRefs(useSettings());
 <template>
   <div class="compact">
     <select v-model="settings.vowel">
-      <option
-        v-for="vowel in Object.keys(Vowel)"
-        :key="vowel"
-        :value="vowel"
-      >
+      <option v-for="vowel in Object.keys(Vowel)" :key="vowel" :value="vowel">
         {{ vowel }} ({{ WORDS[vowel as Vowel] }})
       </option>
     </select>

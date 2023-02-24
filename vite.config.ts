@@ -1,20 +1,23 @@
 import { defineConfig } from 'vite';
-import vue from '@vitejs/plugin-vue';
-import svgLoader from 'vite-svg-loader';
+import Vue from '@vitejs/plugin-vue';
 import AutoImport from 'unplugin-auto-import/vite';
+import Pages from 'vite-plugin-pages';
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    vue(),
-    svgLoader(),
+    Vue(),
     AutoImport({
-      dts: true,
+      dts: './src/auto-imports.d.ts',
       imports: [
         'vue',
+        'vue-router',
+        'pinia',
         '@vueuse/core',
-        {},
-      ]
+      ],
+      dirs: ['./src/**'],
+      vueTemplate: true,
     }),
+    Pages(),
   ],
 });
