@@ -1,16 +1,16 @@
 <script setup lang="ts">
 import { WebMidi, Input } from 'webmidi';
 import type { NoteMessageEvent } from 'webmidi';
-import { onMounted, onUnmounted, ref } from 'vue';
+import type { Note } from 'utils';
 
 const emit = defineEmits<{
-  (e: 'noteOn', note: number, attack: number): void
-  (e: 'noteOff', note: number): void
+  (e: 'noteOn', note: Note, attack: number): void
+  (e: 'noteOff', note: Note): void
 }>();
 
 const midiInDeviceId = ref<string|null>();
 const midiInChannel = ref<number|null>();
-const midiIn = ref<Input | null>();
+const midiIn = ref<Input|null>();
 
 function getMidiIn(): Input | null {
   if (!WebMidi.enabled) return null;
@@ -22,11 +22,13 @@ function getMidiIn(): Input | null {
     console.log('using midi input', input.name);
 
     input.addListener('noteon', (e: NoteMessageEvent) => {
-      emit('noteOn', e.note.number, e.note.attack);
+      const name = midi2note(e.note.number);
+      emit('noteOn', name, e.note.attack);
     }, { channels: midiInChannel.value ?? undefined });
 
     input.addListener('noteoff', (e: NoteMessageEvent) => {
-      emit('noteOff', e.note.number);
+      const name = midi2note(e.note.number);
+      emit('noteOff', name);
     }, { channels: midiInChannel.value ?? undefined });
 
     return input;

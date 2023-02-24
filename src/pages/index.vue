@@ -1,17 +1,10 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import Piano from '../components/Piano.vue';
+</script>
 
 <template>
   <Piano />
-  <SettingsPanel />
 </template>
 
 <style scoped lang="scss">
-.piano {
-  margin: auto;
-}
-
-.settings {
-  margin-top: 60px;
-  width: 75vw;
-}
 </style>

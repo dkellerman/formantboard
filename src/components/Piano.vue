@@ -1,77 +1,20 @@
 <script setup lang="ts">
-const KEYS = ['C', 'Cs', 'D', 'Ds', 'E', 'F', 'Fs', 'G', 'Gs', 'A', 'As', 'B'];
-const KB_KEYS = 'qwertyuiopasdfghjklzxcvbnm'.split('');
-const ZOOM = { rate: .25, min: .25, max: 4 };
-
-type VocalNodeType = Omit<typeof VocalNode, 'prototype'> & { stop: () => void }; // TODO
-
-const { settings } = storeToRefs(useSettings());
-const ctx = ref<AudioContext>(new AudioContext({ latencyHint: 'interactive' }));
-const playing = ref<Record<string, VocalNodeType>>({});
-const master = ref<GainNode>(new GainNode(ctx.value, { gain: 1 }));
-const octave = ref(4);
-const zoom = ref(1);
+const noteIds = computed(() => NOTES.map((n) => n.replace('#', 's')));
 const dragging = ref(false);
-const harmonics = ref<[number, number][]>();
-const heldKey = ref<string>();
-const playedKey = ref<string>('C4');
+const whiteKeyWidth = ref(25);
+const pianoFullWidth = computed(() => 52 * whiteKeyWidth.value);
 
-const keys = computed(() => {
-  const vals: string[] = ['A0', 'As0', 'B0'];
-  for (let o = 1; o <= 7; o++) {
-    for (const key of KEYS) vals.push(`${key}${o}`);
-  }
-  vals.push('C8');
-  return vals;
-});
+const emit = defineEmits<{
+  (e: 'play', freq: number, velocity: number): void;
+  (e: 'stop', freq: number): void;
+}>();
 
-function play(keyName: string, velocity = 1.0) {
-  const t = Date.now();
-  const key = keyName.replace('s', '#');
-  if (key in (playing.value ?? {})) return;
-
-  const vocNode = new VocalNode(ctx.value, {
-    ...settings.value,
-    frequency: getFrequency(key) ?? 0,
-    velocity,
-  });
-
-  vocNode.connect(master.value);
-  vocNode.start();
-
-  console.log('play', keyName, '=>', `${Date.now() - t}ms`);
-  playing.value[key] = vocNode;
-  harmonics.value = vocNode._harmonics.map(h => [h.frequency.value, 1]);
-  playedKey.value = key;
-  activateKey(key);
+function getKeyById(id: string) {
+  return document.getElementById(id.replace('#', 's'));
 }
 
-function stop(keyName?: string) {
-  if (!keyName) keyName = heldKey.value;
-  if (!keyName) return;
-
-  const key = keyName.replace('s', '#');
-  const vocNode = playing.value[key];
-  if (vocNode) {
-    vocNode.stop();
-    delete playing.value[key];
-    deactivateKey(key);
-  }
-  heldKey.value = undefined;
-}
-
-function hold(keyName: string) {
-  if (keyName === heldKey.value) {
-    stop();
-    return;
-  }
-  stop();
-  play(keyName);
-  heldKey.value = keyName;
-}
-
-function activateKey(key: string) {
-  const k = getKeyByName(key);
+function activateKey(id: string) {
+  const k = getKeyById(id);
   if (k) {
     k.classList.add('active');
     /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
@@ -79,127 +22,65 @@ function activateKey(key: string) {
   }
 }
 
-function deactivateKey(key: string) {
-  getKeyByName(key)?.classList.remove('active');
+function deactivateKey(id: string) {
+  getKeyById(id)?.classList.remove('active');
 }
 
-function scrollToKey(key: string, behavior: 'auto' | 'smooth' = 'auto') {
-  getKeyByName(key)?.scrollIntoView({ behavior, inline: 'center' });
+function scrollToKey(id: string, behavior: 'auto' | 'smooth' = 'auto') {
+  getKeyById(id)?.scrollIntoView({ behavior, inline: 'center' });
 }
 
-function getNoteName(n: number) {
-  return keys.value[n - 21].replace('s', '#');
+function play(id: string, velocity = 1) {
+  emit('play', freq(id.replace('s', '#')), velocity);
+  activateKey(id);
 }
 
-const getKeyByName = (keyName: string) => {
-  const key = keyName.replace('#', 's');
-  return document.getElementById(key);
-};
-
-function getKeyFromEvent(event: KeyboardEvent) {
-  const startIdx = Math.max(keys.value.indexOf(`C${octave.value}`) - 12, 0);
-  const keyIdx = KB_KEYS.indexOf(event.key.toLowerCase());
-  return keys.value[startIdx + keyIdx];
+function stop(id: string) {
+  emit('stop', freq(id.replace('s', '#')));
+  deactivateKey(id);
 }
-
-watch([settings.value], () => {
-  if (heldKey.value) {
-    stop();
-    hold(heldKey.value);
-  }
-});
-
-const pianoFullWidth = computed(() => 52 * 25 * zoom.value);
-provide('pianoFullWidth', pianoFullWidth);
 
 onMounted(async () => {
-  master.value.connect(ctx.value.destination);
+  // TODO: set fit to zoom whiteKeyWidth, force mobile horizontal
+  // TODO: kb keys
   scrollToKey('C4');
-
-  // handle keyboard keys
-  onKeyStroke(KB_KEYS, (event) => !event.metaKey && play(getKeyFromEvent(event)), { eventName: 'keydown' });
-  onKeyStroke(KB_KEYS, (event) => !event.metaKey && stop(getKeyFromEvent(event)), { eventName: 'keyup' });
-  onKeyStroke(KB_KEYS.map(k => k.toUpperCase()), (event) => {
-    if (!event.metaKey) hold(getKeyFromEvent(event));
-  }, { eventName: 'keydown' });
-  onKeyStroke([' '], () => {
-    if (heldKey.value) stop();
-    else if (playedKey.value) hold(playedKey.value);
-  });
-  onKeyStroke([','], () => {
-    octave.value = Math.max(0, octave.value - 1);
-    scrollToKey(`C${octave.value}`);
-  });
-  onKeyStroke(['.'], () => {
-    octave.value = Math.min(7, octave.value + 1);
-    scrollToKey(`C${octave.value}`);
-  });
-  onKeyStroke(['+', '='], () => {
-    zoom.value = Math.min(ZOOM.max, zoom.value * (1 + ZOOM.rate));
-  });
-  onKeyStroke(['-', '_'], () => {
-    zoom.value = Math.max(ZOOM.min, zoom.value * (1 - ZOOM.rate));
-  });
-  onKeyStroke(['0', ')'], () => {
-    zoom.value = 1;
-  });
-  onKeyStroke(['1', '2', '3', '4', '5', '6'], (event) => {
-    const f = Number(event.key) - 1;
-    const fspec = settings.value.formantSpecs[settings.value.vowel][f];
-    if (fspec) fspec.on = !fspec.on;
-  });
-  onKeyStroke(['*'], () => {
-    const all = settings.value.formantSpecs[settings.value.vowel];
-    const val = all.find((f) => !f.on) ? true : false;
-    for (const fspec of all) fspec.on = val;
-  });
-  onKeyStroke(['<', '>'], (event) => {
-    const vowels = Object.values(Vowel);
-    const idx = vowels.indexOf(settings.value.vowel);
-    const step = event.key === '>' ? 1 : -1;
-    if (vowels[idx + step]) settings.value.vowel = vowels[idx + step];
-  });
 });
+
+defineExpose([
+  play,
+  stop,
+  pianoFullWidth,
+]);
 </script>
 
 <template>
   <div class="piano">
-    <PianoViz :node="master" />
-
-    <PianoBar
-      :harmonics="harmonics ?? []"
-      :formant-specs="settings.formantSpecs[settings.vowel] ?? []"
-    />
-
-    <ul
-      class="keys"
-      ref="piano"
-    >
+    <ul class="keys" ref="piano">
       <li
-        v-for="key of keys"
-        :id="key"
-        :key="key"
-        :class="`key ${key.substring(0, key.length - 1)} ${key.includes('s') ? 'black' : 'white'}`"
-        @mousedown.prevent="() => { dragging = true; play(key); }"
-        @mouseup.prevent="() => { dragging = false; stop(key); }"
-        @mouseenter.prevent="() => { dragging && play(key) }"
-        @mouseout.prevent="() => stop(key)"
+        v-for="id of noteIds"
+        :id="id"
+        :key="id"
+        :class="`key ${id.substring(0, id.length - 1)} ${id.includes('s') ? 'black' : 'white'}`"
+        @mousedown.prevent="() => { dragging = true; play(id); }"
+        @mouseup.prevent="() => { dragging = false; stop(id); }"
+        @mouseenter.prevent="() => { dragging && play(id) }"
+        @mouseout.prevent="() => stop(id)"
       >
-        <label>{{ key.replace('s', '#') }}</label>
+        <label>{{ id.replace('s', '#') }}</label>
       </li>
     </ul>
   </div>
 
   <MidiInput
-    @note-on="(n: number, v: number) => play(getNoteName(n), v)"
-    @note-off="(n: number) => stop(getNoteName(n))"
+    @note-on="play"
+    @note-off="stop"
   />
 </template>
 
 <style scoped lang="scss">
-$kbdHeight: 120px;
-$blackKeyWidth: 15px;
-$whiteKeyWidth: 25px;
+$whiteKeyWidth: calc(1px * v-bind(whiteKeyWidth));
+$kbdHeight: calc(v-bind(whiteKeyWidth) * 5px);
+$blackKeyWidth: calc(v-bind(whiteKeyWidth) / 1.6 * 1px);
 $blackKeyHeight: 57%;
 $labelMargin: 20px;
 
@@ -212,22 +93,20 @@ ul {
   display: flex;
   flex-direction: row;
   align-items: flex-start;
-  height: calc($kbdHeight * v-bind(zoom));
+  height: $kbdHeight;
   padding: 0;
   margin: 0;
 
   li {
     text-indent: 0;
-    &:before {
-      display: none;
-    }
+    list-style: none;
     height: 100%;
     border: 1px solid #000;
     font-size: small;
     position: relative;
 
     &.white {
-      $w: calc($whiteKeyWidth * v-bind(zoom));
+      $w: $whiteKeyWidth;
       width: $w;
       min-width: $w;
       max-width: $w;
@@ -251,12 +130,12 @@ ul {
       &.F,
       &.G,
       &.A {
-        margin-right: calc(-1 * ($blackKeyWidth * v-bind(zoom)));
+        margin-right: calc(-1 * $blackKeyWidth);
       }
     }
 
     &.black {
-      $w: calc($blackKeyWidth * v-bind(zoom));
+      $w: $blackKeyWidth;
       width: $w;
       min-width: $w;
       max-width: $w;

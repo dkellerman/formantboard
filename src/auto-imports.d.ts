@@ -5,6 +5,8 @@
 export {}
 declare global {
   const EffectScope: typeof import('vue')['EffectScope']
+  const FREQUENCIES: typeof import('./utils')['FREQUENCIES']
+  const NOTES: typeof import('./utils')['NOTES']
   const VocalNode: typeof import('./nodes/VocalNode')['VocalNode']
   const Vowel: typeof import('./types')['Vowel']
   const acceptHMRUpdate: typeof import('pinia')['acceptHMRUpdate']
@@ -34,11 +36,11 @@ declare global {
   const eagerComputed: typeof import('@vueuse/core')['eagerComputed']
   const effectScope: typeof import('vue')['effectScope']
   const extendRef: typeof import('@vueuse/core')['extendRef']
+  const freq: typeof import('./utils')['freq']
   const getActivePinia: typeof import('pinia')['getActivePinia']
   const getCurrentInstance: typeof import('vue')['getCurrentInstance']
   const getCurrentScope: typeof import('vue')['getCurrentScope']
-  const getFrequency: typeof import('./utils')['getFrequency']
-  const getNote: typeof import('./utils')['getNote']
+  const getSemitones: typeof import('./utils')['getSemitones']
   const h: typeof import('vue')['h']
   const ignorableWatch: typeof import('@vueuse/core')['ignorableWatch']
   const inject: typeof import('vue')['inject']
@@ -54,7 +56,9 @@ declare global {
   const mapStores: typeof import('pinia')['mapStores']
   const mapWritableState: typeof import('pinia')['mapWritableState']
   const markRaw: typeof import('vue')['markRaw']
+  const midi2note: typeof import('./utils')['midi2note']
   const nextTick: typeof import('vue')['nextTick']
+  const note: typeof import('./utils')['note']
   const onActivated: typeof import('vue')['onActivated']
   const onBeforeMount: typeof import('vue')['onBeforeMount']
   const onBeforeRouteLeave: typeof import('vue-router')['onBeforeRouteLeave']
@@ -296,6 +300,8 @@ import { UnwrapRef } from 'vue'
 declare module 'vue' {
   interface ComponentCustomProperties {
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
+    readonly FREQUENCIES: UnwrapRef<typeof import('./utils')['FREQUENCIES']>
+    readonly NOTES: UnwrapRef<typeof import('./utils')['NOTES']>
     readonly VocalNode: UnwrapRef<typeof import('./nodes/VocalNode')['VocalNode']>
     readonly Vowel: UnwrapRef<typeof import('./types')['Vowel']>
     readonly acceptHMRUpdate: UnwrapRef<typeof import('pinia')['acceptHMRUpdate']>
@@ -325,11 +331,11 @@ declare module 'vue' {
     readonly eagerComputed: UnwrapRef<typeof import('@vueuse/core')['eagerComputed']>
     readonly effectScope: UnwrapRef<typeof import('vue')['effectScope']>
     readonly extendRef: UnwrapRef<typeof import('@vueuse/core')['extendRef']>
+    readonly freq: UnwrapRef<typeof import('./utils')['freq']>
     readonly getActivePinia: UnwrapRef<typeof import('pinia')['getActivePinia']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
-    readonly getFrequency: UnwrapRef<typeof import('./utils')['getFrequency']>
-    readonly getNote: UnwrapRef<typeof import('./utils')['getNote']>
+    readonly getSemitones: UnwrapRef<typeof import('./utils')['getSemitones']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
     readonly ignorableWatch: UnwrapRef<typeof import('@vueuse/core')['ignorableWatch']>
     readonly inject: UnwrapRef<typeof import('vue')['inject']>
@@ -345,7 +351,9 @@ declare module 'vue' {
     readonly mapStores: UnwrapRef<typeof import('pinia')['mapStores']>
     readonly mapWritableState: UnwrapRef<typeof import('pinia')['mapWritableState']>
     readonly markRaw: UnwrapRef<typeof import('vue')['markRaw']>
+    readonly midi2note: UnwrapRef<typeof import('./utils')['midi2note']>
     readonly nextTick: UnwrapRef<typeof import('vue')['nextTick']>
+    readonly note: UnwrapRef<typeof import('./utils')['note']>
     readonly onActivated: UnwrapRef<typeof import('vue')['onActivated']>
     readonly onBeforeMount: UnwrapRef<typeof import('vue')['onBeforeMount']>
     readonly onBeforeRouteLeave: UnwrapRef<typeof import('vue-router')['onBeforeRouteLeave']>

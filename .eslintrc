@@ -11,6 +11,7 @@
   ],
   "plugins": ["@typescript-eslint"],
   "rules": {
+    "no-undef": "off",
     "vue/multi-word-component-names": "off",
     "vue/no-multiple-template-root": "off",
     "max-len": ["error", 120, 2, {
