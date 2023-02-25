@@ -11,6 +11,7 @@ const emit = defineEmits<{
 const midiInDeviceId = ref<string|null>();
 const midiInChannel = ref<number|null>();
 const midiIn = ref<Input|null>();
+const status = ref('disabled');
 
 function getMidiIn(): Input | null {
   if (!WebMidi.enabled) return null;
@@ -38,14 +39,24 @@ function getMidiIn(): Input | null {
   return null;
 }
 
-onMounted(async () => {
+async function enable() {
   await WebMidi.enable();
-  console.log('midi', WebMidi.enabled ? 'enabled' : 'disabled', WebMidi.inputs);
+  console.log('midi', WebMidi.inputs);
   midiIn.value = getMidiIn();
-  if (midiIn.value) console.log('using midi input', midiIn.value?.name);
-});
+  status.value = WebMidi.enabled && midiIn.value ? 'enabled' : 'failed';
+}
 
-onUnmounted(() => {
+function disable() {
   midiIn.value?.removeListener();
+}
+
+defineExpose({
+  enable,
+  disable,
+  status,
 });
 </script>
+
+<template>
+  <section />
+</template>

@@ -45,17 +45,18 @@ onMounted(async () => {
   scrollToKey('C4');
 });
 
-defineExpose([
+defineExpose({
   play,
   stop,
   width,
-]);
+});
 </script>
 
 <template>
   <div class="piano">
     <ul class="keys" ref="piano">
-      <li v-for="id of noteIds" :id="id" :key="id"
+      <li
+        v-for="id of noteIds" :id="id" :key="id"
         :class="`key ${id.substring(0, id.length - 1).toUpperCase()} ${id.length === 3 ? 'black' : 'white'}`"
         @mousedown.prevent="() => { dragging = true; play(id); }"
         @mouseup.prevent="() => { dragging = false; stop(id); }"
@@ -69,11 +70,6 @@ defineExpose([
       </li>
     </ul>
   </div>
-
-  <MidiInput
-    @note-on="play"
-    @note-off="stop"
-  />
 </template>
 
 <style scoped lang="scss">
@@ -153,7 +149,7 @@ ul {
       background: transparent;
       font-size: 10px;
       margin-right: calc(-1 * $blackKeyWidth / 2);
-      top: 75%;
+      top: calc(100% - 30px);
       width: 100%;
       text-align: center;
       padding: 0 2px;
