@@ -35,3 +35,26 @@ export function note(frequency: number) {
 export function midi2note(midi: number) {
   return NOTES[midi - 33];
 }
+
+const _oscBank: Record<number, [OscillatorNode, GainNode]> = {};
+
+export function playFreq(ctx: AudioContext, frequency: number, velocity: number) {
+  let [osc, gainNode] = _oscBank[frequency] ?? [];
+  if (!osc) {
+    osc = ctx.createOscillator();
+    osc.frequency.value = frequency;
+    gainNode = new GainNode(ctx, { gain: 0 });
+    osc.connect(gainNode);
+    gainNode.connect(ctx.destination);
+    _oscBank[frequency] = [osc, gainNode];
+    osc.start();
+  }
+  gainNode.gain.linearRampToValueAtTime(velocity, ctx.currentTime + 0.01);
+  return osc;
+}
+
+export function stopFreq(ctx: AudioContext, frequency: number) {
+  const [osc, gainNode] = _oscBank[frequency] ?? [];
+  if (!osc) return;
+  gainNode.gain.linearRampToValueAtTime(0, ctx.currentTime + .1);
+}

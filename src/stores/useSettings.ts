@@ -42,7 +42,7 @@ export const useSettings = defineStore('settings', () => {
   const on = true;
   const settings = ref<Settings>({
     audioContextConfig: {
-      sampleRate: 22050,
+      sampleRate: 44100,
       channels: 1,
     },
     onsetTime: 0.01,

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Vowel } from '../types';
+import { Vowel } from 'stores/useSettings';
 
 const WORDS: Record<Vowel, string> = {
   [Vowel.i]: "fleece",

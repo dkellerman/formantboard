@@ -1,4 +1,7 @@
-import { FormantSpec, Settings, Vibrato, Vowel } from '../types';
+import { Settings, Vowel } from '../stores/useSettings';
+
+type FormantSpec = Settings['formantSpecs'][Vowel][number];
+type Vibrato = Settings['vibrato'];
 
 export class VocalNode {
   _harmonics: OscillatorNode[] = [];

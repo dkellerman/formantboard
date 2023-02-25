@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { WebMidi, Input } from 'webmidi';
+import { MidiStatus } from '../types';
 import type { NoteMessageEvent } from 'webmidi';
 import type { Note } from 'utils';
 
@@ -11,7 +12,7 @@ const emit = defineEmits<{
 const midiInDeviceId = ref<string|null>();
 const midiInChannel = ref<number|null>();
 const midiIn = ref<Input|null>();
-const status = ref('disabled');
+const status = ref(MidiStatus.Disabled);
 
 function getMidiIn(): Input | null {
   if (!WebMidi.enabled) return null;
@@ -43,7 +44,7 @@ async function enable() {
   await WebMidi.enable();
   console.log('midi', WebMidi.inputs);
   midiIn.value = getMidiIn();
-  status.value = WebMidi.enabled && midiIn.value ? 'enabled' : 'failed';
+  status.value = WebMidi.enabled && midiIn.value ? MidiStatus.Enabled : MidiStatus.Failed;
 }
 
 function disable() {
