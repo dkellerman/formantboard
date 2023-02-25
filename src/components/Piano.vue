@@ -1,8 +1,8 @@
 <script setup lang="ts">
+const piano = ref<HTMLElement>();
 const noteIds = computed(() => NOTES.map((n) => n.replace('#', 's')));
 const dragging = ref(false);
-const whiteKeyWidth = ref(25);
-const pianoFullWidth = computed(() => 52 * whiteKeyWidth.value);
+const { width } = useWindowSize();
 
 const emit = defineEmits<{
   (e: 'play', freq: number, velocity: number): void;
@@ -41,7 +41,6 @@ function stop(id: string) {
 }
 
 onMounted(async () => {
-  // TODO: set fit to zoom whiteKeyWidth, force mobile horizontal
   // TODO: kb keys
   scrollToKey('C4');
 });
@@ -49,24 +48,24 @@ onMounted(async () => {
 defineExpose([
   play,
   stop,
-  pianoFullWidth,
+  width,
 ]);
 </script>
 
 <template>
   <div class="piano">
     <ul class="keys" ref="piano">
-      <li
-        v-for="id of noteIds"
-        :id="id"
-        :key="id"
-        :class="`key ${id.substring(0, id.length - 1)} ${id.includes('s') ? 'black' : 'white'}`"
+      <li v-for="id of noteIds" :id="id" :key="id"
+        :class="`key ${id.substring(0, id.length - 1).toUpperCase()} ${id.length === 3 ? 'black' : 'white'}`"
         @mousedown.prevent="() => { dragging = true; play(id); }"
         @mouseup.prevent="() => { dragging = false; stop(id); }"
         @mouseenter.prevent="() => { dragging && play(id) }"
         @mouseout.prevent="() => stop(id)"
       >
-        <label>{{ id.replace('s', '#') }}</label>
+        <label>
+          <div>{{ id.replace('s', '#') }}</div>
+          <div>{{ freq(id.replace('s', '#')).toFixed(0) }}</div>
+        </label>
       </li>
     </ul>
   </div>
@@ -78,15 +77,14 @@ defineExpose([
 </template>
 
 <style scoped lang="scss">
-$whiteKeyWidth: calc(1px * v-bind(whiteKeyWidth));
-$kbdHeight: calc(v-bind(whiteKeyWidth) * 5px);
-$blackKeyWidth: calc(v-bind(whiteKeyWidth) / 1.6 * 1px);
+$whiteKeyWidth: calc((v-bind(width) / 52) * 1px);
+$kbdHeight: calc((v-bind(width) / 52) * 5px);
+$blackKeyWidth: calc((v-bind(width) / 52) * .6px);
 $blackKeyHeight: 57%;
-$labelMargin: 20px;
 
 .piano {
   width: 100%;
-  overflow: scroll;
+  overflow: auto;
 }
 
 ul {
@@ -102,21 +100,23 @@ ul {
     list-style: none;
     height: 100%;
     border: 1px solid #000;
-    font-size: small;
     position: relative;
 
     &.white {
-      $w: $whiteKeyWidth;
-      width: $w;
-      min-width: $w;
-      max-width: $w;
+      min-width: $whiteKeyWidth;
       height: 100%;
       color: #000;
+      position: relative;
+      &.C, &.D, &.F, &.G, &.A {
+        margin-right: calc(-1 * $blackKeyWidth);
+      }
+
       border-left: 1px solid #bbb;
       border-bottom: 1px solid #bbb;
       border-radius: 0 0 5px 5px;
       box-shadow: -1px 0 0 rgba(255, 255, 255, 0.8) inset, 0 0 5px #ccc inset, 0 0 3px rgba(0, 0, 0, 0.2);
       background: linear-gradient(to bottom, #eee 0%, #fff 100%);
+
       &.active {
         border-top: 1px solid #777;
         border-left: 1px solid #999;
@@ -125,26 +125,16 @@ ul {
           0 0 3px rgba(0, 0, 0, 0.2);
         background: linear-gradient(to bottom, #fff 0%, #e9e9e9 100%);
       }
-      &.C,
-      &.D,
-      &.F,
-      &.G,
-      &.A {
-        margin-right: calc(-1 * $blackKeyWidth);
-      }
     }
 
     &.black {
-      $w: $blackKeyWidth;
-      width: $w;
-      min-width: $w;
-      max-width: $w;
-      background-color: #000;
-      color: #fff;
+      min-width: $blackKeyWidth;
       height: $blackKeyHeight;
+      color: #fff;
       position: relative;
-      right: calc((-1 * $w) / 2);
+      right: calc((-1 * $blackKeyWidth) / 2);
       z-index: 2;
+
       border: 1px solid #000;
       border-radius: 0 0 3px 3px;
       box-shadow: -1px -1px 2px rgba(255, 255, 255, 0.2) inset, 0 -5px 2px 3px rgba(0, 0, 0, 0.6) inset,
@@ -158,22 +148,24 @@ ul {
     }
 
     label {
-      text-align: center;
-      height: 100%;
+      position: absolute;
+      color: #999;
+      background: transparent;
+      font-size: 10px;
+      margin-right: calc(-1 * $blackKeyWidth / 2);
+      top: 75%;
       width: 100%;
-      position: relative;
-      color: #aaa;
+      text-align: center;
+      padding: 0 2px;
       display: none;
     }
     &.black label {
-      top: calc(100% - $labelMargin);
-      left: calc(50% - 11px);
+      width: unset;
+      background: white;
+      padding: 3px;
+      border: 1px solid #aaa;
     }
-    &.white label {
-      top: calc(100% - $labelMargin);
-      left: calc(50% - 7px);
-    }
-    &.C label {
+    &.C label, &.white:hover label {
       display: initial;
     }
   }

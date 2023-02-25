@@ -10,7 +10,10 @@ NOTES.push('C8');
 
 export type Note = typeof NOTES[number];
 
-export const FREQUENCIES = NOTES.map((_, i) => i ** Math.pow(2, 1/12));
+export const FREQUENCIES: number[] = Array(NOTES.length).fill(0);
+NOTES.forEach((_, i) => FREQUENCIES[i] =
+  i ? FREQUENCIES[i - 1] * Math.pow(2, 1 / 12) : 27.5
+);
 
 export type NoteFreq = typeof FREQUENCIES[number];
 
