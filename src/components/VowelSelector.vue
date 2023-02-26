@@ -25,8 +25,12 @@ const items = computed(() => Object.keys(Vowels).map(v => ({
 </script>
 
 <template>
-  <section class="vowel">
-    <v-select label="Vowel" :items="items" @change="emit('change', $event.value)" />
+  <section class="vowel-selector">
+    <v-select
+      label="Vowel"
+      :items="items"
+      @change="emit('change', $event.value)"
+    />
   </section>
 </template>
 
