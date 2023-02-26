@@ -1,35 +1,37 @@
-import { ADSRNode } from "nodes/ADSRNode";
+export const NOTE_LETTERS: string[] = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+export const NOTES: string[] = ['A0', 'A#0', 'B0']
+  .concat([...Array(7)].flatMap((_, i) => NOTE_LETTERS.map(l => `${l}${i + 1}`)))
+  .concat(['C8']);
+export const FREQUENCIES: number[] = [...Array(NOTES.length)];
+NOTES.forEach((_, i) => FREQUENCIES[i] = i ? FREQUENCIES[i - 1] * Math.pow(2, 1 / 12) : 27.5);
 
-const NOTE_LETTERS: string[] = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-
-export const NOTES: string[] = ['A0', 'A#0', 'B0'];
-for (let o = 1; o <= 7; o++) {
-  for (const letter of NOTE_LETTERS) {
-    NOTES.push(`${letter}${o}`);
-  }
-}
-NOTES.push('C8');
+export const
+  A0 = note2freq('A0'),
+  C1 = note2freq('C1'),
+  A2 = note2freq('A2'),
+  A3 = note2freq('A3'),
+  A4 = note2freq('A4'),
+  C8 = note2freq('C8')
+;
 
 export type Note = typeof NOTES[number];
-
-export const FREQUENCIES: number[] = Array(NOTES.length).fill(0);
-NOTES.forEach((_, i) => FREQUENCIES[i] =
-  i ? FREQUENCIES[i - 1] * Math.pow(2, 1 / 12) : 27.5
-);
-
 export type NoteFreq = typeof FREQUENCIES[number];
 
-export function semitones(note: string) {
+export function note2semitones(note: string) {
   return NOTES.indexOf(note);
 }
 
-export function freq(note: string) {
+export function freq2semitones(freq: number) {
+  return FREQUENCIES.indexOf(freq);
+}
+
+export function note2freq(note: string) {
   return FREQUENCIES[NOTES.indexOf(note)];
 }
 
-export function note(frequency: number) {
+export function freq2note(freq: number) {
   const f = FREQUENCIES.reduce((prev, curr) => {
-    return (Math.abs(curr)- frequency) < Math.abs(prev - frequency) ? curr : prev;
+    return (Math.abs(curr)- freq) < Math.abs(prev - freq) ? curr : prev;
   });
   return NOTES[FREQUENCIES.indexOf(f)];
 }
@@ -38,23 +40,32 @@ export function midi2note(midi: number) {
   return NOTES[midi - 33];
 }
 
-const _oscillators: Record<number, [OscillatorNode, ADSRNode]> = {};
-
-export function playFreq(ctx: AudioContext, frequency: number, velocity: number = 1) {
-  const osc = new OscillatorNode(ctx, { frequency });
-  const adsr = new ADSRNode(ctx, { attack: 0.01, sustain: velocity, release: 0.1 });
-  osc.connect(adsr);
-  adsr.connect(ctx.destination);
-  _oscillators[frequency] = [osc, adsr];
-  const t = ctx.currentTime;
-  osc.start(t);
-  adsr.start(t);
+export function freq2px(freq: number, width: number) {
+  const stepPx = width / 103;
+  const semitones = 12 * Math.log2(freq / A0);
+  const octaves = Math.floor(semitones / 12);
+  let stepsIntoOctave = semitones % 12;
+  if (stepsIntoOctave > 8) stepsIntoOctave += 2;
+  else if (stepsIntoOctave > 3) stepsIntoOctave += 1;
+  return (octaves * 14 * stepPx) + (stepsIntoOctave * stepPx);
 }
 
-export function stopFreq(ctx: AudioContext, frequency: number) {
-  const [osc, adsr] = _oscillators[frequency] ?? [];
-  if (!osc) return;
-  const t = ctx.currentTime;
-  adsr.stop(t);
-  delete _oscillators[frequency];
+export function clamp(n: number, min: number, max: number) {
+  return Math.max(min, Math.min(n, max));
+}
+
+export function getHarmonics(note: Note|number, max = 40, top = 22050) {
+  const baseFreq = typeof note === 'number' ? note : note2freq(note);
+  const harmonics: number[] = [];
+  while (harmonics.length < max) {
+    const h = harmonics.length + 1;
+    const f = h * baseFreq;
+    if (f > top) break;
+    harmonics.push(f);
+  }
+  return harmonics;
+}
+
+for (const f of FREQUENCIES) {
+  console.log('->', freq2note(f), f, freq2px(f, 1000));
 }

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { Vowel } from 'stores/useSettings';
-import { Vowels } from 'stores/useSettings';
+import type { Vowel } from '../stores/useSettings';
+import { Vowels } from '../stores/useSettings';
 
 const WORDS: Record<Vowel, string> = {
   [Vowels.i]: "fleece",
@@ -14,24 +14,20 @@ const WORDS: Record<Vowel, string> = {
   [Vowels.ə]: "sofa",
 };
 
-const { settings } = storeToRefs(useSettings());
+const emit = defineEmits<{
+  (e: 'change', value: Vowel): void;
+}>();
+
+const items = computed(() => Object.keys(Vowels).map(v => ({
+  title: `${Vowels[Vowels[v as Vowel]]} (${WORDS[v as Vowel]})`,
+  value: v,
+})));
 </script>
 
 <template>
-  <div class="compact">
-    <select v-model="settings.vowel">
-      <option v-for="vowel in Object.keys(Vowels)" :key="vowel" :value="vowel">
-        {{ vowel }} ({{ WORDS[vowel as Vowel] }})
-      </option>
-    </select>
-  </div>
+  <section class="vowel">
+    <v-select label="Vowel" :items="items" @change="emit('change', $event.value)" />
+  </section>
 </template>
 
-<style scoped>
-.compact {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 10px;
-}
-</style>
+<style scoped></style>

@@ -12,6 +12,8 @@ declare module '@vue/runtime-core' {
     FormantBar: typeof import('./src/components/FormantBar.vue')['default']
     Keyboard: typeof import('./src/components/Keyboard.vue')['default']
     MidiInput: typeof import('./src/components/MidiInput.vue')['default']
+    PianoBar: typeof import('./src/components/PianoBar.vue')['default']
+    Player: typeof import('./src/components/Player.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SettingsPanel: typeof import('./src/components/SettingsPanel.vue')['default']

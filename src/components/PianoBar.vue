@@ -1,38 +1,34 @@
 <script setup lang="ts">
-import type { FormantSpecs, FormantSpec } from 'stores/useSettings';
+import type { FormantSpec } from '../stores/useSettings';
+import { freq2px } from '../utils';
 
 interface Props {
-  formantSpecs: FormantSpecs;
+  formantSpec: FormantSpec;
   harmonics: [number, number][];
+  width?: number;
 }
 
 const MAXFREQ = 4186;
 const props = defineProps<Props>();
-const formantSpecs = computed(() => props.formantSpecs?.filter((f: FormantSpec) => f.frequency <= MAXFREQ) ?? []);
+const formantSpecs = computed(() => props.formantSpec?.filter(f => f.frequency <= MAXFREQ) ?? []);
 const harmonics = computed(() => props.harmonics?.filter(([f])=> f <= MAXFREQ) ?? []);
 const mounted = ref(false);
-const pianoFullWidth = inject('pianoFullWidth');
+const width = computed(() => props.width ?? document.querySelector('.keyboard')?.scrollWidth ?? 300);
 
 function hstyle(h: [number, number]) {
-  const x = getXForFrequency(h[0]);
+  const x = freq2px(h[0], width.value);
   if (x === null) return 'display: none;';
   return `left: ${x}px`;
 }
 
-function fstyle(fs: FormantSpec) {
-  const x1 = getXForFrequency(fs.frequency - (fs.frequency * fs.Q));
-  const x2 = getXForFrequency(fs.frequency + (fs.frequency * fs.Q));
+function fstyle(fs: FormantSpec[number]) {
+  const x1 = freq2px(fs.frequency - (fs.frequency * fs.Q), width.value);
+  const x2 = freq2px(fs.frequency + (fs.frequency * fs.Q), width.value);
   if (x1 === null || x2 === null) return 'display: none;';
   return [
     `left: ${x1}px`,
     `width: ${x2 - x1}px`
   ].join(';');
-}
-
-function getXForFrequency(freq: number) {
-  const note = getNote(freq).replace('#', 's');
-  const rect = document.getElementById(note)?.getBoundingClientRect();
-  return rect ? (rect.left + window.scrollX) - 15 : null;
 }
 
 onMounted(() => mounted.value = true);
@@ -51,6 +47,15 @@ onMounted(() => mounted.value = true);
         <div class="line">
           |
         </div>
+        <v-tooltip
+          activator="parent"
+          location="left"
+          :open-on-hover="true"
+        >
+          <div>Harmonic H{{ idx + 1 }}</div>
+          <div>Frequency: {{ h[0].toFixed(2) }}</div>
+          <div>Gain: {{ h[1].toFixed(2) }}</div>
+        </v-tooltip>
       </li>
 
       <li
@@ -60,6 +65,16 @@ onMounted(() => mounted.value = true);
         :key="`F${idx + 1}`"
       >
         F{{ idx + 1 }}
+        <v-tooltip
+          activator="parent"
+          location="top"
+          :open-on-hover="true"
+        >
+          <div>Formant F{{ idx + 1 }}: {{ fs.on ? 'on' : 'off' }}</div>
+          <div>
+            {{ fs.frequency - (fs.frequency * fs.Q) }}-{{ fs.frequency + (fs.frequency * fs.Q) }}hz
+          </div>
+        </v-tooltip>
       </li>
     </ul>
   </div>
@@ -67,8 +82,8 @@ onMounted(() => mounted.value = true);
 
 <style scoped lang="scss">
 .bar {
-  height: 60px;
-  width: calc(1px * v-bind(pianoFullWidth));
+  height: 80px;
+  width: calc(1px * v-bind(width));
   border-bottom: 0;
   box-shadow: 2px 0 3px rgba(0, 0, 0, 0.1) inset, -5px 5px 20px rgba(0, 0, 0, 0.2) inset;
   border-radius: 7px 7px 0 0;
@@ -81,7 +96,7 @@ onMounted(() => mounted.value = true);
       text-indent: 0;
       font-size: medium;
       text-align: center;
-      &:before { display: none; }
+      list-style: none;
 
       &.h {
         top: 10px;
@@ -94,7 +109,7 @@ onMounted(() => mounted.value = true);
         }
       }
       &.f {
-        top: 42px;
+        top: 55px;
         background: rgb(171, 223, 171);
         padding: 2px;
         font-size: small;

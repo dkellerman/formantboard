@@ -1,25 +1,28 @@
 <script setup lang="ts">
-import Keyboard from 'components/Keyboard.vue';
-import MidiInput from 'components/MidiInput.vue';
-import { MidiStatus } from 'types';
+import type { Vowel } from '../stores/useSettings';
+import PianoBar from '../components/PianoBar.vue';
+import Keyboard from '../components/Keyboard.vue';
+import Player from '../components/Player.vue';
+import { useApp } from '../stores/useApp';
 
-const keyboard = ref<typeof Keyboard>();
-const midi = ref<typeof MidiInput>();
-const { audioContext } = storeToRefs(useSettings());
-
-onUnmounted(() => {
-  midi.value?.disable();
-});
+const { settings, keyboard, player, bar, vowel } = storeToRefs(useApp());
 </script>
 
 <template>
   <section>
-    <Keyboard ref="keyboard" @play="(f, v) => playFreq(audioContext, f, v)" @stop="(f) => stopFreq(audioContext, f)" />
-    <v-btn v-if="midi?.status === MidiStatus.Disabled" variant="outlined" @click="midi?.enable()">
-      Enable MIDI
-    </v-btn>
+    <PianoBar
+      ref="bar"
+      :harmonics="player?.harmonics ?? []"
+      :formant-spec="settings.formantSpecs[vowel as Vowel ?? settings.defaultVowel]"
+      :width="keyboard?.width"
+    />
+    <Keyboard
+      ref="keyboard"
+      @play="(f, v) => player?.play(f, v)"
+      @stop="(f) => player?.stop(f)"
+    />
+    <Player ref="player" />
   </section>
-  <MidiInput ref="midi" @note-on="keyboard?.play" @note-off="keyboard?.stop" />
 </template>
 
 <style scoped lang="scss">
@@ -27,12 +30,5 @@ section {
   display: flex;
   flex-direction: column;
   align-items: center;
-}
-button {
-  margin-top: 20px;
-  position: absolute;
-  right: 15px;
-  top: -5px;
-  z-index: 2000;
 }
 </style>

@@ -22,7 +22,7 @@ export type Settings = {
     Q: number;
     on: boolean;
   }>>;
-  vowel: Vowel;
+  defaultVowel: Vowel;
   vibrato: {
     rate: number;
     extent: number;
@@ -50,7 +50,7 @@ export const useSettings = defineStore('settings', () => {
     onsetTime: 0.01,
     decayTime: 0.1,
     tilt: -3,
-    vowel: Vowels.ɑ,
+    defaultVowel: Vowels.ɑ,
     maxHarmonics: 40,
     vibrato: {
       rate: 5,

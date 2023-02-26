@@ -1,8 +1,14 @@
 <script setup lang="ts">
 import { WebMidi, Input } from 'webmidi';
-import { MidiStatus } from 'types';
 import type { NoteMessageEvent } from 'webmidi';
-import type { Note } from 'utils';
+import { MidiStatus } from '../types';
+import type { Note } from '../utils';
+
+interface Props {
+  show?: boolean;
+}
+
+const props = withDefaults(defineProps<Props>(), { show: true });
 
 const emit = defineEmits<{
   (e: 'noteOn', note: Note, attack: number): void
@@ -51,6 +57,10 @@ function disable() {
   midiIn.value?.removeListener();
 }
 
+onUnmounted(() => {
+  disable();
+});
+
 defineExpose({
   enable,
   disable,
@@ -59,5 +69,9 @@ defineExpose({
 </script>
 
 <template>
-  <section />
+  <section class="midi">
+    <v-btn v-if="props.show && status === MidiStatus.Disabled" variant="outlined" @click="enable()">
+      Enable MIDI
+    </v-btn>
+  </section>
 </template>

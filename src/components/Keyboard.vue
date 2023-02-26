@@ -34,12 +34,12 @@ function getKeyClass(id: string) {
 }
 
 function play(id: string, velocity = 1) {
-  emit('play', freq(id.replace('s', '#')), velocity);
+  emit('play', note2freq(id.replace('s', '#')), velocity);
   activateKey(id);
 }
 
 function stop(id: string) {
-  emit('stop', freq(id.replace('s', '#')));
+  emit('stop', note2freq(id.replace('s', '#')));
   deactivateKey(id);
 }
 
@@ -68,7 +68,7 @@ defineExpose({
       >
         <label>
           <div>{{ id.replace('s', '#') }}</div>
-          <div>{{ freq(id.replace('s', '#')).toFixed(0) }}</div>
+          <div>{{ note2freq(id.replace('s', '#')).toFixed(0) }}</div>
         </label>
       </li>
     </ul>
@@ -81,7 +81,7 @@ $kbdHeight: calc((v-bind(width) / 52) * 5px);
 $blackKeyWidth: calc((v-bind(width) / 52) * .65px);
 $blackKeyHeight: 57%;
 
-.piano {
+.keyboard {
   width: 100%;
   min-width: 800px;
   overflow: auto;
@@ -175,7 +175,7 @@ ul {
       padding: 3px;
       border: 1px solid #aaa;
     }
-    &.C label, &.white:hover label {
+    &.C label, &:hover label {
       display: initial;
     }
   }
