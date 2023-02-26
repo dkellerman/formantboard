@@ -25,4 +25,7 @@ const { keyboard, midi, vowel } = storeToRefs(useApp());
 .midi {
   margin-right: 20px;
 }
+main {
+  margin-top: 20px;
+}
 </style>

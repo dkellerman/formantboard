@@ -70,7 +70,7 @@ onMounted(() => mounted.value = true);
           location="top"
           :open-on-hover="true"
         >
-          <div>Formant F{{ idx + 1 }}: {{ fs.on ? 'on' : 'off' }}</div>
+          <div>Formant F{{ idx + 1 }} [{{ fs.on ? 'ON' : 'OFF' }}]</div>
           <div>
             {{ fs.frequency - (fs.frequency * fs.Q) }}-{{ fs.frequency + (fs.frequency * fs.Q) }}hz
           </div>

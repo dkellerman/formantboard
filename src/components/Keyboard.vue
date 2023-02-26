@@ -1,7 +1,8 @@
 <script setup lang="ts">
 const noteIds = computed(() => NOTES.map((n) => n.replace('#', 's')));
 const dragging = ref(false);
-const { width } = useWindowSize();
+const { width: winWidth } = useWindowSize();
+const width = computed(() => winWidth.value - 20);
 
 const emit = defineEmits<{
   (e: 'play', freq: number, velocity: number): void;
@@ -82,7 +83,7 @@ $blackKeyWidth: calc((v-bind(width) / 52) * .65px);
 $blackKeyHeight: 57%;
 
 .keyboard {
-  width: 100%;
+  width: calc(1px * v-bind(width));
   min-width: 800px;
   overflow: auto;
 }

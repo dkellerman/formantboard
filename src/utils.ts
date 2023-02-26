@@ -1,18 +1,14 @@
 export const NOTE_LETTERS: string[] = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
 export const NOTES: string[] = ['A0', 'A#0', 'B0']
   .concat([...Array(7)].flatMap((_, i) => NOTE_LETTERS.map(l => `${l}${i + 1}`)))
   .concat(['C8']);
+
 export const FREQUENCIES: number[] = [...Array(NOTES.length)];
 NOTES.forEach((_, i) => FREQUENCIES[i] = i ? FREQUENCIES[i - 1] * Math.pow(2, 1 / 12) : 27.5);
 
-export const
-  A0 = note2freq('A0'),
-  C1 = note2freq('C1'),
-  A2 = note2freq('A2'),
-  A3 = note2freq('A3'),
-  A4 = note2freq('A4'),
-  C8 = note2freq('C8')
-;
+export const NUM_KEY_SLOTS = countKeySlots(NOTES[0], NOTES[NOTES.length - 1]);
+export const KEY_SLOTS_PER_OCTAVE = countKeySlots(NOTES[0], NOTES[12]);
 
 export type Note = typeof NOTES[number];
 export type NoteFreq = typeof FREQUENCIES[number];
@@ -41,13 +37,13 @@ export function midi2note(midi: number) {
 }
 
 export function freq2px(freq: number, width: number) {
-  const stepPx = width / 103;
-  const semitones = 12 * Math.log2(freq / A0);
+  const stepPx = width / NUM_KEY_SLOTS;
+  const semitones = 12 * Math.log2(freq / FREQUENCIES[0]);
   const octaves = Math.floor(semitones / 12);
-  let stepsIntoOctave = semitones % 12;
-  if (stepsIntoOctave > 8) stepsIntoOctave += 2;
-  else if (stepsIntoOctave > 3) stepsIntoOctave += 1;
-  return (octaves * 14 * stepPx) + (stepsIntoOctave * stepPx);
+  let slotsIntoOctave = semitones % 12;
+  if (slotsIntoOctave > 8) slotsIntoOctave += 2;
+  else if (slotsIntoOctave > 3) slotsIntoOctave += 1;
+  return (octaves * KEY_SLOTS_PER_OCTAVE * stepPx) + (slotsIntoOctave * stepPx);
 }
 
 export function clamp(n: number, min: number, max: number) {
@@ -66,6 +62,13 @@ export function getHarmonics(note: Note|number, max = 40, top = 22050) {
   return harmonics;
 }
 
-for (const f of FREQUENCIES) {
-  console.log('->', freq2note(f), f, freq2px(f, 1000));
+export function countKeySlots(start: Note, end: Note) {
+  const startIndex = NOTES.indexOf(start);
+  const endIndex = NOTES.indexOf(end);
+  const notes = NOTES.slice(startIndex, endIndex + 1);
+  return notes.reduce((prev, curr) => {
+    if (curr.includes('F') || curr.includes('C') && !curr.includes("#")) return prev + 2;
+    return prev + 1;
+  }, 0) - 1;
 }
+
