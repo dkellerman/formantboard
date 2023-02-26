@@ -12,7 +12,10 @@
     "lib": ["ESNext", "DOM"],
     "skipLibCheck": true,
     "noEmit": true,
-    "baseUrl": "src",
+    "baseUrl": "./src",
+    "paths": {
+      "*": ["./*"]
+    },
     "types": [
       "vite/client",
       "vite-plugin-pages/client"

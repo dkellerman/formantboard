@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import Piano from '../components/Piano.vue';
-import MidiInput from '../components/MidiInput.vue';
-import { MidiStatus } from '../types';
-import { playFreq, stopFreq } from '../utils';
+import Keyboard from 'components/Keyboard.vue';
+import MidiInput from 'components/MidiInput.vue';
+import { MidiStatus } from 'types';
 
-const piano = ref<typeof Piano>();
+const keyboard = ref<typeof Keyboard>();
 const midi = ref<typeof MidiInput>();
 const { audioContext } = storeToRefs(useSettings());
 
@@ -15,12 +14,12 @@ onUnmounted(() => {
 
 <template>
   <section>
-    <Piano ref="piano" @play="(f, v) => playFreq(audioContext, f, v)" @stop="(f) => stopFreq(audioContext, f)" />
+    <Keyboard ref="keyboard" @play="(f, v) => playFreq(audioContext, f, v)" @stop="(f) => stopFreq(audioContext, f)" />
     <v-btn v-if="midi?.status === MidiStatus.Disabled" variant="outlined" @click="midi?.enable()">
       Enable MIDI
     </v-btn>
   </section>
-  <MidiInput ref="midi" @note-on="piano?.play" @note-off="piano?.stop" />
+  <MidiInput ref="midi" @note-on="keyboard?.play" @note-off="keyboard?.stop" />
 </template>
 
 <style scoped lang="scss">

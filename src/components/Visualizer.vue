@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import * as PIXI from "pixi.js";
+import * as PIXI from 'pixi.js';
 
 interface Props {
   node: AudioNode;

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-const piano = ref<HTMLElement>();
 const noteIds = computed(() => NOTES.map((n) => n.replace('#', 's')));
 const dragging = ref(false);
 const { width } = useWindowSize();
@@ -57,8 +56,8 @@ defineExpose({
 </script>
 
 <template>
-  <div class="piano">
-    <ul class="keys" ref="piano">
+  <div class="keyboard">
+    <ul class="keys">
       <li
         v-for="id of noteIds" :id="id" :key="id"
         :class="getKeyClass(id)"
@@ -168,6 +167,7 @@ ul {
       text-align: center;
       padding: 0 2px;
       display: none;
+      pointer-events: none;
     }
     &.black label {
       width: unset;

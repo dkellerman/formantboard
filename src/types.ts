@@ -1,5 +1,5 @@
 export enum MidiStatus {
-  Disabled = 'disabled',
-  Enabled = 'enabled',
-  Failed = 'failed',
-}
+  Disabled,
+  Enabled,
+  Failed,
+};

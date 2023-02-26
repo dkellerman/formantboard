@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import type { FormantSpec } from 'types';
+import type { FormantSpecs, FormantSpec } from 'stores/useSettings';
 
 interface Props {
-  formantSpecs: FormantSpec[];
+  formantSpecs: FormantSpecs;
   harmonics: [number, number][];
 }
 
 const MAXFREQ = 4186;
 const props = defineProps<Props>();
-const formantSpecs = computed(() => props.formantSpecs?.filter(f => f.frequency <= MAXFREQ) ?? []);
+const formantSpecs = computed(() => props.formantSpecs?.filter((f: FormantSpec) => f.frequency <= MAXFREQ) ?? []);
 const harmonics = computed(() => props.harmonics?.filter(([f])=> f <= MAXFREQ) ?? []);
 const mounted = ref(false);
 const pianoFullWidth = inject('pianoFullWidth');

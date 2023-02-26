@@ -1,16 +1,17 @@
 <script setup lang="ts">
-import { Vowel } from 'stores/useSettings';
+import type { Vowel } from 'stores/useSettings';
+import { Vowels } from 'stores/useSettings';
 
 const WORDS: Record<Vowel, string> = {
-  [Vowel.i]: "fleece",
-  [Vowel.ɪ]: "kit",
-  [Vowel.ɛ]: "dress",
-  [Vowel.æ]: "trap",
-  [Vowel.ɑ]: "father",
-  [Vowel.ɔ]: "thought",
-  [Vowel.ʊ]: "foot",
-  [Vowel.u]: "goose",
-  [Vowel.ə]: "sofa",
+  [Vowels.i]: "fleece",
+  [Vowels.ɪ]: "kit",
+  [Vowels.ɛ]: "dress",
+  [Vowels.æ]: "trap",
+  [Vowels.ɑ]: "father",
+  [Vowels.ɔ]: "thought",
+  [Vowels.ʊ]: "foot",
+  [Vowels.u]: "goose",
+  [Vowels.ə]: "sofa",
 };
 
 const { settings } = storeToRefs(useSettings());
@@ -19,7 +20,7 @@ const { settings } = storeToRefs(useSettings());
 <template>
   <div class="compact">
     <select v-model="settings.vowel">
-      <option v-for="vowel in Object.keys(Vowel)" :key="vowel" :value="vowel">
+      <option v-for="vowel in Object.keys(Vowels)" :key="vowel" :value="vowel">
         {{ vowel }} ({{ WORDS[vowel as Vowel] }})
       </option>
     </select>

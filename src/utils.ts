@@ -1,8 +1,10 @@
-const LETTERS: string[] = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+import { ADSRNode } from "nodes/ADSRNode";
+
+const NOTE_LETTERS: string[] = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
 export const NOTES: string[] = ['A0', 'A#0', 'B0'];
 for (let o = 1; o <= 7; o++) {
-  for (const letter of LETTERS) {
+  for (const letter of NOTE_LETTERS) {
     NOTES.push(`${letter}${o}`);
   }
 }
@@ -17,7 +19,7 @@ NOTES.forEach((_, i) => FREQUENCIES[i] =
 
 export type NoteFreq = typeof FREQUENCIES[number];
 
-export function getSemitones(note: string) {
+export function semitones(note: string) {
   return NOTES.indexOf(note);
 }
 
@@ -36,25 +38,23 @@ export function midi2note(midi: number) {
   return NOTES[midi - 33];
 }
 
-const _oscBank: Record<number, [OscillatorNode, GainNode]> = {};
+const _oscillators: Record<number, [OscillatorNode, ADSRNode]> = {};
 
-export function playFreq(ctx: AudioContext, frequency: number, velocity: number) {
-  let [osc, gainNode] = _oscBank[frequency] ?? [];
-  if (!osc) {
-    osc = ctx.createOscillator();
-    osc.frequency.value = frequency;
-    gainNode = new GainNode(ctx, { gain: 0 });
-    osc.connect(gainNode);
-    gainNode.connect(ctx.destination);
-    _oscBank[frequency] = [osc, gainNode];
-    osc.start();
-  }
-  gainNode.gain.linearRampToValueAtTime(velocity, ctx.currentTime + 0.01);
-  return osc;
+export function playFreq(ctx: AudioContext, frequency: number, velocity: number = 1) {
+  const osc = new OscillatorNode(ctx, { frequency });
+  const adsr = new ADSRNode(ctx, { attack: 0.01, sustain: velocity, release: 0.1 });
+  osc.connect(adsr);
+  adsr.connect(ctx.destination);
+  _oscillators[frequency] = [osc, adsr];
+  const t = ctx.currentTime;
+  osc.start(t);
+  adsr.start(t);
 }
 
 export function stopFreq(ctx: AudioContext, frequency: number) {
-  const [osc, gainNode] = _oscBank[frequency] ?? [];
+  const [osc, adsr] = _oscillators[frequency] ?? [];
   if (!osc) return;
-  gainNode.gain.linearRampToValueAtTime(0, ctx.currentTime + .1);
+  const t = ctx.currentTime;
+  adsr.stop(t);
+  delete _oscillators[frequency];
 }

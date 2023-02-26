@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { WebMidi, Input } from 'webmidi';
-import { MidiStatus } from '../types';
+import { MidiStatus } from 'types';
 import type { NoteMessageEvent } from 'webmidi';
 import type { Note } from 'utils';
 

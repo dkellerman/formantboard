@@ -1,4 +1,4 @@
-import { Settings, Vowel } from '../stores/useSettings';
+import { Settings, Vowel } from 'stores/useSettings';
 
 type FormantSpec = Settings['formantSpecs'][Vowel][number];
 type Vibrato = Settings['vibrato'];
