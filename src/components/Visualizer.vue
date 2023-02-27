@@ -85,7 +85,7 @@ function makeBins() {
     if (w > 18) {
       const label = `${freq1.toFixed(0)}${w > 40 ? ' hz' : ''}`
       const text = new PIXI.Text(label, { fill: 0xffffff, fontSize: 10 });
-      text.x = x1 - 10;
+      text.x = x1 + (i === 0 ? 5 : -10);
       text.y = 5;
       gLabels.addChild(text);
     }
@@ -111,10 +111,12 @@ function render() {
     const h = (canvas.value.clientHeight - 1) * pct;
     const y = canvas.value.clientHeight - h;
     g.lineStyle(2, 0xffffff);
-    g.moveTo(bin.x1, canvas.value.clientHeight);
-    g.lineTo(bin.x1, y);
+    // g.moveTo(bin.x1, canvas.value.clientHeight);
+    // g.lineTo(bin.x1, y);
+    // g.lineTo(bin.x2, y);
+    // g.lineTo(bin.x2, canvas.value.clientHeight);
+    if (bin.bufferIndex === 0) g.moveTo(bin.x1, canvas.value.clientHeight);
     g.lineTo(bin.x2, y);
-    g.lineTo(bin.x2, canvas.value.clientHeight);
   }
 }
 
