@@ -13,6 +13,7 @@ declare module '@vue/runtime-core' {
     Keyboard: typeof import('./src/components/Keyboard.vue')['default']
     MidiInput: typeof import('./src/components/MidiInput.vue')['default']
     PianoBar: typeof import('./src/components/PianoBar.vue')['default']
+    PIXIAnalyzer: typeof import('./src/components/PIXIAnalyzer.vue')['default']
     Player: typeof import('./src/components/Player.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']

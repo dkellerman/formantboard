@@ -176,7 +176,7 @@ ul {
       padding: 3px;
       border: 1px solid #aaa;
     }
-    &.C label, &:hover label {
+    &.C label, &:hover label, &.active label {
       display: initial;
     }
   }

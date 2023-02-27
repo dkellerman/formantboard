@@ -44,10 +44,8 @@ onMounted(() => mounted.value = true);
         :style="hstyle(h)"
         :key="`H${idx + 1}`"
       >
-        {{ idx < 6 ? `H${idx+1}` : '&nbsp;' }}
-        <div class="line">
-          |
-        </div>
+        <!-- {{ idx < 6 ? `H${idx+1}` : '&nbsp;' }} -->&nbsp;
+        <div class="line">|</div>
         <v-tooltip
           activator="parent"
           location="left"
@@ -65,7 +63,7 @@ onMounted(() => mounted.value = true);
         :style="fstyle(fs)"
         :key="`F${idx + 1}`"
       >
-        F{{ idx + 1 }}
+        <!-- F{{ idx + 1 }} -->&nbsp;
         <v-tooltip
           activator="parent"
           location="top"
@@ -111,13 +109,13 @@ onMounted(() => mounted.value = true);
       }
       &.f {
         top: 55px;
-        background: rgb(171, 223, 171);
+        background: linear-gradient(to right, rgb(171, 223, 171), rgb(179, 222, 179));
         padding: 2px;
         font-size: small;
-        border: 1px solid forestgreen;
         &.off {
           background: rgb(223, 171, 171);
-          border: 1px solid darkred;}
+          border: 1px solid darkred;
+        }
       }
     }
   }

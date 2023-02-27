@@ -1,3 +1,6 @@
+import * as PIXI from 'pixi.js';
+import tinycolor from 'tinycolor2';
+
 export const NOTE_LETTERS: string[] = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
 export const NOTES: string[] = ['A0', 'A#0', 'B0']
@@ -7,6 +10,10 @@ export const NOTES: string[] = ['A0', 'A#0', 'B0']
 export const FREQUENCIES: number[] = [...Array(NOTES.length)];
 NOTES.forEach((_, i) => FREQUENCIES[i] = i ? FREQUENCIES[i - 1] * Math.pow(2, 1 / 12) : 27.5);
 
+export const TOP_NOTE = NOTES[NOTES.length - 1];
+export const BOTTOM_NOTE = NOTES[0];
+export const MIN_FREQ = FREQUENCIES[0];
+export const MAX_FREQ = FREQUENCIES[FREQUENCIES.length - 1];
 export const NUM_KEY_SLOTS = countKeySlots(NOTES[0], NOTES[NOTES.length - 1]);
 export const KEY_SLOTS_PER_OCTAVE = countKeySlots(NOTES[0], NOTES[12]);
 
@@ -37,8 +44,11 @@ export function midi2note(midi: number) {
 }
 
 export function freq2px(freq: number, width: number) {
+  if (freq <= MIN_FREQ) return 0;
+  if (freq >= MAX_FREQ) return width;
+
   const stepPx = width / NUM_KEY_SLOTS;
-  const semitones = 12 * Math.log2(freq / FREQUENCIES[0]);
+  const semitones = 12 * Math.log2(freq / MIN_FREQ);
   const octaves = Math.floor(semitones / 12);
   let slotsIntoOctave = semitones % 12;
   if (slotsIntoOctave > 8) slotsIntoOctave += 2;
@@ -72,3 +82,20 @@ export function countKeySlots(start: Note, end: Note) {
   }, 0) - 1;
 }
 
+export function fillRect(
+  g: PIXI.Graphics,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  color: string,
+  borderColor?: string,
+  borderWidth?: number,
+) {
+  let c = parseInt(tinycolor(color).toHexString().slice(1), 16);
+  const bc = c; // borderColor ? Number(tinycolor(borderColor).toHexString()) : c;
+  g.beginFill(c);
+  g.lineStyle(borderWidth ?? 1, bc);
+  g.drawRect(x, y, w, h);
+  g.endFill();
+}

@@ -13,16 +13,18 @@ export enum Vowels {
 export type Vowel = typeof Vowels[keyof typeof Vowels];
 
 export type Settings = {
+  keyGain: number;
   onsetTime: number;
   decayTime: number;
   tilt: number;
   maxHarmonics: number;
+  compress: boolean;
+  fftSize: number;
   formantSpecs: Record<Vowel, Array<{
     frequency: number;
     Q: number;
     on: boolean;
   }>>;
-  defaultVowel: Vowel;
   vibrato: {
     rate: number;
     extent: number;
@@ -30,6 +32,7 @@ export type Settings = {
     onsetTime: number;
     on: boolean;
   };
+  defaultVowel: Vowel;
   audioContextConfig: {
     sampleRate: number;
     channels: number;
@@ -47,11 +50,14 @@ export const useSettings = defineStore('settings', () => {
       sampleRate: 44100,
       channels: 1,
     },
+    keyGain: 0.2,
     onsetTime: 0.01,
-    decayTime: 0.1,
+    decayTime: 0.05,
     tilt: -3,
     defaultVowel: Vowels.ɑ,
     maxHarmonics: 40,
+    compress: true,
+    fftSize: 1024,
     vibrato: {
       rate: 5,
       extent: 1,

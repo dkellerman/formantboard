@@ -16,12 +16,14 @@
     "pinia": "^2.0.30",
     "pixi.js": "^7.1.2",
     "sass": "^1.58.2",
+    "tinycolor2": "^1.6.0",
     "vue": "^3.2.45",
     "vue-router": "^4.1.6",
     "vuetify": "^3.1.6",
     "webmidi": "^3.1.4"
   },
   "devDependencies": {
+    "@types/tinycolor2": "^1.4.3",
     "@typescript-eslint/eslint-plugin": "^5.52.0",
     "@typescript-eslint/parser": "^5.52.0",
     "@vitejs/plugin-vue": "^4.0.0",
