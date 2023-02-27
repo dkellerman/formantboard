@@ -92,7 +92,7 @@ export function fillRect(
   borderColor?: string,
   borderWidth?: number,
 ) {
-  let c = parseInt(tinycolor(color).toHexString().slice(1), 16);
+  const c = parseInt(tinycolor(color).toHexString().slice(1), 16);
   const bc = c; // borderColor ? Number(tinycolor(borderColor).toHexString()) : c;
   g.beginFill(c);
   g.lineStyle(borderWidth ?? 1, bc);

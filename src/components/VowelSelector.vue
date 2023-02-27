@@ -31,6 +31,7 @@ console.log(items);
       :items="items"
       variant="outlined"
       label="Vowel"
+      density="compact"
     />
   </section>
 </template>

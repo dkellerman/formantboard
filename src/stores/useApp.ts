@@ -16,7 +16,7 @@ export const useApp = defineStore('app', () => {
   const bar = ref<typeof PianoBar>();
   const vowel = ref<Vowel>(settings.value.defaultVowel);
   const volume = ref(100);
-
+  const f0 = ref<string>('A3');
 
   const audioContext = computed(() => new AudioContext({
     ...settings.value.audioContextConfig,
@@ -34,5 +34,6 @@ export const useApp = defineStore('app', () => {
     settingsPanel,
     audioContext,
     volume,
+    f0,
   };
 });

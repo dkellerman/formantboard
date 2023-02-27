@@ -13,7 +13,7 @@ interface FFTBin {
   freq2: number;
   x1: number;
   x2: number;
-};
+}
 
 const { settings } = storeToRefs(useSettings());
 
@@ -67,23 +67,25 @@ function makeBins() {
 
   for (let i = 0; i < binCount; i++) {
     const fwidth = props.input.context.sampleRate / binCount;
-    const f1 = fwidth * i;
-    const f2 = f1 + fwidth;
-    const x1 = freq2px(f1, canvas.value.clientWidth);
-    const x2 = freq2px(f2, canvas.value.clientWidth)
-    bins.push({ freq1: f1, freq2: f2, x1, x2, bufferIndex: i });
+    const freq1 = Math.max(fwidth * i, FREQUENCIES[0]);
+    const freq2 = Math.min(freq1 + fwidth, FREQUENCIES[FREQUENCIES.length - 1]);
+    const x1 = freq2px(freq1, canvas.value.clientWidth);
+    const x2 = freq2px(freq2, canvas.value.clientWidth)
+    bins.push({ freq1, freq2, x1, x2, bufferIndex: i });
 
-    if (f2 < FREQUENCIES[0] || f1 > FREQUENCIES[FREQUENCIES.length - 1])
+    if (freq2 < FREQUENCIES[0] || freq1 > FREQUENCIES[FREQUENCIES.length - 1])
       continue;
 
-    if (x2 - x1 > 5) {
+    const w = x2 - x1;
+    if (w > 5) {
       gLabels.moveTo(x2, 0);
       gLabels.lineTo(x2, canvas.value.clientHeight);
     }
 
-    if (x2 - x1 > 15) {
-      const text = new PIXI.Text(`${f1.toFixed(0)}`, { fill: 0xffffff, fontSize: 10 });
-      text.x = x1 + 3;
+    if (w > 18) {
+      const label = `${freq1.toFixed(0)}${w > 40 ? ' hz' : ''}`
+      const text = new PIXI.Text(label, { fill: 0xffffff, fontSize: 10 });
+      text.x = x1 - 10;
       text.y = 5;
       gLabels.addChild(text);
     }

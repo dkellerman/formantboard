@@ -45,7 +45,9 @@ onMounted(() => mounted.value = true);
         :key="`H${idx + 1}`"
       >
         <!-- {{ idx < 6 ? `H${idx+1}` : '&nbsp;' }} -->&nbsp;
-        <div class="line">|</div>
+        <div class="line">
+          |
+        </div>
         <v-tooltip
           activator="parent"
           location="left"
