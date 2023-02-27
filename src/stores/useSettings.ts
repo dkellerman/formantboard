@@ -120,9 +120,5 @@ export const useSettings = defineStore('settings', () => {
   // TODO: from URL, local storage
   return {
     settings,
-    audioContext: computed(() => new AudioContext({
-      ...settings.value.audioContextConfig,
-      latencyHint: 'interactive',
-    })),
   };
 });

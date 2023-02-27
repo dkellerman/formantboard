@@ -1,8 +1,11 @@
 <script setup lang="ts">
+import { useApp } from '../stores/useApp';
+
 const playing: Ref<Record<number, [OscillatorNode, GainNode]>> = ref({});
 const harmonics = ref<[number, number][]>([]);
-
-const { audioContext, settings } = storeToRefs(useSettings());
+const { audioContext, settings, volume } = storeToRefs(useApp());
+const compressor = computed<DynamicsCompressorNode>(() => new DynamicsCompressorNode(audioContext.value));
+const master = computed<GainNode>(() => new GainNode(audioContext.value, { gain: volume.value / 100 }));
 
 function play(frequency: number, velocity = 1) {
   const ctx = audioContext.value;
@@ -10,9 +13,12 @@ function play(frequency: number, velocity = 1) {
   const gain = new GainNode(ctx, { gain: 0 });
   harmonics.value = getHarmonics(frequency, settings.value.maxHarmonics).map(h => [h, 1]);
 
-  const t = ctx.currentTime + .001;
   osc.connect(gain);
-  gain.connect(ctx.destination);
+  gain.connect(compressor.value);
+  compressor.value.connect(master.value);
+  master.value.connect(ctx.destination);
+
+  const t = ctx.currentTime + .001;
   osc.start(t);
   gain.gain.linearRampToValueAtTime(velocity, t + settings.value.onsetTime);
   playing.value[frequency] = [osc, gain];
