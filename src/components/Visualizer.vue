@@ -59,6 +59,8 @@ function makeBins() {
 
   const g = graphics.value;
   g.clear();
+  const gLabels = new PIXI.Graphics();
+  gLabels.lineStyle(1, 0x444444);
 
   const binCount = analyzer.value.frequencyBinCount;
   const bins: FFTBin[] = [];
@@ -71,16 +73,24 @@ function makeBins() {
     const x2 = freq2px(f2, canvas.value.clientWidth)
     bins.push({ freq1: f1, freq2: f2, x1, x2, bufferIndex: i });
 
-    if (f2 < FREQUENCIES[0] || f1 > FREQUENCIES[FREQUENCIES.length - 1] || (x2 - x1 < 30))
+    if (f2 < FREQUENCIES[0] || f1 > FREQUENCIES[FREQUENCIES.length - 1])
       continue;
 
-    const text = new PIXI.Text(`${f1.toFixed(0)}-${f2.toFixed(0)}`, { fill: 0xffffff, fontSize: 10 });
-    text.x = x1 + 5;
-    text.y = 5;
-    app.value.stage.addChild(text);
+    if (x2 - x1 > 5) {
+      gLabels.moveTo(x2, 0);
+      gLabels.lineTo(x2, canvas.value.clientHeight);
+    }
+
+    if (x2 - x1 > 15) {
+      const text = new PIXI.Text(`${f1.toFixed(0)}`, { fill: 0xffffff, fontSize: 10 });
+      text.x = x1 + 3;
+      text.y = 5;
+      gLabels.addChild(text);
+    }
   }
 
   console.log('fft bins', bins);
+  app.value.stage.addChild(gLabels);
   fftBins.value = bins;
 }
 
@@ -92,13 +102,13 @@ function render() {
   analyzer.value.getByteFrequencyData(dataArray.value);
 
   g.clear();
-  g.lineStyle(2, 0xffffff);
-  if (dataArray.value.every(v => v === 0)) return;
+  // if (dataArray.value.every(v => v === 0)) return;
 
   for (const bin of fftBins.value) {
     const pct = dataArray.value[bin.bufferIndex] / 256.0;
     const h = (canvas.value.clientHeight - 1) * pct;
     const y = canvas.value.clientHeight - h;
+    g.lineStyle(2, 0xffffff);
     g.moveTo(bin.x1, canvas.value.clientHeight);
     g.lineTo(bin.x1, y);
     g.lineTo(bin.x2, y);

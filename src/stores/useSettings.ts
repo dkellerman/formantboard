@@ -57,7 +57,7 @@ export const useSettings = defineStore('settings', () => {
     defaultVowel: Vowels.ɑ,
     maxHarmonics: 40,
     compress: true,
-    fftSize: 1024,
+    fftSize: 2048,
     vibrato: {
       rate: 5,
       extent: 1,
