@@ -101,7 +101,6 @@ function makeBins() {
     }
   }
 
-  console.log('fft bins', bins);
   app.value.stage.addChild(gLabels);
   fftBins.value = bins;
   overlay.value = gLabels;

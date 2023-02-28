@@ -11,6 +11,7 @@ declare module '@vue/runtime-core' {
   export interface GlobalComponents {
     FormantBar: typeof import('./src/components/FormantBar.vue')['default']
     Keyboard: typeof import('./src/components/Keyboard.vue')['default']
+    MidiButton: typeof import('./src/components/MidiButton.vue')['default']
     MidiInput: typeof import('./src/components/MidiInput.vue')['default']
     PianoBar: typeof import('./src/components/PianoBar.vue')['default']
     PIXIAnalyzer: typeof import('./src/components/PIXIAnalyzer.vue')['default']

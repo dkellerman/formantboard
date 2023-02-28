@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import { usePlayer } from '../stores/usePlayer';
 import { useApp } from '../stores/useApp';
 
-const { keyboard, f0, player, vizType } = storeToRefs(useApp());
+const { f0, vizType } = storeToRefs(useApp());
+const player = usePlayer();
 const playingF0 = ref<number>();
 
 const vizTypes = [
@@ -15,14 +17,14 @@ function toggleF0() {
   const freq = Number.isNaN(hz) ? note2freq(val) : hz;
 
   if (playingF0.value) {
-    player.value?.stop(playingF0.value);
+    player?.stop(playingF0.value);
     playingF0.value = undefined;
     return;
   }
 
   if (freq) {
     playingF0.value = freq;
-    player.value?.play(playingF0.value);
+    player?.play(playingF0.value);
   }
 }
 </script>
@@ -51,7 +53,7 @@ function toggleF0() {
       density="compact"
     />
 
-    <MidiInput ref="midi" @note-on="keyboard?.play" @note-off="keyboard?.stop" />
+    <MidiButton />
   </section>
 </template>
 
