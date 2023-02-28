@@ -19,7 +19,12 @@ export type Settings = {
   tilt: number;
   maxHarmonics: number;
   compress: boolean;
-  fftSize: number;
+  viz: {
+    fft: {
+      size: number;
+      useFloatData: boolean;
+    };
+  };
   formantSpecs: Record<Vowel, Array<{
     frequency: number;
     Q: number;
@@ -57,7 +62,12 @@ export const useSettings = defineStore('settings', () => {
     defaultVowel: Vowels.ɑ,
     maxHarmonics: 40,
     compress: true,
-    fftSize: 2048,
+    viz: {
+      fft: {
+        size: 2048,
+        useFloatData: false,
+      },
+    },
     vibrato: {
       rate: 5,
       extent: 1,

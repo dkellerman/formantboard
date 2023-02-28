@@ -21,7 +21,7 @@ const canvas = ref<HTMLCanvasElement>();
 const app = ref<PIXI.Application>();
 const graphics = ref<PIXI.Graphics>();
 const analyzer = ref<AnalyserNode>();
-const dataArray = ref<Uint8Array>();
+const dataArray = ref<Float32Array|Uint8Array>();
 const fftBins = ref<FFTBin[]>();
 
 const props = withDefaults(defineProps<Props>(), {});
@@ -44,11 +44,12 @@ function initAnalyzer() {
   if (!app.value || !props.input || !canvas.value) return;
 
   const a = props.input.context.createAnalyser();
-  a.fftSize = settings.value.fftSize;
+  a.fftSize = settings.value.viz.fft.size;
   props.input.connect(a);
 
   analyzer.value = a;
-  dataArray.value = new Uint8Array(a.frequencyBinCount);
+  const DataArrType = settings.value.viz.fft.useFloatData ? Float32Array : Uint8Array;
+  dataArray.value = new DataArrType(a.frequencyBinCount);
 
   makeBins();
   app.value.ticker.add(render);
@@ -101,20 +102,31 @@ function render() {
     return;
 
   const g = graphics.value;
-  analyzer.value.getByteFrequencyData(dataArray.value);
+  const useFloatData = settings.value.viz.fft.useFloatData;
+
+  if (useFloatData)
+    analyzer.value.getFloatFrequencyData(dataArray.value as Float32Array);
+  else
+    analyzer.value.getByteFrequencyData(dataArray.value as Uint8Array);
 
   g.clear();
-  // if (dataArray.value.every(v => v === 0)) return;
+  if (dataArray.value.every(v => v === -Infinity)) return;
 
   for (const bin of fftBins.value) {
-    const pct = dataArray.value[bin.bufferIndex] / 256.0;
+    const db = dataArray.value[bin.bufferIndex];
+    const { maxDecibels, minDecibels } = analyzer.value;
+    const pct = useFloatData
+      ? (db - minDecibels) / (maxDecibels - minDecibels)
+      : db / 256;
     const h = (canvas.value.clientHeight - 1) * pct;
-    const y = canvas.value.clientHeight - h;
-    g.lineStyle(2, 0xffffff);
-    // g.moveTo(bin.x1, canvas.value.clientHeight);
-    // g.lineTo(bin.x1, y);
-    // g.lineTo(bin.x2, y);
-    // g.lineTo(bin.x2, canvas.value.clientHeight);
+    const y = canvas.value.clientHeight - h + 5;
+    g.lineStyle(1, 0xffffff);
+    // rectangles:
+    //  g.moveTo(bin.x1, canvas.value.clientHeight);
+    //  g.lineTo(bin.x1, y);
+    //  g.lineTo(bin.x2, y);
+    //  g.lineTo(bin.x2, canvas.value.clientHeight);
+    // line:
     if (bin.bufferIndex === 0) g.moveTo(bin.x1, canvas.value.clientHeight);
     g.lineTo(bin.x2, y);
   }
@@ -141,7 +153,7 @@ onMounted(() => {
 .visualizer {
   canvas {
     width: calc(1px * v-bind(width));
-    height: 150px;
+    height: 140px;
     margin: 0;
     margin-bottom: 10px;
     padding: 0;
