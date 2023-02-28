@@ -56,7 +56,7 @@ export const useSettings = defineStore('settings', () => {
     keyGain: 0.2,
     onsetTime: 0.02,
     decayTime: 0.05,
-    tilt: -3,
+    tilt: -3.0,
     maxHarmonics: 40,
     compress: true,
     viz: {
@@ -65,8 +65,8 @@ export const useSettings = defineStore('settings', () => {
       fftSmoothing: .7,
     },
     vibrato: {
-      rate: 5,
-      extent: 1,
+      rate: 5.0,
+      extent: 1.0,
       jitter: 0.1,
       onsetTime: .5,
       on: true,
