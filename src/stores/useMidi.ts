@@ -1,7 +1,12 @@
 import { WebMidi, Input } from 'webmidi';
 import type { NoteMessageEvent } from 'webmidi';
-import { MidiStatus } from '../types';
 import { Note } from '../utils';
+
+export enum MidiStatus {
+  Disabled,
+  Enabled,
+  Failed,
+}
 
 export const useMidi = defineStore('midi', () => {
   const midiInDeviceId = ref<string|null>();

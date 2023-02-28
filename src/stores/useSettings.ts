@@ -19,6 +19,7 @@ export type Settings = {
   tilt: number;
   maxHarmonics: number;
   compress: boolean;
+  sourceType: string;
   viz: {
     fftSize: number;
     fftSmoothing: number;
@@ -34,6 +35,10 @@ export type Settings = {
     extent: number;
     jitter: number;
     onsetTime: number;
+    on: boolean;
+  };
+  flutter: {
+    amount: number;
     on: boolean;
   };
   audioContextConfig: {
@@ -59,10 +64,15 @@ export const useSettings = defineStore('settings', () => {
     tilt: -3.0,
     maxHarmonics: 40,
     compress: true,
+    sourceType: 'sine',
     viz: {
       useFloatData: false,
       fftSize: 4096,
       fftSmoothing: .7,
+    },
+    flutter: {
+      on: true,
+      amount: 5,
     },
     vibrato: {
       rate: 5.0,

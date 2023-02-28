@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { MidiStatus } from '../types';
-import { useMidi } from '../stores/useMidi';
+import { useMidi, MidiStatus } from '../stores/useMidi';
 
 interface Props {
   show?: boolean;

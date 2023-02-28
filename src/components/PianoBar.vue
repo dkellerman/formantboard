@@ -8,10 +8,9 @@ interface Props {
   width?: number;
 }
 
-const MAXFREQ = 4186;
 const props = defineProps<Props>();
-const formantSpecs = computed(() => props.formantSpec?.filter(f => f.frequency <= MAXFREQ) ?? []);
-const harmonics = computed(() => props.harmonics?.filter(([f])=> f <= MAXFREQ) ?? []);
+const formantSpecs = computed(() => props.formantSpec?.filter(f => f.frequency <= MAX_FREQ) ?? []);
+const harmonics = computed(() => props.harmonics?.filter(([f])=> f <= MAX_FREQ) ?? []);
 const mounted = ref(false);
 const width = computed(() => props.width ?? document.querySelector('.keyboard')?.scrollWidth ?? 300);
 
