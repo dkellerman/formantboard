@@ -21,7 +21,6 @@ const items = computed(() => Object.values(Vowels).map(vowel => ({
   value: vowel,
   title: `${vowel} (${WORDS[vowel as Vowel]})`,
 })));
-console.log(items);
 </script>
 
 <template>
@@ -41,6 +40,5 @@ console.log(items);
   display: flex;
   flex-direction: row;
   align-items: center;
-
 }
 </style>

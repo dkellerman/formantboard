@@ -14,9 +14,10 @@ export const useApp = defineStore('app', () => {
   const player = ref<typeof Player>();
   const midi = ref<typeof MidiInput>();
   const bar = ref<typeof PianoBar>();
-  const vowel = ref<Vowel>(settings.value.defaultVowel);
+  const vowel = ref<Vowel>(Vowels.ɑ);
   const volume = ref(100);
   const f0 = ref<string>('A3');
+  const vizType = ref<string>('power');
 
   const audioContext = computed(() => new AudioContext({
     ...settings.value.audioContextConfig,
@@ -35,5 +36,6 @@ export const useApp = defineStore('app', () => {
     audioContext,
     volume,
     f0,
+    vizType,
   };
 });

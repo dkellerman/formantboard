@@ -20,10 +20,9 @@ export type Settings = {
   maxHarmonics: number;
   compress: boolean;
   viz: {
-    fft: {
-      size: number;
-      useFloatData: boolean;
-    };
+    fftSize: number;
+    fftSmoothing: number;
+    useFloatData: boolean;
   };
   formantSpecs: Record<Vowel, Array<{
     frequency: number;
@@ -37,7 +36,6 @@ export type Settings = {
     onsetTime: number;
     on: boolean;
   };
-  defaultVowel: Vowel;
   audioContextConfig: {
     sampleRate: number;
     channels: number;
@@ -56,17 +54,15 @@ export const useSettings = defineStore('settings', () => {
       channels: 1,
     },
     keyGain: 0.2,
-    onsetTime: 0.01,
+    onsetTime: 0.02,
     decayTime: 0.05,
     tilt: -3,
-    defaultVowel: Vowels.ɑ,
     maxHarmonics: 40,
     compress: true,
     viz: {
-      fft: {
-        size: 2048,
-        useFloatData: false,
-      },
+      useFloatData: false,
+      fftSize: 4096,
+      fftSmoothing: .7,
     },
     vibrato: {
       rate: 5,

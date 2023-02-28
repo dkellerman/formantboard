@@ -18,7 +18,7 @@ const { settings, keyboard, player, bar, vowel, visualizer, settingsPanel } = st
       <PianoBar
         ref="bar"
         :harmonics="player.harmonics ?? []"
-        :formant-spec="settings.formantSpecs[vowel as Vowel ?? settings.defaultVowel]"
+        :formant-spec="settings.formantSpecs[vowel as Vowel]"
         :width="keyboard.width"
       />
     </template>
