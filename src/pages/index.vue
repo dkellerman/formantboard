@@ -15,7 +15,7 @@ const player = usePlayer();
   <section>
     <template v-if="player && keyboard">
       <SettingsPanel ref="settingsPanel" />
-      <Visualizer ref="visualizer" :input="player.master" :width="keyboard.width" />
+      <Visualizer v-if="settings.viz.on" ref="visualizer" :input="player.master" :width="keyboard.width" />
       <PianoBar
         ref="bar"
         :harmonics="player.harmonics ?? []"

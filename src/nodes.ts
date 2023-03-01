@@ -11,3 +11,26 @@ export function createWhiteNoiseNode(ctx: AudioContext) {
   node.loop = true;
   return node;
 }
+
+export function createHarmonics(
+  ctx: AudioContext,
+  baseFrequency: number,
+  maxHarmonics: number = Number.POSITIVE_INFINITY,
+  maxFrequency = 22050,
+  tilt = 0.0,
+  customGains: Record<number, number> = {},
+): [OscillatorNode, GainNode][] {
+  const harmonics: [OscillatorNode, GainNode][] = [];
+
+  for (let i = 0; i < maxHarmonics; i++) {
+    const freq = baseFrequency * (i + 1);
+    if (freq > maxFrequency) break;
+    const hOsc = new OscillatorNode(ctx, { type: 'sine', frequency: freq });
+    const gain = customGains[i] ?? (10 ** (tilt / 20)) ** i;
+    const hGain = new GainNode(ctx, { gain });
+    hOsc.connect(hGain);
+    harmonics.push([hOsc, hGain]);
+  }
+
+  return harmonics;
+}

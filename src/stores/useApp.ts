@@ -12,7 +12,7 @@ export const useApp = defineStore('app', () => {
   const bar = ref<typeof PianoBar>();
   const vowel = ref<Vowel>(Vowels.ɑ);
   const volume = ref(100);
-  const f0 = ref<string>('A3');
+  const f0 = ref<string>('A2');
   const vizType = ref<string>('power');
 
   const audioContext = computed(() => new AudioContext({

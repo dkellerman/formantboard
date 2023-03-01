@@ -13,23 +13,32 @@ export enum Vowels {
 export type Vowel = typeof Vowels[keyof typeof Vowels];
 
 export type Settings = {
-  keyGain: number;
-  onsetTime: number;
-  decayTime: number;
-  tilt: number;
-  maxHarmonics: number;
-  compress: boolean;
-  sourceType: string;
+  f0: {
+    keyGain: number;
+    onsetTime: number;
+    decayTime: number;
+    sourceType: string;
+  };
   viz: {
+    on: boolean;
     fftSize: number;
     fftSmoothing: number;
     useFloatData: boolean;
+  };
+  harmonics: {
+    on: boolean;
+    max: number;
+    maxFreq: number;
+    tilt: number;
   };
   formantSpecs: Record<Vowel, Array<{
     frequency: number;
     Q: number;
     on: boolean;
   }>>;
+  compression: DynamicsCompressorOptions & {
+    on: boolean;
+  };
   vibrato: {
     rate: number;
     extent: number;
@@ -58,27 +67,36 @@ export const useSettings = defineStore('settings', () => {
       sampleRate: 44100,
       channels: 1,
     },
-    keyGain: 0.2,
-    onsetTime: 0.02,
-    decayTime: 0.05,
-    tilt: -3.0,
-    maxHarmonics: 40,
-    compress: true,
-    sourceType: 'sine',
     viz: {
+      on: true,
       useFloatData: false,
       fftSize: 4096,
       fftSmoothing: .7,
     },
+    f0: {
+      keyGain: 0.2,
+      onsetTime: 0.02,
+      decayTime: 0.05,
+      sourceType: 'sine',
+    },
+    harmonics: {
+      on: true,
+      max: 40,
+      maxFreq: 22050,
+      tilt: 0.0,
+    },
     flutter: {
       on: true,
-      amount: 5,
+      amount: 10,
     },
     vibrato: {
-      rate: 5.0,
-      extent: 1.0,
+      on: true,
+      rate: 3,
+      extent: 1,
       jitter: 0.1,
-      onsetTime: .5,
+      onsetTime: 1,
+    },
+    compression: {
       on: true,
     },
     formantSpecs: {

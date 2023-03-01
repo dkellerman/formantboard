@@ -8,7 +8,7 @@ const playingF0 = ref<number>();
 
 const vizTypes = [
   { title: 'Spectrum', value: 'power' },
-  { title: 'Waveform', value: 'waveform' },
+  { title: 'Wave', value: 'waveform' },
 ];
 
 function toggleF0() {
@@ -74,7 +74,7 @@ function toggleF0() {
     max-width: 100px;
   }
   .viz-type {
-    max-width: 150px;
+    max-width: 130px;
   }
   :deep(.mdi-play::before) {
     color: rgb(16, 116, 16);
