@@ -1,4 +1,4 @@
-export function createWhiteNoiseNode(ctx: AudioContext) {
+export function createWhiteNoise(ctx: AudioContext) {
   const buffer = ctx.createBuffer(1, ctx.sampleRate * 3, ctx.sampleRate);
   const channel = buffer.getChannelData(0);
 
@@ -26,8 +26,8 @@ export function createHarmonics(
     const freq = baseFrequency * (i + 1);
     if (freq > maxFrequency) break;
     const hOsc = new OscillatorNode(ctx, { type: 'sine', frequency: freq });
-    const gain = customGains[i] ?? (10 ** (tilt / 20)) ** i;
-    const hGain = new GainNode(ctx, { gain });
+    const gainVal = customGains[i] ?? (10 ** (tilt / 20)) ** (i + 1);
+    const hGain = new GainNode(ctx, { gain: gainVal });
     hOsc.connect(hGain);
     harmonics.push([hOsc, hGain]);
   }

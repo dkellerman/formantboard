@@ -60,18 +60,6 @@ export function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(n, max));
 }
 
-export function getHarmonics(note: Note|number, max = 40, top = 22050) {
-  const baseFreq = typeof note === 'number' ? note : note2freq(note);
-  const harmonics: number[] = [];
-  while (harmonics.length < max) {
-    const h = harmonics.length + 1;
-    const f = h * baseFreq;
-    if (f > top) break;
-    harmonics.push(f);
-  }
-  return harmonics;
-}
-
 export function countKeySlots(start: Note, end: Note) {
   const startIndex = NOTES.indexOf(start);
   const endIndex = NOTES.indexOf(end);
@@ -93,7 +81,7 @@ export function fillRect(
   borderWidth?: number,
 ) {
   const c = parseInt(tinycolor(color).toHexString().slice(1), 16);
-  const bc = c; // borderColor ? Number(tinycolor(borderColor).toHexString()) : c;
+  const bc = borderColor ? parseInt(tinycolor(borderColor).toHexString().slice(1), 16) : c;
   g.beginFill(c);
   g.lineStyle(borderWidth ?? 1, bc);
   g.drawRect(x, y, w, h);

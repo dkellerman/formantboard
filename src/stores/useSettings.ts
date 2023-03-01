@@ -14,6 +14,7 @@ export type Vowel = typeof Vowels[keyof typeof Vowels];
 
 export type Settings = {
   f0: {
+    on: boolean;
     keyGain: number;
     onsetTime: number;
     decayTime: number;
@@ -70,10 +71,11 @@ export const useSettings = defineStore('settings', () => {
     viz: {
       on: true,
       useFloatData: false,
-      fftSize: 4096,
+      fftSize: 2048,
       fftSmoothing: .7,
     },
     f0: {
+      on: true,
       keyGain: 0.2,
       onsetTime: 0.02,
       decayTime: 0.05,
@@ -83,18 +85,18 @@ export const useSettings = defineStore('settings', () => {
       on: true,
       max: 40,
       maxFreq: 22050,
-      tilt: 0.0,
+      tilt: -6.0,
     },
     flutter: {
       on: true,
-      amount: 10,
+      amount: 10.0,
     },
     vibrato: {
       on: true,
-      rate: 3,
-      extent: 1,
-      jitter: 0.1,
-      onsetTime: 1,
+      rate: 3.0,
+      extent: 1.0,
+      jitter: 0.5,
+      onsetTime: 1.0,
     },
     compression: {
       on: true,
