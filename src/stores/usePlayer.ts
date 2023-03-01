@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { createHarmonics, createWhiteNoise } from '../nodes';
+import { createHarmonics, createWhiteNoise, createFormants, createTube } from '../nodes';
 import { useApp } from './useApp';
 
 export const usePlayer = defineStore('player', () => {
-  const { audioContext, settings, volume } = storeToRefs(useApp());
+  const { audioContext, settings, volume, vowel } = storeToRefs(useApp());
   const playing: Ref<Record<number, () => void>> = ref({});
   const harmonics = ref<[number, number][]>([]);
   const noise = ref(createWhiteNoise(audioContext.value));
@@ -17,7 +17,7 @@ export const usePlayer = defineStore('player', () => {
 
     const ctx = audioContext.value;
     const startTime = ctx.currentTime;
-    const { vibrato, flutter, harmonics: hmcfg, f0, compression } = settings.value;
+    const { vibrato, flutter, harmonics: hmcfg, f0, compression, formants, tube } = settings.value;
 
     // create basic source nodes
     const osc = new OscillatorNode(ctx, { frequency, type: f0.sourceType as OscillatorType });
@@ -68,16 +68,38 @@ export const usePlayer = defineStore('player', () => {
       }
     }
 
+    // create tube and apply formants
+    let tubeNode;
+    let tubeGain: GainNode = new GainNode(ctx, { gain: 1 });
+    if (tube.on) {
+      tubeNode = createTube(ctx, frequency);
+      sourceGain.connect(tubeNode);
+      tubeNode.connect(tubeGain);
+    } else {
+      sourceGain.connect(tubeGain);
+    }
+
+    // formants
+    let formantNodes: BiquadFilterNode[];
+    if (formants.on) {
+      const formantSpec = formants.specs[vowel.value];
+      formantNodes = createFormants(ctx, formantSpec);
+      for (const fnode of formantNodes) {
+        sourceGain.connect(fnode);
+        fnode.connect(tubeGain);
+      }
+    }
+
     // final leg: compression -> master
     if (compression.on) {
-      sourceGain.connect(compressor.value);
+      tubeGain.connect(compressor.value);
       compressor.value.connect(master.value);
     } else {
-      sourceGain.connect(master.value);
+      tubeGain.connect(master.value);
     }
 
     // master -> destination
-    sourceGain.connect(master.value);
+    tubeGain.connect(master.value);
     master.value.connect(ctx.destination);
 
     // start/ramp source nodes
@@ -97,9 +119,9 @@ export const usePlayer = defineStore('player', () => {
       const t = ctx.currentTime + .001;
       sourceGain.gain.setTargetAtTime(0, t, f0.decayTime);
       source.stop(t + f0.decayTime + 2);
-      hmNodes.forEach(([osc]) => { osc.stop(t); osc = undefined as any; });
+      hmNodes?.forEach(([osc]) => { osc.stop(t); osc = undefined as any; });
       vibratoOsc?.stop(t);
-      source = sourceGain = hmNodes = vibratoOsc = undefined as any;
+      source = sourceGain = hmNodes = vibratoOsc = tubeGain = undefined as any;
     };
 
     console.log("player latency", (ctx.currentTime - startTime) * 1000.0, 'ms');

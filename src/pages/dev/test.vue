@@ -1,10 +1,15 @@
 <script setup lang="ts">
-  // FB1
+  //
 </script>
 
 <template>
-  Hello world
+  <section class="test">
+    <h1>Test</h1>
+  </section>
 </template>
 
 <style scoped lang="scss">
+.test {
+  color: forestgreen;
+}
 </style>

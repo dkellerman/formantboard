@@ -1,3 +1,5 @@
+import type { FormantSpec } from './stores/useSettings';
+
 export function createWhiteNoise(ctx: AudioContext) {
   const buffer = ctx.createBuffer(1, ctx.sampleRate * 3, ctx.sampleRate);
   const channel = buffer.getChannelData(0);
@@ -33,4 +35,27 @@ export function createHarmonics(
   }
 
   return harmonics;
+}
+
+export function createFormants(ctx: AudioContext, formantSpec: FormantSpec): BiquadFilterNode[] {
+  const formants: BiquadFilterNode[] = [];
+
+  for (const bandSpec of formantSpec) {
+    if (!bandSpec.on) continue;
+    const formant = new BiquadFilterNode(ctx, {
+      type: 'peaking',
+      frequency: bandSpec.frequency,
+      Q: bandSpec.Q,
+    });
+    formants.push(formant);
+  }
+  return formants;
+}
+
+export function createTube(ctx: AudioContext, frequency: number): BiquadFilterNode {
+  return new BiquadFilterNode(ctx, {
+    type: 'bandpass',
+    frequency,
+    Q: 1,
+  });
 }

@@ -21,6 +21,9 @@ const items = computed(() => Object.values(Vowels).map(vowel => ({
   value: vowel,
   title: `${vowel} (${WORDS[vowel as Vowel]})`,
 })));
+
+const emit = defineEmits(['change']);
+
 </script>
 
 <template>
@@ -31,6 +34,7 @@ const items = computed(() => Object.values(Vowels).map(vowel => ({
       variant="outlined"
       label="Vowel"
       density="compact"
+      @change="emit('change', $event)"
     />
   </section>
 </template>

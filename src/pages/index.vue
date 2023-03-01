@@ -19,7 +19,7 @@ const player = usePlayer();
       <PianoBar
         ref="bar"
         :harmonics="player.harmonics ?? []"
-        :formant-spec="settings.formantSpecs[vowel as Vowel]"
+        :formant-spec="settings.formants.specs[vowel as Vowel]"
         :width="keyboard.width"
       />
     </template>

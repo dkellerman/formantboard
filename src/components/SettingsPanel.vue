@@ -70,11 +70,11 @@ function restartF0() {
       @change="restartF0"
       type="number"
       suffix="dB/oct"
-      :min="-12.0"
-      :max="12.0"
+      :min="-20.0"
+      :max="1.0"
     />
 
-    <VowelSelector />
+    <VowelSelector @change="restartF0" />
 
     <v-select
       class="viz-type"
@@ -102,24 +102,16 @@ function restartF0() {
   .midi {
     flex: 1;
     text-align: right;
-
     position: absolute;
     top: 15px;
     right: 25px;
     z-index: 2000;
   }
-  .f0 {
-    max-width: 100px;
-  }
-  .max-harmonics {
-    max-width: 110px;
-  }
-  .tilt {
-    max-width: 120px;
-  }
-  .viz-type {
-    max-width: 130px;
-  }
+  .f0 { max-width: 100px; }
+  .max-harmonics { max-width: 110px; }
+  .tilt { max-width: 120px; }
+  .viz-type { max-width: 130px; }
+
   :deep(.mdi-play::before) {
     color: rgb(16, 116, 16);
   }
