@@ -24,6 +24,7 @@ const player = usePlayer();
       />
     </template>
     <Keyboard ref="keyboard" @play="(f, v) => player?.play(f, v)" @stop="(f) => player?.stop(f)" />
+    <MidiButton />
   </section>
 </template>
 
@@ -32,5 +33,9 @@ section {
   display: flex;
   flex-direction: column;
   align-items: center;
+  .midi {
+    margin-top: 40px;
+  }
+
 }
 </style>

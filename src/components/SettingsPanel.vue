@@ -131,7 +131,6 @@ watch([settings.value.formants.specs[vowel.value]], setFormants);
       label="Visualzation"
       density="compact"
     />
-    <MidiButton />
   </section>
 </template>
 
@@ -146,14 +145,6 @@ watch([settings.value.formants.specs[vowel.value]], setFormants);
   justify-content: flex-start;
   column-gap: 20px;
   row-gap: 0;
-  .midi {
-    flex: 1;
-    text-align: right;
-    position: absolute;
-    top: 15px;
-    right: 25px;
-    z-index: 2000;
-  }
   .f0 { max-width: 100px; }
   .max-harmonics { max-width: 110px; }
   .tilt { max-width: 120px; }
