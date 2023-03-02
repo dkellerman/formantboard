@@ -66,9 +66,11 @@ function toggleEffects() {
           <VowelSelector />
         </fieldset>
         <fieldset v-for="_, idx in [...Array(5).fill(0)]">
-          <v-switch :label="`F${idx+1}`" v-model="settings.formants.specs[vowel][idx].on" @change="f0selector?.restartF0" density="compact" variant="outlined" />
-          <v-text-field label="Freq" v-model="settings.formants.specs[vowel][idx].frequency" @change="f0selector?.restartF0" density="compact" variant="outlined" type="number" min="0" />
-          <v-text-field label="Q" v-model="settings.formants.specs[vowel][idx].Q" @change="f0selector?.restartF0" density="compact" variant="outlined" type="number" min="0" max="1" />
+          <div v-if="settings.formants.specs[vowel][idx]">
+            <v-switch :label="`F${idx+1}`" v-model="settings.formants.specs[vowel][idx].on" @change="f0selector?.restartF0" density="compact" variant="outlined" />
+            <v-text-field label="Freq" v-model="settings.formants.specs[vowel][idx].frequency" @change="f0selector?.restartF0" density="compact" variant="outlined" type="number" min="0" />
+            <v-text-field label="Q" v-model="settings.formants.specs[vowel][idx].Q" @change="f0selector?.restartF0" density="compact" variant="outlined" type="number" min="0" max="1" />
+          </div>
         </fieldset>
       </div>
     </div>
