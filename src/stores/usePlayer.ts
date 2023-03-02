@@ -39,7 +39,6 @@ export const usePlayer = defineStore('player', () => {
       hmNodes = createHarmonics(ctx, frequency, hmcfg.max, hmcfg.maxFreq, hmcfg.tilt);
       hmNodes.forEach(([, hGain]) => hGain.connect(sourceGain));
       harmonics.value = hmNodes.map(([osc, gain]) => [osc.frequency.value, gain.gain.value]);
-      console.log("*", [...harmonics.value.map(x => [...x])]);
     } else {
       hmNodes = [];
       harmonics.value = [];

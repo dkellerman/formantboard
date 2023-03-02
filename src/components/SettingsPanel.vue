@@ -1,15 +1,14 @@
 <script setup lang="ts">
-import { usePlayer } from '../stores/usePlayer';
 import { useApp } from '../stores/useApp';
+import F0Selector from './F0Selector.vue';
 
 const vizTypes = [
   { title: 'Spectrum', value: 'power' },
   { title: 'Wave', value: 'waveform' },
 ];
 
-const { f0, vizType, settings, vowel } = storeToRefs(useApp());
-const player = usePlayer();
-const playingF0 = ref<number>();
+const { vizType, settings, vowel } = storeToRefs(useApp());
+const f0selector = ref<typeof F0Selector>();
 const formantButtons = ref();
 
 function setFormants() {
@@ -24,50 +23,17 @@ function updateFormants(btns: number[]) {
   settings.value.formants.specs[vowel.value].forEach((f, idx) => {
     f.on = btns.includes(idx);
   });
-  restartF0();
+  f0selector.value?.restartF0();
 }
 
-function toggleF0() {
-  if (playingF0.value) {
-    player?.stop(playingF0.value);
-    playingF0.value = undefined;
-    return;
-  }
-
-  const val = f0.value;
-  const hz = parseFloat(val);
-  const freq = Number.isNaN(hz) ? note2freq(val) : hz;
-  if (freq) {
-    playingF0.value = freq;
-    player?.play(playingF0.value);
-  }
-}
-
-function restartF0() {
-  if (playingF0.value) {
-    toggleF0();
-    toggleF0();
-  }
-}
 
 onMounted(setFormants);
 watch([settings.value.formants.specs[vowel.value]], setFormants);
-
 </script>
 
 <template>
   <section class="settings">
-    <v-text-field
-      class="f0"
-      label="F0"
-      v-model="f0"
-      :append-inner-icon="!!playingF0 ? 'mdi-stop' : 'mdi-play'"
-      density="compact"
-      variant="outlined"
-      @click:append-inner="toggleF0"
-      @change="restartF0"
-      @keyup.enter="restartF0"
-    />
+    <F0Selector ref="f0selector" />
 
     <v-btn-toggle
       multiple
@@ -95,7 +61,7 @@ watch([settings.value.formants.specs[vowel.value]], setFormants);
       </v-btn>
     </v-btn-toggle>
 
-    <VowelSelector @change="restartF0" />
+    <VowelSelector @change="f0selector?.restartF0" />
 
     <v-text-field
       class="max-harmonics"
@@ -103,7 +69,7 @@ watch([settings.value.formants.specs[vowel.value]], setFormants);
       v-model="settings.harmonics.max"
       density="compact"
       variant="outlined"
-      @change="restartF0"
+      @change="f0selector?.restartF0"
       type="number"
       suffix="max"
       :min="0"
@@ -116,7 +82,7 @@ watch([settings.value.formants.specs[vowel.value]], setFormants);
       v-model="settings.harmonics.tilt"
       density="compact"
       variant="outlined"
-      @change="restartF0"
+      @change="f0selector?.restartF0"
       type="number"
       suffix="dB/oct"
       :min="-20.0"
@@ -145,16 +111,9 @@ watch([settings.value.formants.specs[vowel.value]], setFormants);
   justify-content: flex-start;
   column-gap: 20px;
   row-gap: 0;
-  .f0 { max-width: 100px; }
+
   .max-harmonics { max-width: 110px; }
   .tilt { max-width: 120px; }
   .viz-type { max-width: 130px; }
-
-  :deep(.mdi-play::before) {
-    color: rgb(16, 116, 16);
-  }
-  :deep(.mdi-stop::before) {
-    color: rgb(163, 11, 11);
-  }
 }
 </style>

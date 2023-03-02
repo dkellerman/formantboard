@@ -9,6 +9,7 @@ export {}
 
 declare module '@vue/runtime-core' {
   export interface GlobalComponents {
+    F0Selector: typeof import('./src/components/F0Selector.vue')['default']
     FormantBar: typeof import('./src/components/FormantBar.vue')['default']
     Keyboard: typeof import('./src/components/Keyboard.vue')['default']
     MidiButton: typeof import('./src/components/MidiButton.vue')['default']

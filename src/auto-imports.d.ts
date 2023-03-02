@@ -10,7 +10,7 @@ declare global {
   const KEY_SLOTS_PER_OCTAVE: typeof import('./utils')['KEY_SLOTS_PER_OCTAVE']
   const MAX_FREQ: typeof import('./utils')['MAX_FREQ']
   const MIN_FREQ: typeof import('./utils')['MIN_FREQ']
-  const MidiStatus: typeof import('./types')['MidiStatus']
+  const MidiStatus: typeof import('./stores/useMidi')['MidiStatus']
   const NOTES: typeof import('./utils')['NOTES']
   const NOTE_LETTERS: typeof import('./utils')['NOTE_LETTERS']
   const NUM_KEY_SLOTS: typeof import('./utils')['NUM_KEY_SLOTS']
@@ -30,12 +30,16 @@ declare global {
   const countKeySlots: typeof import('./utils')['countKeySlots']
   const createApp: typeof import('vue')['createApp']
   const createEventHook: typeof import('@vueuse/core')['createEventHook']
+  const createFormants: typeof import('./nodes')['createFormants']
   const createGlobalState: typeof import('@vueuse/core')['createGlobalState']
+  const createHarmonics: typeof import('./nodes')['createHarmonics']
   const createInjectionState: typeof import('@vueuse/core')['createInjectionState']
   const createPinia: typeof import('pinia')['createPinia']
   const createReactiveFn: typeof import('@vueuse/core')['createReactiveFn']
   const createSharedComposable: typeof import('@vueuse/core')['createSharedComposable']
+  const createTube: typeof import('./nodes')['createTube']
   const createUnrefFn: typeof import('@vueuse/core')['createUnrefFn']
+  const createWhiteNoise: typeof import('./nodes')['createWhiteNoise']
   const customRef: typeof import('vue')['customRef']
   const debouncedRef: typeof import('@vueuse/core')['debouncedRef']
   const debouncedWatch: typeof import('@vueuse/core')['debouncedWatch']
@@ -52,7 +56,6 @@ declare global {
   const getActivePinia: typeof import('pinia')['getActivePinia']
   const getCurrentInstance: typeof import('vue')['getCurrentInstance']
   const getCurrentScope: typeof import('vue')['getCurrentScope']
-  const getHarmonics: typeof import('./utils')['getHarmonics']
   const h: typeof import('vue')['h']
   const ignorableWatch: typeof import('@vueuse/core')['ignorableWatch']
   const inject: typeof import('vue')['inject']
@@ -212,6 +215,7 @@ declare global {
   const useMediaQuery: typeof import('@vueuse/core')['useMediaQuery']
   const useMemoize: typeof import('@vueuse/core')['useMemoize']
   const useMemory: typeof import('@vueuse/core')['useMemory']
+  const useMidi: typeof import('./stores/useMidi')['useMidi']
   const useMounted: typeof import('@vueuse/core')['useMounted']
   const useMouse: typeof import('@vueuse/core')['useMouse']
   const useMouseInElement: typeof import('@vueuse/core')['useMouseInElement']
@@ -226,6 +230,7 @@ declare global {
   const usePageLeave: typeof import('@vueuse/core')['usePageLeave']
   const useParallax: typeof import('@vueuse/core')['useParallax']
   const usePermission: typeof import('@vueuse/core')['usePermission']
+  const usePlayer: typeof import('./stores/usePlayer')['usePlayer']
   const usePointer: typeof import('@vueuse/core')['usePointer']
   const usePointerLock: typeof import('@vueuse/core')['usePointerLock']
   const usePointerSwipe: typeof import('@vueuse/core')['usePointerSwipe']
@@ -319,7 +324,7 @@ declare module 'vue' {
     readonly KEY_SLOTS_PER_OCTAVE: UnwrapRef<typeof import('./utils')['KEY_SLOTS_PER_OCTAVE']>
     readonly MAX_FREQ: UnwrapRef<typeof import('./utils')['MAX_FREQ']>
     readonly MIN_FREQ: UnwrapRef<typeof import('./utils')['MIN_FREQ']>
-    readonly MidiStatus: UnwrapRef<typeof import('./types')['MidiStatus']>
+    readonly MidiStatus: UnwrapRef<typeof import('./stores/useMidi')['MidiStatus']>
     readonly NOTES: UnwrapRef<typeof import('./utils')['NOTES']>
     readonly NOTE_LETTERS: UnwrapRef<typeof import('./utils')['NOTE_LETTERS']>
     readonly NUM_KEY_SLOTS: UnwrapRef<typeof import('./utils')['NUM_KEY_SLOTS']>
@@ -339,12 +344,16 @@ declare module 'vue' {
     readonly countKeySlots: UnwrapRef<typeof import('./utils')['countKeySlots']>
     readonly createApp: UnwrapRef<typeof import('vue')['createApp']>
     readonly createEventHook: UnwrapRef<typeof import('@vueuse/core')['createEventHook']>
+    readonly createFormants: UnwrapRef<typeof import('./nodes')['createFormants']>
     readonly createGlobalState: UnwrapRef<typeof import('@vueuse/core')['createGlobalState']>
+    readonly createHarmonics: UnwrapRef<typeof import('./nodes')['createHarmonics']>
     readonly createInjectionState: UnwrapRef<typeof import('@vueuse/core')['createInjectionState']>
     readonly createPinia: UnwrapRef<typeof import('pinia')['createPinia']>
     readonly createReactiveFn: UnwrapRef<typeof import('@vueuse/core')['createReactiveFn']>
     readonly createSharedComposable: UnwrapRef<typeof import('@vueuse/core')['createSharedComposable']>
+    readonly createTube: UnwrapRef<typeof import('./nodes')['createTube']>
     readonly createUnrefFn: UnwrapRef<typeof import('@vueuse/core')['createUnrefFn']>
+    readonly createWhiteNoise: UnwrapRef<typeof import('./nodes')['createWhiteNoise']>
     readonly customRef: UnwrapRef<typeof import('vue')['customRef']>
     readonly debouncedRef: UnwrapRef<typeof import('@vueuse/core')['debouncedRef']>
     readonly debouncedWatch: UnwrapRef<typeof import('@vueuse/core')['debouncedWatch']>
@@ -361,7 +370,6 @@ declare module 'vue' {
     readonly getActivePinia: UnwrapRef<typeof import('pinia')['getActivePinia']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
-    readonly getHarmonics: UnwrapRef<typeof import('./utils')['getHarmonics']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
     readonly ignorableWatch: UnwrapRef<typeof import('@vueuse/core')['ignorableWatch']>
     readonly inject: UnwrapRef<typeof import('vue')['inject']>
@@ -521,6 +529,7 @@ declare module 'vue' {
     readonly useMediaQuery: UnwrapRef<typeof import('@vueuse/core')['useMediaQuery']>
     readonly useMemoize: UnwrapRef<typeof import('@vueuse/core')['useMemoize']>
     readonly useMemory: UnwrapRef<typeof import('@vueuse/core')['useMemory']>
+    readonly useMidi: UnwrapRef<typeof import('./stores/useMidi')['useMidi']>
     readonly useMounted: UnwrapRef<typeof import('@vueuse/core')['useMounted']>
     readonly useMouse: UnwrapRef<typeof import('@vueuse/core')['useMouse']>
     readonly useMouseInElement: UnwrapRef<typeof import('@vueuse/core')['useMouseInElement']>
@@ -535,6 +544,7 @@ declare module 'vue' {
     readonly usePageLeave: UnwrapRef<typeof import('@vueuse/core')['usePageLeave']>
     readonly useParallax: UnwrapRef<typeof import('@vueuse/core')['useParallax']>
     readonly usePermission: UnwrapRef<typeof import('@vueuse/core')['usePermission']>
+    readonly usePlayer: UnwrapRef<typeof import('./stores/usePlayer')['usePlayer']>
     readonly usePointer: UnwrapRef<typeof import('@vueuse/core')['usePointer']>
     readonly usePointerLock: UnwrapRef<typeof import('@vueuse/core')['usePointerLock']>
     readonly usePointerSwipe: UnwrapRef<typeof import('@vueuse/core')['usePointerSwipe']>

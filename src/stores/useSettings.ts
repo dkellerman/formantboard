@@ -85,7 +85,7 @@ export const useSettings = defineStore('settings', () => {
     },
     f0: {
       on: true,
-      keyGain: 0.001,
+      keyGain: 0.01,
       onsetTime: 0.02,
       decayTime: 0.05,
       sourceType: 'sine',
