@@ -2,14 +2,30 @@
 import { usePlayer } from '../stores/usePlayer';
 import { useApp } from '../stores/useApp';
 
-const { f0, vizType, settings } = storeToRefs(useApp());
-const player = usePlayer();
-const playingF0 = ref<number>();
-
 const vizTypes = [
   { title: 'Spectrum', value: 'power' },
   { title: 'Wave', value: 'waveform' },
 ];
+
+const { f0, vizType, settings, vowel } = storeToRefs(useApp());
+const player = usePlayer();
+const playingF0 = ref<number>();
+const formantButtons = ref();
+
+function setFormants() {
+  const btns: number[] = [];
+  settings.value.formants.specs[vowel.value].forEach((f, idx) => {
+    if (f.on) btns.push(idx)
+  });
+  formantButtons.value = btns;
+}
+
+function updateFormants(btns: number[]) {
+  settings.value.formants.specs[vowel.value].forEach((f, idx) => {
+    f.on = btns.includes(idx);
+  });
+  restartF0();
+}
 
 function toggleF0() {
   if (playingF0.value) {
@@ -33,6 +49,10 @@ function restartF0() {
     toggleF0();
   }
 }
+
+onMounted(setFormants);
+watch([settings.value.formants.specs[vowel.value]], setFormants);
+
 </script>
 
 <template>
@@ -46,7 +66,36 @@ function restartF0() {
       variant="outlined"
       @click:append-inner="toggleF0"
       @change="restartF0"
+      @keyup.enter="restartF0"
     />
+
+    <v-btn-toggle
+      multiple
+      variant="outlined"
+      density="compact"
+      divided
+      v-model="formantButtons"
+      @update:model-value="updateFormants($event)"
+    >
+      <v-btn
+        v-for="f, idx in settings.formants.specs[vowel]"
+        :key="idx"
+      >
+        F{{ idx + 1 }}
+        <v-tooltip
+          activator="parent"
+          location="top"
+          :open-on-hover="true"
+        >
+          <div>Formant F{{ idx + 1 }} [{{ f.on ? 'ON' : 'OFF' }}]</div>
+          <div>
+            {{ f.frequency - (f.frequency * f.Q) }}-{{ f.frequency + (f.frequency * f.Q) }}hz
+          </div>
+        </v-tooltip>
+      </v-btn>
+    </v-btn-toggle>
+
+    <VowelSelector @change="restartF0" />
 
     <v-text-field
       class="max-harmonics"
@@ -73,8 +122,6 @@ function restartF0() {
       :min="-20.0"
       :max="1.0"
     />
-
-    <VowelSelector @change="restartF0" />
 
     <v-select
       class="viz-type"

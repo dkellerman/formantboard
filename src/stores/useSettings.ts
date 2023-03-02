@@ -85,7 +85,7 @@ export const useSettings = defineStore('settings', () => {
     },
     f0: {
       on: true,
-      keyGain: 0.1,
+      keyGain: 0.001,
       onsetTime: 0.02,
       decayTime: 0.05,
       sourceType: 'sine',
@@ -142,13 +142,6 @@ export const useSettings = defineStore('settings', () => {
           { frequency: 730, Q: Q ?? 0.0548, on },
           { frequency: 1090, Q: Q ?? 0.0734, on },
           { frequency: 2560, Q: Q ?? 0.0391, on },
-        ],
-        [Vowels.ɑ]: [
-          { frequency: 800, Q: Q ?? 0.0625, on },
-          { frequency: 1200, Q: Q ?? 0.0833, on },
-          { frequency: 2500, Q: Q ?? 0.04, on },
-          { frequency: 2700, Q: Q ?? 0.037, on },
-          { frequency: 2900, Q: Q ?? 0.0345, on },
         ],
         [Vowels.ɔ]: [
           { frequency: 500, Q: Q ?? 0.16, on },

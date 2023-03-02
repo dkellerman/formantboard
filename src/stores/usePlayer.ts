@@ -103,10 +103,9 @@ export const usePlayer = defineStore('player', () => {
     master.value.connect(ctx.destination);
 
     // start/ramp source nodes
-    const t = ctx.currentTime + .001;
-
+    const t = ctx.currentTime + .002;
     source.start(t);
-    hmNodes.forEach(([osc]) => osc.start(t));
+    for (const [osc] of hmNodes) osc.start(t);
 
     sourceGain.gain.linearRampToValueAtTime(velocity * f0.keyGain, t + f0.onsetTime);
     if (vibratoOsc && vibratoGain) {
