@@ -111,7 +111,7 @@ export const useSettings = defineStore('settings', () => {
     },
     compression: {
       on: true,
-      threshold: _comp.threshold.value,
+      threshold: 0.0, // _comp.threshold.value,
       knee: _comp.knee.value,
       ratio: _comp.ratio.value,
       attack: _comp.attack.value,
