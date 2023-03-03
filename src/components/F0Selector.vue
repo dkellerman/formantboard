@@ -18,7 +18,7 @@ onMounted(() => {
 
 function toggleF0() {
   if (playingF0.value) {
-    player?.stop(playingF0.value);
+    player.stop(playingF0.value);
     playingF0.value = undefined;
     return;
   }
@@ -42,6 +42,7 @@ function restartF0() {
 defineExpose({
   toggleF0,
   restartF0,
+  player,
 });
 </script>
 

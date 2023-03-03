@@ -5,6 +5,8 @@ import { freq2px } from '../utils';
 interface Props {
   input: AudioNode;
   width: number;
+  height: number;
+  visType?: string;
 }
 
 interface FFTBin {
@@ -15,7 +17,7 @@ interface FFTBin {
   x2: number;
 }
 
-const { settings, vizType } = storeToRefs(useApp());
+const { settings, visType: defaultVisType } = storeToRefs(useApp());
 
 const canvas = ref<HTMLCanvasElement>();
 const app = ref<PIXI.Application>();
@@ -24,9 +26,14 @@ const overlay = ref<PIXI.Graphics>();
 const analyzer = ref<AnalyserNode>();
 const dataArray = ref<Float32Array|Uint8Array>();
 const fftBins = ref<FFTBin[]>();
+const renderFn = ref<() => void>();
 const width = computed(() => props.width);
+const visType = computed(() => props.visType || defaultVisType.value);
 
-const props = withDefaults(defineProps<Props>(), {});
+const props = withDefaults(defineProps<Props>(), {
+  height: 140,
+  visType: 'power',
+});
 
 function initPixi() {
   app.value = new PIXI.Application({
@@ -50,17 +57,20 @@ function initAnalyzer() {
   const DataArrType = settings.value.viz.useFloatData ? Float32Array : Uint8Array;
   dataArray.value = new DataArrType(a.frequencyBinCount);
 
-  let renderFn;
-  if (vizType.value === 'power') {
+  if (visType.value === 'power') {
     a.fftSize = settings.value.viz.fftSize;
     a.smoothingTimeConstant = settings.value.viz.fftSmoothing;
     makeBins();
-    renderFn = renderFrequency;
-  } else {
-    renderFn = renderTime;
+    renderFn.value = renderFrequency;
+  } else if (visType.value === 'waveform') {
+    renderFn.value = renderTime;
   }
 
-  app.value.ticker.add(renderFn);
+  app.value.ticker.add(render);
+}
+
+function render() {
+  renderFn.value?.();
 }
 
 function makeBins() {
@@ -179,7 +189,7 @@ function cleanup() {
   app.value?.ticker.remove(renderTime);
 }
 
-watch(() => [props.input, vizType.value], () => {
+watch(() => [props.input, props.visType], () => {
   cleanup();
   initAnalyzer();
 });
@@ -200,7 +210,7 @@ onMounted(() => {
 .visualizer {
   canvas {
     width: calc(1px * v-bind(width));
-    height: 140px;
+    height: calc(1px * v-bind(height));
     margin: 0;
     margin-bottom: 10px;
     padding: 0;

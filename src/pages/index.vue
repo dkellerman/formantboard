@@ -7,7 +7,7 @@ import SettingsPanel from '../components/SettingsPanel.vue';
 import Visualizer from '../components/Visualizer.vue';
 import { usePlayer } from '../stores/usePlayer';
 
-const { settings, keyboard, bar, vowel, visualizer, settingsPanel } = storeToRefs(useApp());
+const { settings, keyboard, bar, vowel, visualizer, settingsPanel, visType } = storeToRefs(useApp());
 const player = usePlayer();
 </script>
 
@@ -15,7 +15,13 @@ const player = usePlayer();
   <section>
     <template v-if="player && keyboard">
       <SettingsPanel ref="settingsPanel" />
-      <Visualizer v-if="settings.viz.on" ref="visualizer" :input="player.master" :width="keyboard.width" />
+      <Visualizer
+        v-if="settings.viz.on"
+        ref="visualizer"
+        :vis-type="visType"
+        :input="player.master"
+        :width="keyboard.width"
+      />
       <PianoBar
         ref="bar"
         :harmonics="player.harmonics ?? []"

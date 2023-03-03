@@ -7,8 +7,8 @@ export const usePlayer = defineStore('player', () => {
   const playing: Ref<Record<number, () => void>> = ref({});
   const harmonics = ref<[number, number][]>([]);
   const noise = ref(createWhiteNoise(audioContext.value));
+  const compressor = ref<DynamicsCompressorNode>();
   const master = ref(new GainNode(audioContext.value, { gain: volume.value / 100 }));
-  const compressor = ref(new DynamicsCompressorNode(audioContext.value, settings.value.compression));
 
   noise.value.start(audioContext.value.currentTime);
 
@@ -91,6 +91,7 @@ export const usePlayer = defineStore('player', () => {
 
     // final leg: compression -> master
     if (compression.on) {
+      compressor.value = new DynamicsCompressorNode(audioContext.value, compression);
       tubeGain.connect(compressor.value);
       compressor.value.connect(master.value);
     } else {
@@ -122,7 +123,8 @@ export const usePlayer = defineStore('player', () => {
       source = sourceGain = hmNodes = vibratoOsc = tubeGain = undefined as any;
     };
 
-    console.log("player latency", (ctx.currentTime - startTime) * 1000.0, 'ms');
+    (window as any)._fb_latency = ctx.currentTime - startTime;
+    // console.log("*", latency.value);
   }
 
   function stop(frequency: number) {
@@ -134,6 +136,7 @@ export const usePlayer = defineStore('player', () => {
     play,
     stop,
     harmonics,
+    compressor,
     master,
   };
 });

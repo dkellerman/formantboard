@@ -2,12 +2,12 @@
 import { useApp } from '../stores/useApp';
 import F0Selector from './F0Selector.vue';
 
-const vizTypes = [
+const visTypes = [
   { title: 'Spectrum', value: 'power' },
   { title: 'Wave', value: 'waveform' },
 ];
 
-const { vizType, settings, vowel } = storeToRefs(useApp());
+const { settings, vowel, visType } = storeToRefs(useApp());
 const f0selector = ref<typeof F0Selector>();
 const formantButtons = ref();
 
@@ -91,8 +91,8 @@ watch([settings.value.formants.specs[vowel.value]], setFormants);
 
     <v-select
       class="viz-type"
-      v-model="vizType"
-      :items="vizTypes"
+      v-model="visType"
+      :items="visTypes"
       variant="outlined"
       label="Visualzation"
       density="compact"

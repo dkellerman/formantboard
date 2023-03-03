@@ -13,7 +13,7 @@ export const useApp = defineStore('app', () => {
   const vowel = ref<Vowel>(Vowels.ɑ);
   const volume = ref(100);
   const f0 = ref<string>('A2');
-  const vizType = ref<string>('power');
+  const visType = ref<string>('power');
 
   const audioContext = computed(() => new AudioContext({
     ...settings.value.audioContextConfig,
@@ -30,6 +30,6 @@ export const useApp = defineStore('app', () => {
     audioContext,
     volume,
     f0,
-    vizType,
+    visType,
   };
 });

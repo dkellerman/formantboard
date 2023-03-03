@@ -10,6 +10,8 @@ export enum Vowels {
   i = 'i', // as in "fleece"
 }
 
+const _comp = new DynamicsCompressorNode(new AudioContext());
+
 export type Vowel = typeof Vowels[keyof typeof Vowels];
 
 export type Settings = {
@@ -109,6 +111,11 @@ export const useSettings = defineStore('settings', () => {
     },
     compression: {
       on: true,
+      threshold: _comp.threshold.value,
+      knee: _comp.knee.value,
+      ratio: _comp.ratio.value,
+      attack: _comp.attack.value,
+      release: _comp.release.value,
     },
     tube: {
       on: true,
