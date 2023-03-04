@@ -11,19 +11,23 @@ export const usePlayer = defineStore('player', () => {
   const { settings } = useSettings();
   const metrics = useMetrics();
   const playing: Record<number, (stopAnalysis: boolean) => void> = {};
-  const volume = ref(100);
+  const volume = ref(100.0);
   const vowel = ref<Vowel>(settings.defaultVowel);
   const audioContext = computed(() => new AudioContext(settings.audioContextConfig));
-  const noise = computed(() => createWhiteNoise(audioContext.value));
+  const noise = computed(() => {
+    const n = createWhiteNoise(audioContext.value);
+    n.start(audioContext.value.currentTime);
+    return n;
+  });
   const compressor = computed(() => new DynamicsCompressorNode(audioContext.value, settings.compression));
   const analyzer = computed(() => new AnalyserNode(audioContext.value, settings.analyzer));
   const analyzerListeners = ref<Record<string, AnalyzerListener>>({});
   const formantSpec = computed(() => settings.formants.specs[vowel.value]);
-  const output = computed(() => new GainNode(audioContext.value, { gain: volume.value / 100 }));
+  const output = ref(new GainNode(audioContext.value, { gain: volume.value / 100.0 }));
   const rafId = ref<number>(); // requestAnimationFrame id
 
-  watch(() => noise.value, (newval, oldval) => {
-    if (oldval !== newval && newval) newval.start(audioContext.value.currentTime);
+  watch(() => volume.value, () => {
+    output.value.gain.value = clamp(volume.value, 0.0, 100.0) / 100.0;
   });
 
   function play(note: number|Note, velocity = 1.0) {
@@ -41,8 +45,11 @@ export const usePlayer = defineStore('player', () => {
     // set the audio source
     let source: AudioScheduledSourceNode;
     let sourceGain: GainNode;
-    if (settings.f0.sourceType === 'noise') [source, sourceGain] = [noise.value, noiseGain];
-    else [source, sourceGain] = [osc, oscGain];
+    let mustControlSource: boolean = true;
+    if (settings.f0.source === 'noise')
+      [source, sourceGain, mustControlSource] = [noise.value, noiseGain, false];
+    else
+      [source, sourceGain] = [osc, oscGain, true];
     source.connect(sourceGain);
     const isTonalSource = 'frequency' in source;
     if (!settings.f0.on && isTonalSource) (source as OscillatorNode).frequency.value = 0;
@@ -122,8 +129,9 @@ export const usePlayer = defineStore('player', () => {
 
     // start/ramp source nodes
     const t = ctx.currentTime + .002;
-    source.start(t);
+    if (mustControlSource) source.start(t);
     for (const [osc] of harmonics) osc.start(t);
+    debug(source);
 
     sourceGain.gain.linearRampToValueAtTime(velocity * settings.f0.keyGain, t + settings.f0.onsetTime);
     if (vibratoOsc && vibratoGain) {
@@ -135,7 +143,7 @@ export const usePlayer = defineStore('player', () => {
     playing[frequency] = (stopAnalysis = false) => {
       const t = ctx.currentTime + .05;
       sourceGain.gain.setTargetAtTime(0, t, settings.f0.decayTime);
-      source.stop(t + settings.f0.decayTime + 1);
+      if (mustControlSource) source.stop(t + settings.f0.decayTime + 1);
       harmonics.forEach(([osc]) => { osc.stop(t); osc = undefined as any; });
       vibratoOsc?.stop(t);
       if (stopAnalysis && rafId.value) {
@@ -163,6 +171,7 @@ export const usePlayer = defineStore('player', () => {
   }
 
   function analyze() {
+    metrics.compression = compressor.value.reduction;
     if (settings.analyzer.useFloatData) {
       analyzer.value.getFloatTimeDomainData(metrics.timeData as Float32Array);
       analyzer.value.getFloatFrequencyData(metrics.freqData as Float32Array);
@@ -172,7 +181,7 @@ export const usePlayer = defineStore('player', () => {
       analyzer.value.getByteFrequencyData(metrics.freqData as Uint8Array);
       metrics.rms = 20.0 * Math.log10(rms([...metrics.freqData], 256.0));
     }
-    metrics.compression = compressor.value.reduction;
+
     for (const l of Object.values(analyzerListeners.value)) {
       l.onFrame(metrics, analyzer.value);
     }

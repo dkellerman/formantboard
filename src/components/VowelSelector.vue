@@ -12,7 +12,7 @@ const items = computed(() => Object.values(Vowels).map(v => ({
 
 <template>
   <section class="vowel-selector">
-    <v-select v-model="vowel" :items="items" label="Vowel" @change="emit('change', $event)" />
+    <v-select v-model="vowel" :items="items" label="Vowel" @update:model-value="emit('change', $event)" />
   </section>
 </template>
 

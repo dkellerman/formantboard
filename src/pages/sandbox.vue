@@ -5,6 +5,17 @@ import F0Selector from '../components/F0Selector.vue';
 import Visualizer from '../components/Visualizer.vue';
 import MidiButton from '../components/MidiButton.vue';
 
+const sources = [
+  { title: 'Tone', value: 'osc' },
+  { title: 'Noise', value: 'noise' },
+];
+
+const sourceTypes = computed(() => f0.source === 'osc' ? [
+  { title: 'Sine', value: 'sine' },
+  { title: 'Sawtooth', value: 'sawtooth' },
+  { title: 'Square', value: 'square' },
+] : []);
+
 const f0selector = ref<InstanceType<typeof F0Selector>>();
 const allEffects = ref(true);
 const metrics = useMetrics();
@@ -30,12 +41,14 @@ function toggleEffects() {
     <Visualizer :vtype="VisType.POWER" :height="80" />
 
     <fieldset>
+      <v-switch label="F0" v-model="f0.on" @change="restartF0" />
       <F0Selector ref="f0selector" />
-      <v-text-field label="Volume" v-model="player.volume" @change="restartF0" type="number" min="0" max="100" />
+      <v-text-field label="Volume" v-model="player.volume" type="number" min="0" max="100" />
       <v-text-field label="Key Gain" v-model="f0.keyGain" @change="restartF0" type="number" min="0" max="1" />
       <v-text-field label="Onset time" v-model="f0.onsetTime" @change="restartF0" type="number" min="0" suffix="s" />
       <v-text-field label="Decay time" v-model="f0.decayTime" @change="restartF0" type="number" min="0" suffix="s" />
-      <v-text-field label="Source type" v-model="f0.sourceType" @change="restartF0" />
+      <v-select label="Source" v-model="f0.source" :items="sources" @update:model-value="restartF0" />
+      <v-select label="Source Type" v-model="f0.sourceType" :items="sourceTypes" @update:model-value="restartF0" />
       <v-text-field label="Latency" v-model="metrics.latency" readonly suffix="s" />
       <v-text-field label="RMS" v-model="metrics.rms" readonly suffix="dB" />
       <v-switch label="All effects" v-model="allEffects" @change="toggleEffects" />
@@ -55,6 +68,7 @@ function toggleEffects() {
       <v-text-field label="Max num" v-model="harmonics.max" @change="restartF0" type="number" min="0" />
       <v-text-field label="Max freq" v-model="harmonics.maxFreq" @change="restartF0" type="number" min="0" suffix="hz" />
       <v-text-field label="Tilt" v-model="harmonics.tilt" @change="restartF0" type="number" min="-40" max="6" suffix="dB/oct" />
+      <v-text-field label="Actual" v-model="metrics.harmonics.length" readonly></v-text-field>
     </fieldset>
     <fieldset>
       <v-switch label="Flutter" v-model="flutter.on" @change="restartF0" />
@@ -109,7 +123,6 @@ section.sandbox {
       width: 200px;
     }
   }
-
   .midi {
     position: fixed;
     top: 15px;

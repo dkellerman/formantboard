@@ -11,6 +11,7 @@ export type Settings = {
     keyGain: number;
     onsetTime: number;
     decayTime: number;
+    source: string;
     sourceType: string;
   };
   viz: {
@@ -82,16 +83,17 @@ export const useSettings = defineStore('settings', () => {
     f0: {
       on: true,
       defaultValue: 'A2',
-      keyGain: 0.01,
+      keyGain: 0.25,
       onsetTime: 0.02,
       decayTime: 0.05,
+      source: 'osc',
       sourceType: 'sine',
     },
     harmonics: {
       on: true,
       max: 40,
       maxFreq: 22050,
-      tilt: 0.0,
+      tilt: -3.0,
     },
     flutter: {
       on: true,
@@ -105,7 +107,7 @@ export const useSettings = defineStore('settings', () => {
       onsetTime: 1.0,
     },
     compression: {
-      on: true,
+      on: false,
       threshold: 0.0, // _comp.threshold.value,
       knee: _comp.knee.value,
       ratio: _comp.ratio.value,
