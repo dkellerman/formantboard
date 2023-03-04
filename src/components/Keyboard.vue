@@ -64,15 +64,15 @@ defineExpose({
 </script>
 
 <template>
-  <div class="keyboard">
+  <div class="keyboard" @mouseleave="dragging = false">
     <ul class="keys">
       <li
         v-for="id of noteIds" :id="id" :key="id"
         :class="getKeyClass(id)"
         @mousedown.prevent="() => { dragging = true; play(id); }"
-        @mouseup.prevent="() => { dragging = false; stop(id); }"
-        @mouseenter.prevent="() => { dragging && play(id) }"
-        @mouseout.prevent="() => stop(id)"
+        @mouseup="() => { dragging = false; stop(id); }"
+        @mouseenter="() => { dragging && play(id) }"
+        @mouseout="() => { stop(id); }"
       >
         <label>
           <div>{{ id.replace('s', '#') }}</div>

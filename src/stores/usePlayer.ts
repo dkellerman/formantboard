@@ -134,9 +134,9 @@ export const usePlayer = defineStore('player', () => {
 
     // store stop function
     playing[frequency] = (stopAnalysis = false) => {
-      const t = ctx.currentTime + .001;
+      const t = ctx.currentTime + .05;
       sourceGain.gain.setTargetAtTime(0, t, settings.f0.decayTime);
-      source.stop(t + settings.f0.decayTime + 2);
+      source.stop(t + settings.f0.decayTime + 1);
       harmonics.forEach(([osc]) => { osc.stop(t); osc = undefined as any; });
       vibratoOsc?.stop(t);
       if (stopAnalysis && rafId.value) {

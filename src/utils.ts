@@ -91,3 +91,14 @@ export function fillRect(
   g.drawRect(x, y, w, h);
   g.endFill();
 }
+
+export function debug(...args: any[]) {
+  console.log('->', ...args);
+}
+
+export function debugt(...args: any[]) {
+  const w = window as any;
+  const dt = w.__debug_ts ? performance.now() - w.__debug_ts : 0;
+  console.log(dt, '->', ...args);
+  w.__debug_ts = performance.now();
+}
