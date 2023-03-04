@@ -46,7 +46,7 @@ export const usePlayer = defineStore('player', () => {
     // set the audio source
     let source: AudioScheduledSourceNode;
     let sourceGain: GainNode;
-    let mustControlSource: boolean = true;
+    let mustControlSource = true;
     if (settings.f0.source === 'noise')
       [source, sourceGain, mustControlSource] = [noise.value, noiseGain, false];
     else
@@ -56,14 +56,25 @@ export const usePlayer = defineStore('player', () => {
     if (!settings.f0.on && isTonalSource) (source as OscillatorNode).frequency.value = 0;
 
     // create harmonics (osc source only) -> oscillators feed into source node
+    // and harmonics feed into harmonicsOutput
     let harmonics: [OscillatorNode, GainNode][];
+    const harmonicsOutput = new GainNode(ctx, { gain: 1.0 });
     const h = settings.harmonics;
     if (h.on && isTonalSource) {
       harmonics = createHarmonics(ctx, frequency, h.max, h.maxFreq, h.tilt, sourceType);
-      harmonics.forEach(([, hGain]) => hGain.connect(sourceGain));
+      harmonics.forEach(([, hGain]) => hGain.connect(harmonicsOutput));
       metrics.harmonics = harmonics.map(([osc, gain]) => [osc.frequency.value, gain.gain.value]);
     } else {
       harmonics = metrics.harmonics = [];
+    }
+
+    // pre-emphasis
+    if (h.preemphasis) {
+      const preemph = createPreEmphasisFilter(ctx, frequency);
+      harmonicsOutput.connect(preemph);
+      preemph.connect(sourceGain);
+    } else {
+      harmonicsOutput.connect(sourceGain);
     }
 
     // apply effects to source

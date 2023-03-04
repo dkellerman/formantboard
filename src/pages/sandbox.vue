@@ -20,6 +20,7 @@ const f0selector = ref<InstanceType<typeof F0Selector>>();
 const allEffects = ref(true);
 const metrics = useMetrics();
 const player = usePlayer();
+const showHGains = ref(false);
 const { vowel } = storeToRefs(useVowel());
 const { settings } = storeToRefs(useSettings());
 const { flutter, harmonics, compression, formants, tube, vibrato, f0 } = settings.value;
@@ -69,6 +70,11 @@ function toggleEffects() {
       <v-text-field label="Max freq" v-model="harmonics.maxFreq" @change="restartF0" type="number" min="0" suffix="hz" />
       <v-text-field label="Tilt" v-model="harmonics.tilt" @change="restartF0" type="number" min="-40" max="6" suffix="dB/oct" />
       <v-text-field label="Actual" v-model="metrics.harmonics.length" readonly></v-text-field>
+      <v-checkbox label="Pre-emphasis" v-model="harmonics.preemphasis" @change="restartF0" />
+      <v-checkbox label="Show gains" v-model="showHGains" />
+      <div v-show="showHGains" style="width:100%; margin-bottom: 10px; white-space: normal; max-width: 100vw;">
+        <span v-for="([h, g], idx) of metrics.harmonics.slice(0, 40)" :key="idx">[H{{ idx+1 }}={{ g }}]&nbsp;</span>
+      </div>
     </fieldset>
     <fieldset>
       <v-switch label="Flutter" v-model="flutter.on" @change="restartF0" />

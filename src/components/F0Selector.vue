@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const player = usePlayer();
 const { settings } = storeToRefs(useSettings());
-const f0 = ref(settings.value.f0.defaultValue);
+const f0 = ref(settings.value.defaultNote);
 const playingF0 = ref<number>();
 
 function toggleF0() {

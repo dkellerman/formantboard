@@ -3,11 +3,11 @@ import { Vowel, Vowels } from "./useVowel";
 import { VisType } from "./useVisType";
 
 export type Settings = {
+  defaultNote: Note;
   defaultVowel: Vowel;
   defaultVisType: VisType;
   f0: {
     on: boolean;
-    defaultValue: Note|number;
     keyGain: number;
     onsetTime: number;
     decayTime: number;
@@ -22,6 +22,7 @@ export type Settings = {
     max: number;
     maxFreq: number;
     tilt: number;
+    preemphasis: boolean;
   };
   tube: {
     on: boolean;
@@ -67,10 +68,10 @@ export type Vibrato = Settings['vibrato'];
 
 export const useSettings = defineStore('settings', () => {
   const _comp = new DynamicsCompressorNode(new AudioContext());
-  const on = true;
-  const Q = .1;
+  const on = true, Q = .1;
 
   const settings = ref<Settings>({
+    defaultNote: 'E3',
     defaultVowel: Vowels.ɑ,
     defaultVisType: VisType.POWER,
     audioContextConfig: {
@@ -82,8 +83,7 @@ export const useSettings = defineStore('settings', () => {
     },
     f0: {
       on: true,
-      defaultValue: 'A2',
-      keyGain: 0.25,
+      keyGain: 0.04,
       onsetTime: 0.02,
       decayTime: 0.05,
       source: 'osc',
@@ -91,20 +91,21 @@ export const useSettings = defineStore('settings', () => {
     },
     harmonics: {
       on: true,
-      max: 0,
+      max: 2,
       maxFreq: 22050,
       tilt: 0.0,
+      preemphasis: true,
     },
     flutter: {
-      on: false,
-      amount: 0.0,
+      on: true,
+      amount: 1.0,
     },
     vibrato: {
       on: true,
-      rate: 6.0,
+      rate: 6.5,
       extent: 3.0,
       jitter: 0.0,
-      onsetTime: 1.0,
+      onsetTime: 0.5,
     },
     compression: {
       on: false,

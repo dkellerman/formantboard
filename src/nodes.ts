@@ -61,3 +61,8 @@ export function createTube(ctx: AudioContext, frequency: number): BiquadFilterNo
     Q: 1,
   });
 }
+
+export function createPreEmphasisFilter(ctx: AudioContext, frequency: number): BiquadFilterNode {
+  const filter = new BiquadFilterNode(ctx, { type: 'highpass', frequency, Q: 0 });
+  return filter;
+}

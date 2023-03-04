@@ -38,6 +38,7 @@ declare global {
   const createHarmonics: typeof import('./nodes')['createHarmonics']
   const createInjectionState: typeof import('@vueuse/core')['createInjectionState']
   const createPinia: typeof import('pinia')['createPinia']
+  const createPreEmphasisFilter: typeof import('./nodes')['createPreEmphasisFilter']
   const createReactiveFn: typeof import('@vueuse/core')['createReactiveFn']
   const createSharedComposable: typeof import('@vueuse/core')['createSharedComposable']
   const createTube: typeof import('./nodes')['createTube']
@@ -362,6 +363,7 @@ declare module 'vue' {
     readonly createHarmonics: UnwrapRef<typeof import('./nodes')['createHarmonics']>
     readonly createInjectionState: UnwrapRef<typeof import('@vueuse/core')['createInjectionState']>
     readonly createPinia: UnwrapRef<typeof import('pinia')['createPinia']>
+    readonly createPreEmphasisFilter: UnwrapRef<typeof import('./nodes')['createPreEmphasisFilter']>
     readonly createReactiveFn: UnwrapRef<typeof import('@vueuse/core')['createReactiveFn']>
     readonly createSharedComposable: UnwrapRef<typeof import('@vueuse/core')['createSharedComposable']>
     readonly createTube: UnwrapRef<typeof import('./nodes')['createTube']>
