@@ -38,7 +38,8 @@ export const usePlayer = defineStore('player', () => {
     const startTime = ctx.currentTime;
 
     // create basic source nodes
-    const osc = new OscillatorNode(ctx, { frequency, type: settings.f0.sourceType as OscillatorType });
+    const sourceType = settings.f0.sourceType as OscillatorType;
+    const osc = new OscillatorNode(ctx, { frequency, type: sourceType });
     const oscGain = new GainNode(ctx, { gain: 0 });
     const noiseGain = new GainNode(ctx, { gain: 0 });
 
@@ -58,7 +59,7 @@ export const usePlayer = defineStore('player', () => {
     let harmonics: [OscillatorNode, GainNode][];
     const h = settings.harmonics;
     if (h.on && isTonalSource) {
-      harmonics = createHarmonics(ctx, frequency, h.max, h.maxFreq, h.tilt);
+      harmonics = createHarmonics(ctx, frequency, h.max, h.maxFreq, h.tilt, sourceType);
       harmonics.forEach(([, hGain]) => hGain.connect(sourceGain));
       metrics.harmonics = harmonics.map(([osc, gain]) => [osc.frequency.value, gain.gain.value]);
     } else {
@@ -71,6 +72,7 @@ export const usePlayer = defineStore('player', () => {
       flutterGain = new GainNode(ctx, { gain: settings.flutter.amount });
       noise.value.connect(flutterGain);
       flutterGain.connect((source as OscillatorNode).frequency);
+      for (const [hosc] of harmonics) flutterGain.connect(hosc.frequency);
     }
 
     let vibratoOsc: OscillatorNode|null = null;
@@ -81,6 +83,7 @@ export const usePlayer = defineStore('player', () => {
       vibratoGain = new GainNode(ctx, { gain: 0 });
       vibratoOsc.connect(vibratoGain);
       vibratoGain.connect((source as OscillatorNode).frequency);
+      for (const [hosc] of harmonics) vibratoGain.connect(hosc.frequency);
       if (settings.vibrato.jitter) {
         vibratoJitter = new GainNode(ctx, { gain: settings.vibrato.jitter });
         noise.value.connect(vibratoJitter);
@@ -131,7 +134,6 @@ export const usePlayer = defineStore('player', () => {
     const t = ctx.currentTime + .002;
     if (mustControlSource) source.start(t);
     for (const [osc] of harmonics) osc.start(t);
-    debug(source);
 
     sourceGain.gain.linearRampToValueAtTime(velocity * settings.f0.keyGain, t + settings.f0.onsetTime);
     if (vibratoOsc && vibratoGain) {

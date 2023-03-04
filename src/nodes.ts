@@ -20,6 +20,7 @@ export function createHarmonics(
   maxHarmonics: number = Number.POSITIVE_INFINITY,
   maxFrequency = 22050,
   tilt = 0.0,
+  sourceType: OscillatorType = 'sine',
   customGains: Record<number, number> = {},
 ): [OscillatorNode, GainNode][] {
   const harmonics: [OscillatorNode, GainNode][] = [];
@@ -27,7 +28,7 @@ export function createHarmonics(
   for (let i = 0; i < maxHarmonics; i++) {
     const freq = baseFrequency * (i + 1);
     if (freq > maxFrequency) break;
-    const hOsc = new OscillatorNode(ctx, { type: 'sine', frequency: freq });
+    const hOsc = new OscillatorNode(ctx, { type: sourceType, frequency: freq });
     const gainVal = customGains[i] ?? (10 ** (tilt / 20)) ** (i + 1);
     const hGain = new GainNode(ctx, { gain: gainVal });
     hOsc.connect(hGain);

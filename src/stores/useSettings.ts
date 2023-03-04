@@ -91,19 +91,19 @@ export const useSettings = defineStore('settings', () => {
     },
     harmonics: {
       on: true,
-      max: 40,
+      max: 0,
       maxFreq: 22050,
-      tilt: -3.0,
+      tilt: 0.0,
     },
     flutter: {
-      on: true,
-      amount: 10.0,
+      on: false,
+      amount: 0.0,
     },
     vibrato: {
       on: true,
-      rate: 3.0,
-      extent: 1.0,
-      jitter: 0.5,
+      rate: 6.0,
+      extent: 3.0,
+      jitter: 0.0,
       onsetTime: 1.0,
     },
     compression: {
@@ -115,7 +115,7 @@ export const useSettings = defineStore('settings', () => {
       release: _comp.release.value,
     },
     tube: {
-      on: true,
+      on: false,
     },
     analyzer: {
       on: true,
@@ -124,7 +124,7 @@ export const useSettings = defineStore('settings', () => {
       smoothingTimeConstant: 0.7,
     },
     formants: {
-      on: true,
+      on: false,
       specs: {
         [Vowels.ɑ]: [
           { frequency: 800, Q: Q ?? 0.0625, on },
