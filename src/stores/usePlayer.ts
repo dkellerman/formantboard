@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { Note } from '../utils';
-import { createHarmonics, createWhiteNoise, createFormants, createTube } from '../nodes';
+import { Note } from '../utils';
 import { Vowel } from './useVowel';
 import type { Metrics } from './useMetrics';
 
@@ -167,9 +166,11 @@ export const usePlayer = defineStore('player', () => {
     if (settings.analyzer.useFloatData) {
       analyzer.value.getFloatTimeDomainData(metrics.timeData as Float32Array);
       analyzer.value.getFloatFrequencyData(metrics.freqData as Float32Array);
+      metrics.rms = 20.0 * Math.log10(rms([...metrics.freqData], 1.0)); // ??
     } else {
       analyzer.value.getByteTimeDomainData(metrics.timeData as Uint8Array);
       analyzer.value.getByteFrequencyData(metrics.freqData as Uint8Array);
+      metrics.rms = 20.0 * Math.log10(rms([...metrics.freqData], 256.0));
     }
     metrics.compression = compressor.value.reduction;
     for (const l of Object.values(analyzerListeners.value)) {

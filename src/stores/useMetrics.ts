@@ -1,5 +1,6 @@
 export const useMetrics = defineStore('metrics', () => {
   const { settings } = useSettings();
+  const rms = ref(0.0);
   const harmonics = ref<[number, number][]>([]);
   const compression = ref(0.0);
   const latency = ref(0.0);
@@ -11,6 +12,7 @@ export const useMetrics = defineStore('metrics', () => {
     : new Uint8Array(settings.analyzer.fftSize / 2));
 
   return {
+    rms,
     harmonics,
     compression,
     latency,

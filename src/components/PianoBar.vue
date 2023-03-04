@@ -49,7 +49,7 @@ onMounted(() => mounted.value = true);
         <div class="line">
           |
         </div>
-        <v-tooltip activator="parent" location="left" :open-on-hover="true">
+        <v-tooltip activator="parent" location="left">
           <div>Harmonic H{{ idx + 1 }}</div>
           <div>Frequency: {{ h[0].toFixed(2) }}</div>
           <div>Gain: {{ h[1].toFixed(2) }}</div>
@@ -58,7 +58,7 @@ onMounted(() => mounted.value = true);
 
       <li v-for="fs, idx of formantSpecs" :class="`f ${fs.on ? 'on' : 'off'}`" :style="fstyle(fs)" :key="`F${idx + 1}`">
         <!-- F{{ idx + 1 }} -->&nbsp;
-        <v-tooltip activator="parent" location="top" :open-on-hover="true">
+        <v-tooltip activator="parent" location="top" open-on-hover>
           <div>Formant F{{ idx + 1 }} [{{ fs.on ? 'ON' : 'OFF' }}]</div>
           <div>
             {{ fs.frequency - (fs.frequency * fs.Q) }}-{{ fs.frequency + (fs.frequency * fs.Q) }}hz

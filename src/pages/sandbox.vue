@@ -36,7 +36,8 @@ function toggleEffects() {
       <v-text-field label="Onset time" v-model="f0.onsetTime" @change="restartF0" type="number" min="0" suffix="s" />
       <v-text-field label="Decay time" v-model="f0.decayTime" @change="restartF0" type="number" min="0" suffix="s" />
       <v-text-field label="Source type" v-model="f0.sourceType" @change="restartF0" />
-      <v-text-field label="Latency" v-model="metrics.latency" :readonly="true" suffix="s" />
+      <v-text-field label="Latency" v-model="metrics.latency" readonly suffix="s" />
+      <v-text-field label="RMS" v-model="metrics.rms" readonly suffix="dB" />
       <v-switch label="All effects" v-model="allEffects" @change="toggleEffects" />
     </fieldset>
     <fieldset>
@@ -46,7 +47,8 @@ function toggleEffects() {
       <v-text-field label="Ratio" v-model="compression.ratio" @change="restartF0" type="number" />
       <v-text-field label="Attack" v-model="compression.attack" @change="restartF0" type="number" />
       <v-text-field label="Release" v-model="compression.release" @change="restartF0" type="number" />
-      <v-text-field label="Reduction" v-model="metrics.compression" :readonly="true" suffix="dB" />
+      <v-text-field label="Reduction" v-model="metrics.compression" readonly suffix="dB"></v-text-field>
+      <meter min="0" max="20" optimum="0" low="0" high="1" :value="Math.abs(metrics.compression)" />
     </fieldset>
     <fieldset>
       <v-switch label="Harmonics" v-model="harmonics.on" @change="restartF0" />
@@ -72,13 +74,13 @@ function toggleEffects() {
       <v-switch label="Formants" v-model="formants.on" @change="restartF0" />
       <VowelSelector />
     </fieldset>
-    <fieldset v-for="_, idx in [...Array(5).fill(0)]">
-      <div v-if="formants.specs[vowel][idx]">
+    <div v-for="_, idx in [...Array(5).fill(0)]">
+      <fieldset v-if="formants.specs[vowel][idx]">
         <v-switch :label="`F${idx+1}`" v-model="formants.specs[vowel][idx].on" @change="restartF0" />
         <v-text-field label="Freq" v-model="formants.specs[vowel][idx].frequency" @change="restartF0" type="number" min="0" suffix="hz" />
         <v-text-field label="Q" v-model="formants.specs[vowel][idx].Q" @change="restartF0" type="number" min="0" max="1" />
-      </div>
-    </fieldset>
+      </fieldset>
+    </div>
   </section>
 </template>
 
@@ -89,6 +91,10 @@ section.sandbox {
     margin-top: -10px;
   }
   fieldset {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: flex-start;
+    align-items: center;
     padding: 0px;
     margin-bottom: 10px;
     border: 0;
@@ -97,7 +103,7 @@ section.sandbox {
     .v-text-field, .v-switch, .vowel-selector {
       width: 150px;
       margin-right: 10px;
-      display: inline-block;
+      flex: unset;
     }
     .vowel-selector {
       width: 200px;
@@ -110,6 +116,10 @@ section.sandbox {
     right: 35px;
     z-index: 2000;
     padding: 0;
+  }
+
+  meter {
+    margin-top: -20px;
   }
 }
 </style>

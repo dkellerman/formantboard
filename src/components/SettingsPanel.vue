@@ -33,7 +33,7 @@ watch([settings.value.formants.specs[vowel.value]], setFormants);
     <v-btn-toggle multiple v-model="formantButtons" @update:model-value="updateFormants($event)">
       <v-btn v-for="f, idx in settings.formants.specs[vowel]" :key="idx">
         F{{ idx + 1 }}
-        <v-tooltip activator="parent" location="top" :open-on-hover="true">
+        <v-tooltip activator="parent" location="top">
           <div>Formant F{{ idx + 1 }} [{{ f.on ? 'ON' : 'OFF' }}]</div>
           <div>
             {{ f.frequency - (f.frequency * f.Q) }}-{{ f.frequency + (f.frequency * f.Q) }}hz

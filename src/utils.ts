@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as PIXI from 'pixi.js';
 import tinycolor from 'tinycolor2';
 
@@ -101,4 +102,8 @@ export function debugt(...args: any[]) {
   const dt = w.__debug_ts ? performance.now() - w.__debug_ts : 0;
   console.log(dt, '->', ...args);
   w.__debug_ts = performance.now();
+}
+
+export function rms(arr: number[], normFactor = 1.0) {
+  return Math.sqrt(arr.reduce((prev, curr) => (prev + (curr/normFactor) * (curr/normFactor)), 0.0) / arr.length);
 }
