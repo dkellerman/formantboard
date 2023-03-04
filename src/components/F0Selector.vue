@@ -38,8 +38,6 @@ defineExpose({
     label="F0"
     v-model="f0"
     :append-inner-icon="!!playingF0 ? 'mdi-stop' : 'mdi-play'"
-    density="compact"
-    variant="outlined"
     @click:append-inner="toggleF0"
     @change="restartF0"
     @keyup.enter="restartF0"

@@ -18,6 +18,20 @@ const router = createRouter({
 const vuetify = createVuetify({
   components,
   directives,
+  defaults: {
+    VTextField: {
+      density: 'compact',
+      variant: 'outlined',
+    },
+    VSelect: {
+      density: 'compact',
+      variant: 'outlined',
+    },
+    VBtnToggle: {
+      density: 'compact',
+      divided: true,
+    }
+  },
 });
 
 createApp(App)

@@ -19,13 +19,19 @@ async function enableMidi() {
   await midi.enable();
 
   midi.addNoteOnListener((note: Note, velocity: number) => {
-    player.play(note2freq(note), velocity);
-    props.keyboard?.play(note);
+    // route to keyboard if one is specified (and assume keyboard will play note)
+    // otherwise play note directly
+    if (props.keyboard)
+      props.keyboard?.play(note);
+    else
+      player.play(note2freq(note), velocity);
   });
 
   midi.addNoteOffListener((note: Note) => {
-    player.stop(note2freq(note))
-    props.keyboard?.stop(note);
+    if (props.keyboard)
+      props.keyboard?.stop(note);
+    else
+      player.stop(note2freq(note))
   });
 }
 
@@ -40,7 +46,7 @@ defineExpose({
 
 <template>
   <section class="midi">
-    <v-btn v-if="props.showButton && midi.status === MidiStatus.Disabled" variant="outlined" @click="enableMidi">
+    <v-btn v-if="props.showButton && midi.status === MidiStatus.Disabled" @click="enableMidi">
       Enable MIDI
     </v-btn>
   </section>

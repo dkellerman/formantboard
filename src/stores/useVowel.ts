@@ -24,9 +24,8 @@ export const VOWEL_WORDS: Record<Vowel, string> = {
 
 export type Vowel = typeof Vowels[keyof typeof Vowels];
 
-const { settings } = storeToRefs(useSettings());
-
 export const useVowel = defineStore('vowel', () => {
+  const { settings } = storeToRefs(useSettings());
   const vowel = ref<Vowel>(settings.value.defaultVowel);
   return { vowel };
 });

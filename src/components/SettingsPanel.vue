@@ -30,24 +30,10 @@ watch([settings.value.formants.specs[vowel.value]], setFormants);
   <section class="settings">
     <F0Selector ref="f0selector" />
 
-    <v-btn-toggle
-      multiple
-      variant="outlined"
-      density="compact"
-      divided
-      v-model="formantButtons"
-      @update:model-value="updateFormants($event)"
-    >
-      <v-btn
-        v-for="f, idx in settings.formants.specs[vowel]"
-        :key="idx"
-      >
+    <v-btn-toggle multiple v-model="formantButtons" @update:model-value="updateFormants($event)">
+      <v-btn v-for="f, idx in settings.formants.specs[vowel]" :key="idx">
         F{{ idx + 1 }}
-        <v-tooltip
-          activator="parent"
-          location="top"
-          :open-on-hover="true"
-        >
+        <v-tooltip activator="parent" location="top" :open-on-hover="true">
           <div>Formant F{{ idx + 1 }} [{{ f.on ? 'ON' : 'OFF' }}]</div>
           <div>
             {{ f.frequency - (f.frequency * f.Q) }}-{{ f.frequency + (f.frequency * f.Q) }}hz
@@ -62,8 +48,6 @@ watch([settings.value.formants.specs[vowel.value]], setFormants);
       class="max-harmonics"
       label="Harmonics"
       v-model="settings.harmonics.max"
-      density="compact"
-      variant="outlined"
       @change="f0selector?.restartF0"
       type="number"
       suffix="max"
@@ -75,8 +59,6 @@ watch([settings.value.formants.specs[vowel.value]], setFormants);
       class="tilt"
       label="Tilt"
       v-model="settings.harmonics.tilt"
-      density="compact"
-      variant="outlined"
       @change="f0selector?.restartF0"
       type="number"
       suffix="dB/oct"
@@ -88,9 +70,7 @@ watch([settings.value.formants.specs[vowel.value]], setFormants);
       class="viz-type"
       v-model="visType"
       :items="VIS_TYPES"
-      variant="outlined"
       label="Visualzation"
-      density="compact"
     />
   </section>
 </template>

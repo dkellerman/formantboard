@@ -8,9 +8,8 @@ export const VIS_TYPES = [
   { title: 'Wave', value: VisType.WAVE },
 ];
 
-const { settings } = storeToRefs(useSettings());
-
 export const useVisType = defineStore('visType', () => {
+  const { settings } = storeToRefs(useSettings());
   const visType = ref<VisType>(settings.value.defaultVisType);
   return { visType };
 });

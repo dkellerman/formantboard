@@ -4,8 +4,8 @@ import { VisType } from '../stores/useVisType';
 import type { Metrics } from '../stores/useMetrics';
 
 interface Props {
-  width: number;
-  height: number;
+  width?: number;
+  height?: number;
   vtype?: VisType;
 }
 
@@ -17,43 +17,43 @@ interface FFTBin {
   x2: number;
 }
 
-const player = usePlayer();
-const { settings } = storeToRefs(useSettings());
-const canvas = ref<HTMLCanvasElement>();
-
 const props = withDefaults(defineProps<Props>(), {
-  width: useWindowSize().width.value * .9,
+  width: useWindowSize().width.value * .95,
   height: 140,
-  vtype: settings.value.defaultVisType,
+  vtype: VisType.POWER,
 });
 
-const id = computed(() => `viz-${props.vtype}-${Date.now()}`);
-const app = computed<PIXI.Application>(() => {
-  return new PIXI.Application({
+const player = usePlayer();
+const { settings } = storeToRefs(useSettings());
+const id = computed(() => `viz-${props.vtype}`);
+const app = ref<PIXI.Application>();
+const g = ref<PIXI.Graphics>();
+const overlay = ref<PIXI.Graphics>();
+const canvas = ref<HTMLCanvasElement>();
+const renderedOverlay = ref(false);
+
+function init() {
+  app.value = new PIXI.Application({
     view: canvas.value,
     width: canvas.value?.scrollWidth,
     height: canvas.value?.scrollHeight,
     background: '#010101',
     antialias: true,
   });
-});
+  g.value = new PIXI.Graphics();
+  app.value.stage.addChild(g.value);
+  overlay.value = new PIXI.Graphics();
+  app.value.stage.addChild(overlay.value);
+  renderedOverlay.value = false;
+}
 
-const g = computed<PIXI.Graphics>(() => {
-  const pg = new PIXI.Graphics();
-  app.value.stage.addChild(pg);
-  return pg;
-});
-
-const overlay = computed<PIXI.Graphics>(() => {
-  const g = new PIXI.Graphics();
-  app.value.stage.addChild(g);
-  return g;
-});
-
+watch(() => props.vtype, init);
 
 onMounted(() => {
+  init();
   player.addAnalyzerListener(id.value, {
     onFrame: (data, analyzer) => {
+      if (!app.value) init();
       if (props.vtype === VisType.POWER) {
         renderPower(data, analyzer);
       } else if (props.vtype === VisType.WAVE) {
@@ -86,7 +86,7 @@ function makeFreqBins(data: Float32Array|Uint8Array) {
 }
 
 function renderFreqLabels(bins: FFTBin[]) {
-  if (!canvas.value) return;
+  if (!canvas.value || !overlay.value) return;
 
   overlay.value.clear();
   overlay.value.lineStyle(1, 0x444444);
@@ -113,30 +113,37 @@ function renderFreqLabels(bins: FFTBin[]) {
 }
 
 function renderPower(data: Metrics, analyzer: AnalyserNode) {
-  if (!canvas.value) return;
+  if (!canvas.value || !g.value) return;
 
   const dataArray = data.freqData;
-  if (dataArray.every(v => v === -Infinity)) return;
 
-  const bins = makeFreqBins(data.freqData);
-  renderFreqLabels(bins); // TODO: check if it's changed
+  // render overlay once
+  let bins;
+  if (!renderedOverlay.value) {
+    bins = makeFreqBins(data.freqData);
+    renderFreqLabels(bins);
+    renderedOverlay.value = true;
+  }
+  // otherwise check that we have any values to render
+  if (dataArray.every(v => v === -Infinity)) return;
+  bins = bins || makeFreqBins(data.freqData);
 
   g.value.clear();
   g.value.lineStyle(2, 0xffffff);
+  const { maxDecibels, minDecibels } = analyzer;
 
   for (const bin of bins) {
     const db = dataArray[bin.bufferIndex];
-    const { maxDecibels, minDecibels } = analyzer;
     const pct = dataArray instanceof Float32Array
       ? (db - minDecibels) / (maxDecibels - minDecibels)
       : db / 256.0;
     const h = (canvas.value.clientHeight - 1) * pct;
     const y = canvas.value.clientHeight - h + 5;
     // rectangles:
-    //  g.moveTo(bin.x1, canvas.value.clientHeight);
-    //  g.lineTo(bin.x1, y);
-    //  g.lineTo(bin.x2, y);
-    //  g.lineTo(bin.x2, canvas.value.clientHeight);
+    //  g.value.moveTo(bin.x1, canvas.value.clientHeight);
+    //  g.value.lineTo(bin.x1, y);
+    //  g.value.lineTo(bin.x2, y);
+    //  g.value.lineTo(bin.x2, canvas.value.clientHeight);
     // line:
     if (bin.bufferIndex === 0) g.value.moveTo(bin.x1, canvas.value.clientHeight);
     g.value.lineTo(bin.x2, y);
@@ -144,7 +151,7 @@ function renderPower(data: Metrics, analyzer: AnalyserNode) {
 }
 
 function renderWave(data: Metrics) {
-  if (!canvas.value) return;
+  if (!canvas.value || !g.value) return;
 
   const dataArray = data.freqData;
   if (dataArray.every(v => v === 128)) return;
@@ -153,7 +160,7 @@ function renderWave(data: Metrics) {
   g.value.lineStyle(2, 0xffffff);
 
   const bufferLength = dataArray.length;
-  const sliceWidth = (canvas.value.clientWidth * 1.0) / bufferLength;
+  const sliceWidth = (canvas.value.scrollWidth * 1.0) / bufferLength;
 
   let x = 0;
   for (let i = 0; i < bufferLength; i++) {
@@ -170,6 +177,7 @@ function clear() {
   overlay.value?.clear();
   overlay.value?.removeChildren();
   if (player.rafId) cancelAnimationFrame(player.rafId);
+  player.rafId = app.value = g.value = overlay.value = undefined;
 }
 
 onUnmounted(() => {
@@ -178,13 +186,15 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <section class="visualizer">
+  <section :class="`visualizer vtype-${vtype}`">
     <canvas ref="canvas" />
   </section>
 </template>
 
 <style scoped lang="scss">
 .visualizer {
+  padding: 0;
+  margin: 0;
   canvas {
     width: calc(1px * v-bind(width));
     height: calc(1px * v-bind(height));

@@ -2,15 +2,15 @@
 import type { Note } from '../utils';
 import { createHarmonics, createWhiteNoise, createFormants, createTube } from '../nodes';
 import { Vowel } from './useVowel';
-
-const { settings } = useSettings();
-const metrics = useMetrics();
+import type { Metrics } from './useMetrics';
 
 interface AnalyzerListener {
-  onFrame: (data: typeof metrics, analyzer: AnalyserNode) => void;
+  onFrame: (data: Metrics, analyzer: AnalyserNode) => void;
 }
 
 export const usePlayer = defineStore('player', () => {
+  const { settings } = useSettings();
+  const metrics = useMetrics();
   const playing: Record<number, () => void> = {};
   const volume = ref(100);
   const vowel = ref<Vowel>(settings.defaultVowel);
@@ -113,23 +113,9 @@ export const usePlayer = defineStore('player', () => {
     tubeGain.connect(output.value);
 
     // output -> analyzer
-    let analyze: (() => void)|null = null;
     if (settings.analyzer.on) {
       output.value.connect(analyzer.value);
-      analyze = () => {
-        if (settings.analyzer.useFloatData) {
-          analyzer.value.getFloatTimeDomainData(metrics.timeData as Float32Array);
-          analyzer.value.getFloatFrequencyData(metrics.freqData as Float32Array);
-        } else {
-          analyzer.value.getByteTimeDomainData(metrics.timeData as Uint8Array);
-          analyzer.value.getByteFrequencyData(metrics.freqData as Uint8Array);
-        }
-        metrics.compression = compressor.value.reduction;
-        for (const l of Object.values(analyzerListeners.value)) {
-          l.onFrame(metrics, analyzer.value);
-        }
-        if (analyze) rafId.value = requestAnimationFrame(analyze);
-      };
+      rafId.value ??= requestAnimationFrame(analyze);
     }
 
     // output -> destination
@@ -145,8 +131,6 @@ export const usePlayer = defineStore('player', () => {
       vibratoOsc.start(t);
       vibratoGain.gain.linearRampToValueAtTime(settings.vibrato.extent, t + settings.vibrato.onsetTime);
     }
-
-    if (analyze) rafId.value = requestAnimationFrame(analyze);
 
     // store stop function
     playing[frequency] = () => {
@@ -175,6 +159,21 @@ export const usePlayer = defineStore('player', () => {
     delete analyzerListeners.value[id];
   }
 
+  function analyze() {
+    if (settings.analyzer.useFloatData) {
+      analyzer.value.getFloatTimeDomainData(metrics.timeData as Float32Array);
+      analyzer.value.getFloatFrequencyData(metrics.freqData as Float32Array);
+    } else {
+      analyzer.value.getByteTimeDomainData(metrics.timeData as Uint8Array);
+      analyzer.value.getByteFrequencyData(metrics.freqData as Uint8Array);
+    }
+    metrics.compression = compressor.value.reduction;
+    for (const l of Object.values(analyzerListeners.value)) {
+      l.onFrame(metrics, analyzer.value);
+    }
+    rafId.value = requestAnimationFrame(analyze);
+  }
+
   return {
     play,
     stop,
@@ -182,6 +181,7 @@ export const usePlayer = defineStore('player', () => {
     rafId,
     addAnalyzerListener,
     removeAnalyzerListener,
+    analyze,
     volume,
     vowel,
   };

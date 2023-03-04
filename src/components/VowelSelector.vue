@@ -1,27 +1,18 @@
 <script setup lang="ts">
 import type { Vowel } from '../stores/useVowel';
 
+const emit = defineEmits(['change']);
 const { vowel } = storeToRefs(useVowel());
 
 const items = computed(() => Object.values(Vowels).map(v => ({
   value: v,
-  title: `${vowel} (${VOWEL_WORDS[v as Vowel]})`,
+  title: `${vowel.value} (${VOWEL_WORDS[v as Vowel]})`,
 })));
-
-const emit = defineEmits(['change']);
-
 </script>
 
 <template>
   <section class="vowel-selector">
-    <v-select
-      v-model="vowel"
-      :items="items"
-      variant="outlined"
-      label="Vowel"
-      density="compact"
-      @change="emit('change', $event)"
-    />
+    <v-select v-model="vowel" :items="items" label="Vowel" @change="emit('change', $event)" />
   </section>
 </template>
 

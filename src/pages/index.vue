@@ -28,7 +28,7 @@ const keyboard = ref<InstanceType<typeof Keyboard>>();
       @key-on="(note: string, v) => player.play(note, v)"
       @key-off="(note: string) => player?.stop(note)"
     />
-    <MidiButton keyboard="keyboard" />
+    <MidiButton :keyboard="keyboard" />
   </section>
 </template>
 
@@ -37,7 +37,7 @@ section {
   display: flex;
   flex-direction: column;
   align-items: center;
-  .midi button {
+  .midi {
     margin-top: 40px;
   }
 
