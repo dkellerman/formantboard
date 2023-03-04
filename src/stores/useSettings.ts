@@ -68,7 +68,7 @@ export type Vibrato = Settings['vibrato'];
 
 export const useSettings = defineStore('settings', () => {
   const _comp = new DynamicsCompressorNode(new AudioContext());
-  const on = true, Q = .1;
+  const on = false, Q = .1;
 
   const settings = ref<Settings>({
     defaultNote: 'E3',
@@ -125,7 +125,7 @@ export const useSettings = defineStore('settings', () => {
       smoothingTimeConstant: 0.7,
     },
     formants: {
-      on: false,
+      on: true,
       specs: {
         [Vowels.ɑ]: [
           { frequency: 800, Q: Q ?? 0.0625, on },
@@ -133,6 +133,7 @@ export const useSettings = defineStore('settings', () => {
           { frequency: 2500, Q: Q ?? 0.04, on },
           { frequency: 2700, Q: Q ?? 0.037, on },
           { frequency: 2900, Q: Q ?? 0.0345, on },
+          { frequency: 3500, Q: Q ?? 0.0345, on },
         ],
         [Vowels.i]: [
           { frequency: 300, Q: Q ?? 0.067, on },

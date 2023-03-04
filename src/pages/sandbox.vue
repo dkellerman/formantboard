@@ -25,14 +25,23 @@ const { vowel } = storeToRefs(useVowel());
 const { settings } = storeToRefs(useSettings());
 const { flutter, harmonics, compression, formants, tube, vibrato, f0 } = settings.value;
 
-function restartF0() {
+function r() {
   f0selector.value?.restartF0();
 }
 
 function toggleEffects() {
   compression.on = harmonics.on = flutter.on = vibrato.on = tube.on = formants.on = allEffects.value;
-  restartF0();
+  f0selector.value?.restartF0();
 }
+
+onMounted(() => {
+  window.addEventListener('keydown', (e) => {
+    if (e.key === ' ') {
+      e.preventDefault();
+      f0selector.value?.toggleF0();
+    }
+  });
+});
 </script>
 
 <template>
@@ -42,40 +51,28 @@ function toggleEffects() {
     <Visualizer :vtype="VisType.POWER" :height="80" />
 
     <fieldset>
-      <label><v-switch label="F0" v-model="f0.on" @change="restartF0" /></label>
+      <label><v-switch label="F0" v-model="f0.on" @change="r" /></label>
       <div>
         <F0Selector ref="f0selector" />
         <v-text-field label="Volume" v-model="player.volume" type="number" min="0" max="100" />
-        <v-text-field label="Key Gain" v-model="f0.keyGain" @change="restartF0" type="number" min="0" max="1" />
-        <v-text-field label="Onset time" v-model="f0.onsetTime" @change="restartF0" type="number" min="0" suffix="s" />
-        <v-text-field label="Decay time" v-model="f0.decayTime" @change="restartF0" type="number" min="0" suffix="s" />
-        <v-select label="Source" v-model="f0.source" :items="sources" @update:model-value="restartF0" />
-        <v-select label="Source Type" v-model="f0.sourceType" :items="sourceTypes" @update:model-value="restartF0" />
+        <v-text-field label="Key Gain" v-model="f0.keyGain" @change="r" type="number" min="0" max="1" />
+        <v-text-field label="Onset time" v-model="f0.onsetTime" @change="r" type="number" min="0" suffix="s" />
+        <v-text-field label="Decay time" v-model="f0.decayTime" @change="r" type="number" min="0" suffix="s" />
+        <v-select label="Source" v-model="f0.source" :items="sources" @update:model-value="r" />
+        <v-select label="Source Type" v-model="f0.sourceType" :items="sourceTypes" @update:model-value="r" />
         <v-text-field label="Latency" v-model="metrics.latency" readonly suffix="s" />
         <v-text-field label="RMS" v-model="metrics.rms" readonly suffix="dB" />
         <v-switch label="All effects" v-model="allEffects" @change="toggleEffects" />
       </div>
     </fieldset>
     <fieldset>
-      <label><v-switch label="Compression" v-model="compression.on" @change="restartF0" /></label>
+      <label><v-switch label="Harmonics" v-model="harmonics.on" @change="r" /></label>
       <div>
-        <v-text-field label="Treshold" v-model="compression.threshold" @change="restartF0" type="number" />
-        <v-text-field label="Knee" v-model="compression.knee" @change="restartF0" type="number" />
-        <v-text-field label="Ratio" v-model="compression.ratio" @change="restartF0" type="number" />
-        <v-text-field label="Attack" v-model="compression.attack" @change="restartF0" type="number" />
-        <v-text-field label="Release" v-model="compression.release" @change="restartF0" type="number" />
-        <v-text-field label="Reduction" v-model="metrics.compression" readonly suffix="dB"></v-text-field>
-        <meter min="0" max="20" optimum="0" low="0" high="1" :value="Math.abs(metrics.compression)" />
-      </div>
-    </fieldset>
-    <fieldset>
-      <label><v-switch label="Harmonics" v-model="harmonics.on" @change="restartF0" /></label>
-      <div>
-        <v-text-field label="Max num" v-model="harmonics.max" @change="restartF0" type="number" min="0" />
-        <v-text-field label="Max freq" v-model="harmonics.maxFreq" @change="restartF0" type="number" min="0" suffix="hz" />
-        <v-text-field label="Tilt" v-model="harmonics.tilt" @change="restartF0" type="number" min="-40" max="6" suffix="dB/oct" />
+        <v-text-field label="Max num" v-model="harmonics.max" @change="r" type="number" min="0" />
+        <v-text-field label="Max freq" v-model="harmonics.maxFreq" @change="r" type="number" min="0" suffix="hz" />
+        <v-text-field label="Tilt" v-model="harmonics.tilt" @change="r" type="number" min="-40" max="6" suffix="dB/oct" />
         <v-text-field label="Actual" v-model="metrics.harmonics.length" readonly></v-text-field>
-        <v-checkbox label="Pre-emphasis" v-model="harmonics.preemphasis" @change="restartF0" />
+        <v-checkbox label="Pre-emphasis" v-model="harmonics.preemphasis" @change="r" />
         <v-checkbox label="Show gains" v-model="showHGains" />
         <div v-show="showHGains" class="hgains">
           <span v-for="([h, g], idx) of metrics.harmonics.slice(0, 40)" :key="idx">[H{{ idx+1 }}={{ g }}]&nbsp;</span>
@@ -83,39 +80,51 @@ function toggleEffects() {
       </div>
     </fieldset>
     <fieldset>
-      <label><v-switch label="Flutter" v-model="flutter.on" @change="restartF0" /></label>
+      <label><v-switch label="Flutter" v-model="flutter.on" @change="r" /></label>
       <div>
-        <v-text-field label="Amount" v-model="flutter.amount" @change="restartF0" type="number" min="0" />
+        <v-text-field label="Amount" v-model="flutter.amount" @change="r" type="number" min="0" />
       </div>
     </fieldset>
     <fieldset>
-      <label><v-switch label="Vibrato" v-model="vibrato.on" @change="restartF0" /></label>
+      <label><v-switch label="Vibrato" v-model="vibrato.on" @change="r" /></label>
       <div>
-        <v-text-field label="Rate" v-model="vibrato.rate" @change="restartF0" type="number" min="0" suffix="hz" />
-        <v-text-field label="Extent" v-model="vibrato.extent" @change="restartF0" type="number" min="0" suffix="hz" />
-        <v-text-field label="Jitter" v-model="vibrato.jitter" @change="restartF0" type="number" min="0" />
-        <v-text-field label="Onset time" v-model="vibrato.onsetTime" @change="restartF0" type="number" min="0" suffix="s" />
+        <v-text-field label="Rate" v-model="vibrato.rate" @change="r" type="number" min="0" suffix="hz" />
+        <v-text-field label="Extent" v-model="vibrato.extent" @change="r" type="number" min="0" suffix="hz" />
+        <v-text-field label="Jitter" v-model="vibrato.jitter" @change="r" type="number" min="0" />
+        <v-text-field label="Onset time" v-model="vibrato.onsetTime" @change="r" type="number" min="0" suffix="s" />
       </div>
     </fieldset>
     <fieldset>
-      <label><v-switch label="Tube" v-model="tube.on" @change="restartF0" /></label>
+      <label><v-switch label="Tube" v-model="tube.on" @change="r" /></label>
     </fieldset>
     <fieldset>
-      <label><v-switch label="Formants" v-model="formants.on" @change="restartF0" /></label>
+      <label><v-switch label="Formants" v-model="formants.on" @change="r" /></label>
       <div>
         <VowelSelector />
       </div>
     </fieldset>
     <div v-for="_, idx in [...Array(5).fill(0)]">
       <fieldset v-if="formants.specs[vowel][idx]">
-        <label><v-switch :label="`F${idx+1}`" v-model="formants.specs[vowel][idx].on" @change="restartF0" /></label>
+        <label><v-switch :label="`F${idx+1}`" v-model="formants.specs[vowel][idx].on" @change="r" /></label>
         <div>
-          <v-text-field label="Freq" v-model="formants.specs[vowel][idx].frequency" @change="restartF0" type="number" min="0" suffix="hz" />
-          <v-text-field label="Q" v-model="formants.specs[vowel][idx].Q" @change="restartF0" type="number" min="0" max="1" />
+          <v-text-field label="Freq" v-model="formants.specs[vowel][idx].frequency" @change="r" type="number" min="0" suffix="hz" />
+          <v-text-field label="Q" v-model="formants.specs[vowel][idx].Q" @change="r" type="number" min="0" max="1" />
         </div>
       </fieldset>
     </div>
-  </section>
+    <fieldset>
+      <label><v-switch label="Compression" v-model="compression.on" @change="r" /></label>
+      <div>
+        <v-text-field label="Treshold" v-model="compression.threshold" @change="r" type="number" />
+        <v-text-field label="Knee" v-model="compression.knee" @change="r" type="number" />
+        <v-text-field label="Ratio" v-model="compression.ratio" @change="r" type="number" />
+        <v-text-field label="Attack" v-model="compression.attack" @change="r" type="number" />
+        <v-text-field label="Release" v-model="compression.release" @change="r" type="number" />
+        <v-text-field label="Reduction" v-model="metrics.compression" readonly suffix="dB"></v-text-field>
+        <meter min="0" max="20" optimum="0" low="0" high="1" :value="Math.abs(metrics.compression)" />
+      </div>
+    </fieldset>
+</section>
 </template>
 
 <style scoped lang="scss">
@@ -168,7 +177,7 @@ section.sandbox {
   }
 
   meter {
-    margin-top: -20px;
+    margin-top: 10px;
   }
 }
 </style>
