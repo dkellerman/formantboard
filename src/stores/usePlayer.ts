@@ -11,7 +11,7 @@ interface AnalyzerListener {
 export const usePlayer = defineStore('player', () => {
   const { settings } = useSettings();
   const metrics = useMetrics();
-  const playing: Record<number, () => void> = {};
+  const playing: Record<number, (stopAnalysis: boolean) => void> = {};
   const volume = ref(100);
   const vowel = ref<Vowel>(settings.defaultVowel);
   const audioContext = computed(() => new AudioContext(settings.audioContextConfig));
@@ -133,21 +133,25 @@ export const usePlayer = defineStore('player', () => {
     }
 
     // store stop function
-    playing[frequency] = () => {
+    playing[frequency] = (stopAnalysis = false) => {
       const t = ctx.currentTime + .001;
       sourceGain.gain.setTargetAtTime(0, t, settings.f0.decayTime);
       source.stop(t + settings.f0.decayTime + 2);
       harmonics.forEach(([osc]) => { osc.stop(t); osc = undefined as any; });
       vibratoOsc?.stop(t);
+      if (stopAnalysis && rafId.value) {
+        cancelAnimationFrame(rafId.value);
+        rafId.value = undefined;
+      }
       source = sourceGain = harmonics = vibratoOsc = tubeGain = undefined as any;
     };
 
     metrics.latency = ctx.currentTime - startTime;
   }
 
-  function stop(note: number|Note) {
+  function stop(note: number|Note, stopAnalysis = false) {
     const frequency = noteOrFreq2freq(note);
-    playing[frequency]?.(); // stop fn
+    playing[frequency]?.(stopAnalysis); // stop fn
     delete playing[frequency];
   }
 

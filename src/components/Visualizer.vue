@@ -18,8 +18,8 @@ interface FFTBin {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  width: useWindowSize().width.value * .95,
-  height: 140,
+  width: undefined,
+  height: undefined,
   vtype: VisType.POWER,
 });
 
@@ -31,12 +31,15 @@ const g = ref<PIXI.Graphics>();
 const overlay = ref<PIXI.Graphics>();
 const canvas = ref<HTMLCanvasElement>();
 const renderedOverlay = ref(false);
+const winSize = useWindowSize();
+const width = computed(() => props.width ?? winSize.width.value * .95);
+const height = computed(() => props.height ?? 140);
 
 function init() {
   app.value = new PIXI.Application({
     view: canvas.value,
-    width: canvas.value?.scrollWidth,
-    height: canvas.value?.scrollHeight,
+    width: canvas.value?.clientWidth,
+    height: canvas.value?.clientHeight,
     background: '#010101',
     antialias: true,
   });
@@ -77,8 +80,8 @@ function makeFreqBins(data: Float32Array|Uint8Array) {
     const fwidth = settings.value.audioContextConfig.sampleRate / binCount;
     const freq1 = Math.max(fwidth * i, FREQUENCIES[0]);
     const freq2 = Math.min(freq1 + fwidth, FREQUENCIES[FREQUENCIES.length - 1]);
-    const x1 = freq2px(freq1, canvas.value.clientWidth);
-    const x2 = freq2px(freq2, canvas.value.clientWidth)
+    const x1 = freq2px(freq1, width.value);
+    const x2 = freq2px(freq2, width.value)
     bins.push({ freq1, freq2, x1, x2, bufferIndex: i });
   }
 
@@ -160,7 +163,8 @@ function renderWave(data: Metrics) {
   g.value.lineStyle(2, 0xffffff);
 
   const bufferLength = dataArray.length;
-  const sliceWidth = (canvas.value.scrollWidth * 1.0) / bufferLength;
+  console.log("*BL", bufferLength);
+  const sliceWidth = width.value / bufferLength;
 
   let x = 0;
   for (let i = 0; i < bufferLength; i++) {
@@ -169,7 +173,7 @@ function renderWave(data: Metrics) {
     if (i === 0) g.value.moveTo(x, y); else g.value.lineTo(x, y);
     x += sliceWidth;
   }
-  g.value.lineTo(canvas.value.clientWidth, canvas.value.clientHeight / 2);
+  g.value.lineTo(width.value, height.value / 2);
 }
 
 function clear() {

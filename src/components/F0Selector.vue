@@ -6,7 +6,7 @@ const playingF0 = ref<number>();
 
 function toggleF0() {
   if (playingF0.value) {
-    player.stop(playingF0.value);
+    player.stop(playingF0.value, true);
     playingF0.value = undefined;
     return;
   }

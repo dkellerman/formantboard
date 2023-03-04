@@ -4,11 +4,11 @@ export const useMetrics = defineStore('metrics', () => {
   const compression = ref(0.0);
   const latency = ref(0.0);
   const freqData = ref<Float32Array|Uint8Array>(settings.analyzer.useFloatData
-    ? new Float32Array(settings.analyzer.fftSize)
-    : new Uint8Array(settings.analyzer.fftSize));
+    ? new Float32Array(settings.analyzer.fftSize / 2)
+    : new Uint8Array(settings.analyzer.fftSize / 2));
   const timeData = ref<Float32Array|Uint8Array>(settings.analyzer.useFloatData
-    ? new Float32Array(settings.analyzer.fftSize)
-    : new Uint8Array(settings.analyzer.fftSize));
+    ? new Float32Array(settings.analyzer.fftSize / 2)
+    : new Uint8Array(settings.analyzer.fftSize / 2));
 
   return {
     harmonics,
