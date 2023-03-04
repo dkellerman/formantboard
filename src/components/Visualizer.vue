@@ -156,20 +156,19 @@ function renderPower(data: Metrics, analyzer: AnalyserNode) {
 function renderWave(data: Metrics) {
   if (!canvas.value || !g.value) return;
 
-  const dataArray = data.freqData;
+  const dataArray = data.timeData;
   if (dataArray.every(v => v === 128)) return;
 
   g.value.clear();
   g.value.lineStyle(2, 0xffffff);
 
   const bufferLength = dataArray.length;
-  console.log("*BL", bufferLength);
   const sliceWidth = width.value / bufferLength;
 
   let x = 0;
   for (let i = 0; i < bufferLength; i++) {
     const val = dataArray[i] / 128.0;
-    const y = val * canvas.value.clientHeight / 2;
+    const y = val * (height.value / 2);
     if (i === 0) g.value.moveTo(x, y); else g.value.lineTo(x, y);
     x += sliceWidth;
   }

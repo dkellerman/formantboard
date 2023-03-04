@@ -1,10 +1,15 @@
 <script setup lang="ts">
 import { Note } from '../utils';
 
+interface Props {
+  height?: number;
+}
+const props = defineProps<Props>();
 const noteIds = computed(() => NOTES.map((n) => n.replace('#', 's')));
 const dragging = ref(false);
 const { width: winWidth } = useWindowSize();
-const width = computed(() => winWidth.value - 20);
+const width = computed(() => winWidth.value * .95);
+const height = computed(() => props.height ?? width.value / 10.0);
 
 const emit = defineEmits<{
   (e: 'keyOn', note: Note, velocity: number): void;
@@ -80,7 +85,7 @@ defineExpose({
 
 <style scoped lang="scss">
 $whiteKeyWidth: calc((v-bind(width) / 52) * 1px);
-$kbdHeight: calc((v-bind(width) / 52) * 5px);
+$kbdHeight: calc(1px * v-bind(height));
 $blackKeyWidth: calc((v-bind(width) / 52) * .65px);
 $blackKeyHeight: 57%;
 

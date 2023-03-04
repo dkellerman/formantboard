@@ -83,9 +83,11 @@ function toggleEffects() {
 </template>
 
 <style scoped lang="scss">
-section {
+section.sandbox {
   padding: 20px;
-
+  .visualizer, .keyboard {
+    margin-top: -10px;
+  }
   fieldset {
     padding: 0px;
     margin-bottom: 10px;
