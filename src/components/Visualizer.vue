@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import * as PIXI from 'pixi.js';
-import { freq2px } from '../utils';
+import { VisType } from '../stores/useVisType';
+import type { Metrics } from '../stores/useMetrics';
 
 interface Props {
-  input: AudioNode;
   width: number;
   height: number;
-  visType?: string;
+  vtype?: VisType;
 }
 
 interface FFTBin {
@@ -17,125 +17,117 @@ interface FFTBin {
   x2: number;
 }
 
-const { settings, visType: defaultVisType } = storeToRefs(useApp());
-
+const player = usePlayer();
+const { settings } = storeToRefs(useSettings());
 const canvas = ref<HTMLCanvasElement>();
-const app = ref<PIXI.Application>();
-const graphics = ref<PIXI.Graphics>();
-const overlay = ref<PIXI.Graphics>();
-const analyzer = ref<AnalyserNode>();
-const dataArray = ref<Float32Array|Uint8Array>();
-const fftBins = ref<FFTBin[]>();
-const renderFn = ref<() => void>();
-const width = computed(() => props.width);
-const visType = computed(() => props.visType || defaultVisType.value);
 
 const props = withDefaults(defineProps<Props>(), {
+  width: useWindowSize().width.value * .9,
   height: 140,
-  visType: 'power',
+  vtype: settings.value.defaultVisType,
 });
 
-function initPixi() {
-  app.value = new PIXI.Application({
+const id = computed(() => `viz-${props.vtype}-${Date.now()}`);
+const app = computed<PIXI.Application>(() => {
+  return new PIXI.Application({
     view: canvas.value,
     width: canvas.value?.scrollWidth,
     height: canvas.value?.scrollHeight,
     background: '#010101',
     antialias: true,
   });
-  graphics.value = new PIXI.Graphics();
-  app.value.stage.addChild(graphics.value);
-}
+});
 
-function initAnalyzer() {
-  if (!app.value || !props.input || !canvas.value) return;
+const g = computed<PIXI.Graphics>(() => {
+  const pg = new PIXI.Graphics();
+  app.value.stage.addChild(pg);
+  return pg;
+});
 
-  const a = props.input.context.createAnalyser();
-  props.input.connect(a);
+const overlay = computed<PIXI.Graphics>(() => {
+  const g = new PIXI.Graphics();
+  app.value.stage.addChild(g);
+  return g;
+});
 
-  analyzer.value = a;
-  const DataArrType = settings.value.viz.useFloatData ? Float32Array : Uint8Array;
-  dataArray.value = new DataArrType(a.frequencyBinCount);
 
-  if (visType.value === 'power') {
-    a.fftSize = settings.value.viz.fftSize;
-    a.smoothingTimeConstant = settings.value.viz.fftSmoothing;
-    makeBins();
-    renderFn.value = renderFrequency;
-  } else if (visType.value === 'waveform') {
-    renderFn.value = renderTime;
-  }
+onMounted(() => {
+  player.addAnalyzerListener(id.value, {
+    onFrame: (data, analyzer) => {
+      if (props.vtype === VisType.POWER) {
+        renderPower(data, analyzer);
+      } else if (props.vtype === VisType.WAVE) {
+        renderWave(data);
+      }
+    }
+  });
+});
 
-  app.value.ticker.add(render);
-}
+onUnmounted(() => {
+  player.removeAnalyzerListener(id.value);
+});
 
-function render() {
-  renderFn.value?.();
-}
+function makeFreqBins(data: Float32Array|Uint8Array) {
+  if (!canvas.value) return [];
 
-function makeBins() {
-  if (!canvas.value || !app.value || !analyzer.value || !graphics.value) return;
-
-  const g = graphics.value;
-  g.clear();
-
-  const gLabels = new PIXI.Graphics();
-  gLabels.lineStyle(1, 0x444444);
-
-  const binCount = analyzer.value.frequencyBinCount;
+  const binCount = data.length;
   const bins: FFTBin[] = [];
 
   for (let i = 0; i < binCount; i++) {
-    const fwidth = props.input.context.sampleRate / binCount;
+    const fwidth = settings.value.audioContextConfig.sampleRate / binCount;
     const freq1 = Math.max(fwidth * i, FREQUENCIES[0]);
     const freq2 = Math.min(freq1 + fwidth, FREQUENCIES[FREQUENCIES.length - 1]);
     const x1 = freq2px(freq1, canvas.value.clientWidth);
     const x2 = freq2px(freq2, canvas.value.clientWidth)
     bins.push({ freq1, freq2, x1, x2, bufferIndex: i });
+  }
 
-    if (freq2 < FREQUENCIES[0] || freq1 > FREQUENCIES[FREQUENCIES.length - 1])
+  return bins;
+}
+
+function renderFreqLabels(bins: FFTBin[]) {
+  if (!canvas.value) return;
+
+  overlay.value.clear();
+  overlay.value.lineStyle(1, 0x444444);
+
+  for (let i = 0; i < bins.length; i++) {
+    const bin = bins[i];
+    if (bin.freq2 < FREQUENCIES[0] || bin.freq1 > FREQUENCIES[FREQUENCIES.length - 1])
       continue;
 
-    const w = x2 - x1;
+    const w = bin.x2 - bin.x1;
     if (w > 5) {
-      gLabels.moveTo(x1, 0);
-      gLabels.lineTo(x1, canvas.value.clientHeight);
+      overlay.value.moveTo(bin.x1, 0);
+      overlay.value.lineTo(bin.x1, canvas.value.clientHeight);
     }
 
     if (w > 18 || (i % 30 === 0)) {
-      const label = `${freq1.toFixed(0)}${w > 40 ? ' hz' : ''}`
+      const label = `${bin.freq1.toFixed(0)}${w > 40 ? ' hz' : ''}`
       const text = new PIXI.Text(label, { fill: 0xffffff, fontSize: 10 });
-      text.x = x1 + 3;
+      text.x = bin.x1 + 3;
       text.y = 5;
-      gLabels.addChild(text);
+      overlay.value.addChild(text);
     }
   }
-
-  app.value.stage.addChild(gLabels);
-  fftBins.value = bins;
-  overlay.value = gLabels;
 }
 
-function renderFrequency() {
-  if (!graphics.value || !canvas.value || !analyzer.value || !dataArray.value || !fftBins.value)
-    return;
+function renderPower(data: Metrics, analyzer: AnalyserNode) {
+  if (!canvas.value) return;
 
-  const g = graphics.value;
-  const useFloatData = settings.value.viz.useFloatData;
+  const dataArray = data.freqData;
+  if (dataArray.every(v => v === -Infinity)) return;
 
-  if (useFloatData)
-    analyzer.value.getFloatFrequencyData(dataArray.value as Float32Array);
-  else
-    analyzer.value.getByteFrequencyData(dataArray.value as Uint8Array);
+  const bins = makeFreqBins(data.freqData);
+  renderFreqLabels(bins); // TODO: check if it's changed
 
-  g.clear();
-  if (dataArray.value.every(v => v === -Infinity)) return;
-  g.lineStyle(2, 0xffffff);
+  g.value.clear();
+  g.value.lineStyle(2, 0xffffff);
 
-  for (const bin of fftBins.value) {
-    const db = dataArray.value[bin.bufferIndex];
-    const { maxDecibels, minDecibels } = analyzer.value;
-    const pct = useFloatData
+  for (const bin of bins) {
+    const db = dataArray[bin.bufferIndex];
+    const { maxDecibels, minDecibels } = analyzer;
+    const pct = dataArray instanceof Float32Array
       ? (db - minDecibels) / (maxDecibels - minDecibels)
       : db / 256.0;
     const h = (canvas.value.clientHeight - 1) * pct;
@@ -146,57 +138,42 @@ function renderFrequency() {
     //  g.lineTo(bin.x2, y);
     //  g.lineTo(bin.x2, canvas.value.clientHeight);
     // line:
-    if (bin.bufferIndex === 0) g.moveTo(bin.x1, canvas.value.clientHeight);
-    g.lineTo(bin.x2, y);
+    if (bin.bufferIndex === 0) g.value.moveTo(bin.x1, canvas.value.clientHeight);
+    g.value.lineTo(bin.x2, y);
   }
 }
 
-function renderTime() {
-  if (!graphics.value || !canvas.value || !analyzer.value || !dataArray.value)
-    return;
+function renderWave(data: Metrics) {
+  if (!canvas.value) return;
 
-  const g = graphics.value;
-  const useFloatData = settings.value.viz.useFloatData;
+  const dataArray = data.freqData;
+  if (dataArray.every(v => v === 128)) return;
 
-  if (useFloatData)
-    analyzer.value.getFloatTimeDomainData(dataArray.value as Float32Array);
-  else
-    analyzer.value.getByteTimeDomainData(dataArray.value as Uint8Array);
+  g.value.clear();
+  g.value.lineStyle(2, 0xffffff);
 
-  g.clear();
-  if (dataArray.value.every(v => v === 128)) return;
-  g.lineStyle(2, 0xffffff);
-
-  // console.log(dataArray.value);
-
-  const bufferLength = dataArray.value.length;
+  const bufferLength = dataArray.length;
   const sliceWidth = (canvas.value.clientWidth * 1.0) / bufferLength;
+
   let x = 0;
   for (let i = 0; i < bufferLength; i++) {
-    const val = dataArray.value[i] / 128.0;
+    const val = dataArray[i] / 128.0;
     const y = val * canvas.value.clientHeight / 2;
-    if (i === 0) g.moveTo(x, y); else g.lineTo(x, y);
+    if (i === 0) g.value.moveTo(x, y); else g.value.lineTo(x, y);
     x += sliceWidth;
   }
-  g.lineTo(canvas.value.clientWidth, canvas.value.clientHeight / 2);
+  g.value.lineTo(canvas.value.clientWidth, canvas.value.clientHeight / 2);
 }
 
-function cleanup() {
-  graphics.value?.clear();
+function clear() {
+  g.value?.clear();
   overlay.value?.clear();
   overlay.value?.removeChildren();
-  app.value?.ticker.remove(renderFrequency);
-  app.value?.ticker.remove(renderTime);
+  if (player.rafId) cancelAnimationFrame(player.rafId);
 }
 
-watch(() => [props.input, props.visType], () => {
-  cleanup();
-  initAnalyzer();
-});
-
-onMounted(() => {
-  initPixi();
-  initAnalyzer();
+onUnmounted(() => {
+  clear();
 });
 </script>
 

@@ -1,20 +1,8 @@
 <script setup lang="ts">
-import { usePlayer } from '../stores/usePlayer';
-import { useApp } from '../stores/useApp';
-
-const { f0 } = storeToRefs(useApp());
 const player = usePlayer();
+const { settings } = storeToRefs(useSettings());
+const f0 = ref(settings.value.f0.defaultValue);
 const playingF0 = ref<number>();
-
-interface Props {
-  defaultVal: string;
-}
-
-const props = withDefaults(defineProps<Props>(), { defaultVal: 'A2' });
-
-onMounted(() => {
-  f0.value = props.defaultVal;
-});
 
 function toggleF0() {
   if (playingF0.value) {
@@ -23,9 +11,7 @@ function toggleF0() {
     return;
   }
 
-  const val = f0.value;
-  const hz = parseFloat(val);
-  const freq = Number.isNaN(hz) ? note2freq(val) : hz;
+  const freq = noteOrFreq2freq(f0.value);
   if (freq) {
     playingF0.value = freq;
     player?.play(playingF0.value);
@@ -40,9 +26,9 @@ function restartF0() {
 }
 
 defineExpose({
+  f0,
   toggleF0,
   restartF0,
-  player,
 });
 </script>
 
@@ -67,7 +53,7 @@ defineExpose({
     color: rgb(16, 116, 16);
   }
   :deep(.mdi-stop::before) {
-    color: rgb(163, 11, 11);
+    color: rgb(181, 8, 8);
   }
 }
 </style>

@@ -1,18 +1,20 @@
 <script setup lang="ts">
 import type { FormantSpec } from '../stores/useSettings';
-import { freq2px } from '../utils';
 
 interface Props {
   formantSpec: FormantSpec;
   harmonics: [number, number][];
   width?: number;
+  height?: number;
 }
 
 const props = defineProps<Props>();
 const formantSpecs = computed(() => props.formantSpec?.filter(f => f.frequency <= MAX_FREQ) ?? []);
 const harmonics = computed(() => props.harmonics?.filter(([f])=> f <= MAX_FREQ) ?? []);
 const mounted = ref(false);
-const width = computed(() => props.width ?? document.querySelector('.keyboard')?.scrollWidth ?? 300);
+const { width: winWidth } = useWindowSize();
+const width = computed(() => props.width ?? document.querySelector('.keyboard')?.scrollWidth ?? winWidth.value);
+const height = computed(() => props.height || 80);
 
 function hstyle(h: [number, number]) {
   const x = freq2px(h[0], width.value);
@@ -82,10 +84,12 @@ onMounted(() => mounted.value = true);
 
 <style scoped lang="scss">
 .bar {
-  height: 80px;
   width: calc(1px * v-bind(width));
+  height: calc(1px * v-bind(height));
   border-bottom: 0;
-  box-shadow: 2px 0 3px rgba(0, 0, 0, 0.1) inset, -5px 5px 20px rgba(0, 0, 0, 0.2) inset;
+  box-shadow:
+    2px 0 3px rgba(0, 0, 0, 0.1) inset,
+    -5px 5px 20px rgba(0, 0, 0, 0.2) inset;
   border-radius: 7px 7px 0 0;
   ul {
     padding: 0;
@@ -110,7 +114,8 @@ onMounted(() => mounted.value = true);
       }
       &.f {
         top: 55px;
-        background: linear-gradient(to right, rgb(171, 223, 171), rgb(179, 222, 179));
+        background:
+          linear-gradient(to right, rgb(171, 223, 171), rgb(179, 222, 179));
         padding: 2px;
         font-size: small;
         &.off {

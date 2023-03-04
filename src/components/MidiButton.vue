@@ -1,28 +1,46 @@
 <script setup lang="ts">
-import { useMidi, MidiStatus } from '../stores/useMidi';
+import type { Note } from '../utils';
+import Keyboard from './Keyboard.vue';
 
 interface Props {
-  show?: boolean;
+  showButton?: boolean;
+  keyboard?: InstanceType<typeof Keyboard>;
 }
 
-const props = withDefaults(defineProps<Props>(), { show: true });
-const { keyboard } = storeToRefs(useApp());
+const props = withDefaults(defineProps<Props>(), {
+  showButton: true,
+  keyboard: undefined,
+});
+
 const midi = useMidi();
+const player = usePlayer();
 
 async function enableMidi() {
   await midi.enable();
-  midi.addNoteOnListener((id) => keyboard.value?.play(id));
-  midi.addNoteOffListener((id) => keyboard.value?.stop(id));
+
+  midi.addNoteOnListener((note: Note, velocity: number) => {
+    player.play(note2freq(note), velocity);
+    props.keyboard?.play(note);
+  });
+
+  midi.addNoteOffListener((note: Note) => {
+    player.stop(note2freq(note))
+    props.keyboard?.stop(note);
+  });
 }
 
 onUnmounted(() => {
   midi.disable();
 });
+
+defineExpose({
+  enableMidi,
+});
 </script>
 
 <template>
   <section class="midi">
-    <v-btn v-if="props.show && midi.status === MidiStatus.Disabled" variant="outlined" @click="enableMidi">
+    <v-btn v-if="props.showButton && midi.status === MidiStatus.Disabled" variant="outlined" @click="enableMidi">
       Enable MIDI
     </v-btn>
   </section>

@@ -1,36 +1,34 @@
 <script setup lang="ts">
-import type { Vowel } from '../stores/useSettings';
 import PianoBar from '../components/PianoBar.vue';
 import Keyboard from '../components/Keyboard.vue';
-import { useApp } from '../stores/useApp';
 import SettingsPanel from '../components/SettingsPanel.vue';
 import Visualizer from '../components/Visualizer.vue';
-import { usePlayer } from '../stores/usePlayer';
 
-const { settings, keyboard, bar, vowel, visualizer, settingsPanel, visType } = storeToRefs(useApp());
 const player = usePlayer();
+const { settings } = storeToRefs(useSettings());
+const { visType } = storeToRefs(useVisType());
+const { vowel } = storeToRefs(useVowel());
+const metrics = useMetrics();
+const keyboard = ref<InstanceType<typeof Keyboard>>();
 </script>
 
 <template>
   <section>
-    <template v-if="player && keyboard">
+    <template v-if="keyboard">
       <SettingsPanel ref="settingsPanel" />
-      <Visualizer
-        v-if="settings.viz.on"
-        ref="visualizer"
-        :vis-type="visType"
-        :input="player.master"
-        :width="keyboard.width"
-      />
+      <Visualizer v-if="settings.viz.on" :vis-type="visType" :width="keyboard.width" />
       <PianoBar
-        ref="bar"
-        :harmonics="player.harmonics ?? []"
-        :formant-spec="settings.formants.specs[vowel as Vowel]"
+        :harmonics="metrics.harmonics ?? []"
+        :formant-spec="settings.formants.specs[vowel]"
         :width="keyboard.width"
       />
     </template>
-    <Keyboard ref="keyboard" @play="(f, v) => player?.play(f, v)" @stop="(f) => player?.stop(f)" />
-    <MidiButton />
+    <Keyboard
+      ref="keyboard"
+      @key-on="(note: string, v) => player.play(note, v)"
+      @key-off="(note: string) => player?.stop(note)"
+    />
+    <MidiButton keyboard="keyboard" />
   </section>
 </template>
 
@@ -39,7 +37,7 @@ section {
   display: flex;
   flex-direction: column;
   align-items: center;
-  .midi {
+  .midi button {
     margin-top: 40px;
   }
 

@@ -1,12 +1,14 @@
 <script setup lang="ts">
+import { Note } from '../utils';
+
 const noteIds = computed(() => NOTES.map((n) => n.replace('#', 's')));
 const dragging = ref(false);
 const { width: winWidth } = useWindowSize();
 const width = computed(() => winWidth.value - 20);
 
 const emit = defineEmits<{
-  (e: 'play', freq: number, velocity: number): void;
-  (e: 'stop', freq: number): void;
+  (e: 'keyOn', note: Note, velocity: number): void;
+  (e: 'keyOff', note: Note): void;
 }>();
 
 function getKeyById(id: string) {
@@ -35,12 +37,12 @@ function getKeyClass(id: string) {
 }
 
 function play(id: string, velocity = 1) {
-  emit('play', note2freq(id.replace('s', '#')), velocity);
+  emit('keyOn', id.replace('s', '#'), velocity);
   activateKey(id);
 }
 
 function stop(id: string) {
-  emit('stop', note2freq(id.replace('s', '#')));
+  emit('keyOff', id.replace('s', '#'));
   deactivateKey(id);
 }
 

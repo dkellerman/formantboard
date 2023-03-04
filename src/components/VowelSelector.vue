@@ -1,25 +1,11 @@
 <script setup lang="ts">
-import { useApp } from '../stores/useApp';
-import type { Vowel } from '../stores/useSettings';
-import { Vowels } from '../stores/useSettings';
+import type { Vowel } from '../stores/useVowel';
 
-const WORDS: Record<Vowel, string> = {
-  [Vowels.i]: "fleece",
-  [Vowels.ɪ]: "kit",
-  [Vowels.ɛ]: "dress",
-  [Vowels.æ]: "trap",
-  [Vowels.ɑ]: "father",
-  [Vowels.ɔ]: "thought",
-  [Vowels.ʊ]: "foot",
-  [Vowels.u]: "goose",
-  [Vowels.ə]: "sofa",
-};
+const { vowel } = storeToRefs(useVowel());
 
-const { vowel } = storeToRefs(useApp());
-
-const items = computed(() => Object.values(Vowels).map(vowel => ({
-  value: vowel,
-  title: `${vowel} (${WORDS[vowel as Vowel]})`,
+const items = computed(() => Object.values(Vowels).map(v => ({
+  value: v,
+  title: `${vowel} (${VOWEL_WORDS[v as Vowel]})`,
 })));
 
 const emit = defineEmits(['change']);

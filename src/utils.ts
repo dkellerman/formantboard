@@ -39,6 +39,10 @@ export function freq2note(freq: number) {
   return NOTES[FREQUENCIES.indexOf(f)];
 }
 
+export function noteOrFreq2freq(val: Note|number) {
+  return typeof val === 'number' ? val : note2freq(val);
+}
+
 export function midi2note(midi: number) {
   return NOTES[midi - 33];
 }

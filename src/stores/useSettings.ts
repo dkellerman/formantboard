@@ -1,22 +1,13 @@
-export enum Vowels {
-  ɑ = 'ɑ', // as in "father"
-  ɛ = 'ɛ', // as in "dress"
-  ə = 'ə', // as in "sofa"
-  æ = 'æ', // as in "trap"
-  ɔ = 'ɔ', // as in "thought"
-  u = 'u', // as in "goose"
-  ʊ = 'ʊ', // as in "foot"
-  ɪ = 'ɪ', // as in "kit"
-  i = 'i', // as in "fleece"
-}
-
-const _comp = new DynamicsCompressorNode(new AudioContext());
-
-export type Vowel = typeof Vowels[keyof typeof Vowels];
+import { Note } from "../utils";
+import { Vowel, Vowels } from "./useVowel";
+import { VisType } from "./useVisType";
 
 export type Settings = {
+  defaultVowel: Vowel;
+  defaultVisType: VisType;
   f0: {
     on: boolean;
+    defaultValue: Note|number;
     keyGain: number;
     onsetTime: number;
     decayTime: number;
@@ -24,9 +15,6 @@ export type Settings = {
   };
   viz: {
     on: boolean;
-    fftSize: number;
-    fftSmoothing: number;
-    useFloatData: boolean;
   };
   harmonics: {
     on: boolean;
@@ -62,7 +50,13 @@ export type Settings = {
   audioContextConfig: {
     sampleRate: number;
     channels: number;
-  },
+  };
+  analyzer: {
+    on: boolean;
+    useFloatData: boolean;
+    fftSize: number;
+    smoothingTimeConstant: number;
+  };
 };
 
 export type FormantSpecs = Settings['formants']['specs'];
@@ -71,22 +65,23 @@ export type FormantBandSpec = FormantSpecs[Vowel][number];
 export type Vibrato = Settings['vibrato'];
 
 export const useSettings = defineStore('settings', () => {
+  const _comp = new DynamicsCompressorNode(new AudioContext());
   const on = true;
   const Q = .1;
 
   const settings = ref<Settings>({
+    defaultVowel: Vowels.ɑ,
+    defaultVisType: VisType.POWER,
     audioContextConfig: {
       sampleRate: 44100,
       channels: 1,
     },
     viz: {
       on: true,
-      useFloatData: false,
-      fftSize: 2048,
-      fftSmoothing: .7,
     },
     f0: {
       on: true,
+      defaultValue: 'A2',
       keyGain: 0.01,
       onsetTime: 0.02,
       decayTime: 0.05,
@@ -119,6 +114,12 @@ export const useSettings = defineStore('settings', () => {
     },
     tube: {
       on: true,
+    },
+    analyzer: {
+      on: true,
+      useFloatData: false,
+      fftSize: 2048,
+      smoothingTimeConstant: 0.7,
     },
     formants: {
       on: true,
@@ -174,8 +175,5 @@ export const useSettings = defineStore('settings', () => {
     },
   });
 
-  // TODO: from URL, local storage
-  return {
-    settings,
-  };
+  return { settings };
 });

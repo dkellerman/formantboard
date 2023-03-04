@@ -15,7 +15,10 @@ declare global {
   const NOTE_LETTERS: typeof import('./utils')['NOTE_LETTERS']
   const NUM_KEY_SLOTS: typeof import('./utils')['NUM_KEY_SLOTS']
   const TOP_NOTE: typeof import('./utils')['TOP_NOTE']
-  const Vowels: typeof import('./stores/useSettings')['Vowels']
+  const VIS_TYPES: typeof import('./stores/useVisType')['VIS_TYPES']
+  const VOWEL_WORDS: typeof import('./stores/useVowel')['VOWEL_WORDS']
+  const VisType: typeof import('./stores/useVisType')['VisType']
+  const Vowels: typeof import('./stores/useVowel')['Vowels']
   const acceptHMRUpdate: typeof import('pinia')['acceptHMRUpdate']
   const asyncComputed: typeof import('@vueuse/core')['asyncComputed']
   const autoResetRef: typeof import('@vueuse/core')['autoResetRef']
@@ -75,6 +78,7 @@ declare global {
   const nextTick: typeof import('vue')['nextTick']
   const note2freq: typeof import('./utils')['note2freq']
   const note2semitones: typeof import('./utils')['note2semitones']
+  const noteOrFreq2freq: typeof import('./utils')['noteOrFreq2freq']
   const onActivated: typeof import('vue')['onActivated']
   const onBeforeMount: typeof import('vue')['onBeforeMount']
   const onBeforeRouteLeave: typeof import('vue-router')['onBeforeRouteLeave']
@@ -137,7 +141,6 @@ declare global {
   const unrefElement: typeof import('@vueuse/core')['unrefElement']
   const until: typeof import('@vueuse/core')['until']
   const useActiveElement: typeof import('@vueuse/core')['useActiveElement']
-  const useApp: typeof import('./stores/useApp')['useApp']
   const useArrayEvery: typeof import('@vueuse/core')['useArrayEvery']
   const useArrayFilter: typeof import('@vueuse/core')['useArrayFilter']
   const useArrayFind: typeof import('@vueuse/core')['useArrayFind']
@@ -215,6 +218,7 @@ declare global {
   const useMediaQuery: typeof import('@vueuse/core')['useMediaQuery']
   const useMemoize: typeof import('@vueuse/core')['useMemoize']
   const useMemory: typeof import('@vueuse/core')['useMemory']
+  const useMetrics: typeof import('./stores/useMetrics')['useMetrics']
   const useMidi: typeof import('./stores/useMidi')['useMidi']
   const useMounted: typeof import('@vueuse/core')['useMounted']
   const useMouse: typeof import('@vueuse/core')['useMouse']
@@ -286,6 +290,8 @@ declare global {
   const useVModels: typeof import('@vueuse/core')['useVModels']
   const useVibrate: typeof import('@vueuse/core')['useVibrate']
   const useVirtualList: typeof import('@vueuse/core')['useVirtualList']
+  const useVisType: typeof import('./stores/useVisType')['useVisType']
+  const useVowel: typeof import('./stores/useVowel')['useVowel']
   const useWakeLock: typeof import('@vueuse/core')['useWakeLock']
   const useWebNotification: typeof import('@vueuse/core')['useWebNotification']
   const useWebSocket: typeof import('@vueuse/core')['useWebSocket']
@@ -329,7 +335,10 @@ declare module 'vue' {
     readonly NOTE_LETTERS: UnwrapRef<typeof import('./utils')['NOTE_LETTERS']>
     readonly NUM_KEY_SLOTS: UnwrapRef<typeof import('./utils')['NUM_KEY_SLOTS']>
     readonly TOP_NOTE: UnwrapRef<typeof import('./utils')['TOP_NOTE']>
-    readonly Vowels: UnwrapRef<typeof import('./stores/useSettings')['Vowels']>
+    readonly VIS_TYPES: UnwrapRef<typeof import('./stores/useVisType')['VIS_TYPES']>
+    readonly VOWEL_WORDS: UnwrapRef<typeof import('./stores/useVowel')['VOWEL_WORDS']>
+    readonly VisType: UnwrapRef<typeof import('./stores/useVisType')['VisType']>
+    readonly Vowels: UnwrapRef<typeof import('./stores/useVowel')['Vowels']>
     readonly acceptHMRUpdate: UnwrapRef<typeof import('pinia')['acceptHMRUpdate']>
     readonly asyncComputed: UnwrapRef<typeof import('@vueuse/core')['asyncComputed']>
     readonly autoResetRef: UnwrapRef<typeof import('@vueuse/core')['autoResetRef']>
@@ -389,6 +398,7 @@ declare module 'vue' {
     readonly nextTick: UnwrapRef<typeof import('vue')['nextTick']>
     readonly note2freq: UnwrapRef<typeof import('./utils')['note2freq']>
     readonly note2semitones: UnwrapRef<typeof import('./utils')['note2semitones']>
+    readonly noteOrFreq2freq: UnwrapRef<typeof import('./utils')['noteOrFreq2freq']>
     readonly onActivated: UnwrapRef<typeof import('vue')['onActivated']>
     readonly onBeforeMount: UnwrapRef<typeof import('vue')['onBeforeMount']>
     readonly onBeforeRouteLeave: UnwrapRef<typeof import('vue-router')['onBeforeRouteLeave']>
@@ -451,7 +461,6 @@ declare module 'vue' {
     readonly unrefElement: UnwrapRef<typeof import('@vueuse/core')['unrefElement']>
     readonly until: UnwrapRef<typeof import('@vueuse/core')['until']>
     readonly useActiveElement: UnwrapRef<typeof import('@vueuse/core')['useActiveElement']>
-    readonly useApp: UnwrapRef<typeof import('./stores/useApp')['useApp']>
     readonly useArrayEvery: UnwrapRef<typeof import('@vueuse/core')['useArrayEvery']>
     readonly useArrayFilter: UnwrapRef<typeof import('@vueuse/core')['useArrayFilter']>
     readonly useArrayFind: UnwrapRef<typeof import('@vueuse/core')['useArrayFind']>
@@ -529,6 +538,7 @@ declare module 'vue' {
     readonly useMediaQuery: UnwrapRef<typeof import('@vueuse/core')['useMediaQuery']>
     readonly useMemoize: UnwrapRef<typeof import('@vueuse/core')['useMemoize']>
     readonly useMemory: UnwrapRef<typeof import('@vueuse/core')['useMemory']>
+    readonly useMetrics: UnwrapRef<typeof import('./stores/useMetrics')['useMetrics']>
     readonly useMidi: UnwrapRef<typeof import('./stores/useMidi')['useMidi']>
     readonly useMounted: UnwrapRef<typeof import('@vueuse/core')['useMounted']>
     readonly useMouse: UnwrapRef<typeof import('@vueuse/core')['useMouse']>
@@ -600,6 +610,8 @@ declare module 'vue' {
     readonly useVModels: UnwrapRef<typeof import('@vueuse/core')['useVModels']>
     readonly useVibrate: UnwrapRef<typeof import('@vueuse/core')['useVibrate']>
     readonly useVirtualList: UnwrapRef<typeof import('@vueuse/core')['useVirtualList']>
+    readonly useVisType: UnwrapRef<typeof import('./stores/useVisType')['useVisType']>
+    readonly useVowel: UnwrapRef<typeof import('./stores/useVowel')['useVowel']>
     readonly useWakeLock: UnwrapRef<typeof import('@vueuse/core')['useWakeLock']>
     readonly useWebNotification: UnwrapRef<typeof import('@vueuse/core')['useWebNotification']>
     readonly useWebSocket: UnwrapRef<typeof import('@vueuse/core')['useWebSocket']>

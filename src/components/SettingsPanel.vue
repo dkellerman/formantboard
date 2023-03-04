@@ -1,14 +1,10 @@
 <script setup lang="ts">
-import { useApp } from '../stores/useApp';
 import F0Selector from './F0Selector.vue';
 
-const visTypes = [
-  { title: 'Spectrum', value: 'power' },
-  { title: 'Wave', value: 'waveform' },
-];
-
-const { settings, vowel, visType } = storeToRefs(useApp());
-const f0selector = ref<typeof F0Selector>();
+const f0selector = ref<InstanceType<typeof F0Selector>>();
+const { vowel } = storeToRefs(useVowel());
+const { settings } = storeToRefs(useSettings());
+const { visType } = storeToRefs(useVisType());
 const formantButtons = ref();
 
 function setFormants() {
@@ -25,7 +21,6 @@ function updateFormants(btns: number[]) {
   });
   f0selector.value?.restartF0();
 }
-
 
 onMounted(setFormants);
 watch([settings.value.formants.specs[vowel.value]], setFormants);
@@ -92,7 +87,7 @@ watch([settings.value.formants.specs[vowel.value]], setFormants);
     <v-select
       class="viz-type"
       v-model="visType"
-      :items="visTypes"
+      :items="VIS_TYPES"
       variant="outlined"
       label="Visualzation"
       density="compact"
