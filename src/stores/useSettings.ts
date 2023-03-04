@@ -91,7 +91,7 @@ export const useSettings = defineStore('settings', () => {
     },
     harmonics: {
       on: true,
-      max: 2,
+      max: 40,
       maxFreq: 22050,
       tilt: 0.0,
       preemphasis: true,

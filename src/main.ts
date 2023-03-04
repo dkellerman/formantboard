@@ -23,6 +23,10 @@ const vuetify = createVuetify({
       density: 'compact',
       variant: 'outlined',
     },
+    VCheckbox: {
+      density: 'compact',
+      variant: 'outlined',
+    },
     VSelect: {
       density: 'compact',
       variant: 'outlined',
