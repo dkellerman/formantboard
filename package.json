@@ -8,7 +8,7 @@
     "build": "vue-tsc && vite build",
     "preview": "vite preview",
     "lint": "eslint src --ext .ts,.vue",
-    "debug": "ngrok http 8098 --subdomain=silvermoon & vue-devtools"
+    "debug": "ngrok http 443 --host-header=rewrite --subdomain=silvermoon & vue-devtools"
   },
   "dependencies": {
     "@mdi/font": "^7.1.96",
