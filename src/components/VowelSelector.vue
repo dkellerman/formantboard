@@ -6,7 +6,7 @@ const { vowel } = storeToRefs(useVowel());
 
 const items = computed(() => Object.values(Vowels).map(v => ({
   value: v,
-  title: `${vowel.value} (${VOWEL_WORDS[v as Vowel]})`,
+  title: `${v} (${VOWEL_WORDS[v as Vowel]})`,
 })));
 </script>
 

@@ -18,7 +18,16 @@ const router = createRouter({
 const vuetify = createVuetify({
   components,
   directives,
+  aliases: {
+    VNum: components.VTextField,
+  },
   defaults: {
+    VNum: {
+      density: 'compact',
+      variant: 'outlined',
+      type: 'number',
+      min: 0,
+    },
     VTextField: {
       density: 'compact',
       variant: 'outlined',
