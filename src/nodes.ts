@@ -49,7 +49,7 @@ export function createFormants(ctx: AudioContext, formantSpec: FormantSpec): Biq
     const formant = new BiquadFilterNode(ctx, {
       type: 'peaking',
       frequency: bandSpec.frequency,
-      gain: 2.0,
+      // gain: 2.0,
       Q: bandSpec.Q,
     });
     formants.push(formant);

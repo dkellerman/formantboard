@@ -98,7 +98,7 @@ export const useSettings = defineStore('settings', () => {
       on: true,
       max: 40,
       maxFreq: 22050,
-      tilt: 0.0,
+      tilt: -1.0,
     },
     preemphasis: {
       on: true,
