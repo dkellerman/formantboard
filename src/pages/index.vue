@@ -16,7 +16,7 @@ const keyboard = ref<InstanceType<typeof Keyboard>>();
   <section>
     <template v-if="keyboard">
       <SettingsPanel ref="settingsPanel" />
-      <Visualizer v-if="settings.viz.on" :vis-type="visType" :width="keyboard.width" />
+      <Visualizer v-if="settings.viz.on" :vtype="visType" :width="keyboard.width" />
       <PianoBar
         :harmonics="metrics.harmonics ?? []"
         :formant-spec="settings.formants.specs[vowel]"

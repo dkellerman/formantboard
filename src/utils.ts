@@ -11,12 +11,14 @@ export const NOTES: string[] = ['A0', 'A#0', 'B0']
 export const FREQUENCIES: number[] = [...Array(NOTES.length)];
 NOTES.forEach((_, i) => FREQUENCIES[i] = i ? FREQUENCIES[i - 1] * Math.pow(2, 1 / 12) : 27.5);
 
+export const WHITE_KEYS = NOTES.filter(n => !n.includes('#'));
+export const BLACK_KEYS = NOTES.filter(n => n.includes('#'));
 export const TOP_NOTE = NOTES[NOTES.length - 1];
 export const BOTTOM_NOTE = NOTES[0];
 export const MIN_FREQ = FREQUENCIES[0];
 export const MAX_FREQ = FREQUENCIES[FREQUENCIES.length - 1];
-export const NUM_KEY_SLOTS = countKeySlots(NOTES[0], NOTES[NOTES.length - 1]);
-export const KEY_SLOTS_PER_OCTAVE = countKeySlots(NOTES[0], NOTES[12]);
+export const NUM_KEY_SLOTS = WHITE_KEYS.length * 2;
+export const KEY_SLOTS_PER_OCTAVE = 15;
 
 export type Note = typeof NOTES[number];
 export type NoteFreq = typeof FREQUENCIES[number];
@@ -51,30 +53,21 @@ export function midi2note(midi: number) {
 }
 
 export function freq2px(freq: number, width: number) {
-  if (freq <= MIN_FREQ) return 0;
-  if (freq >= MAX_FREQ) return width;
+  if (freq < MIN_FREQ) return 0;
+  if (freq > MAX_FREQ) return width;
 
-  const stepPx = width / NUM_KEY_SLOTS;
+  const slotPx = width / NUM_KEY_SLOTS;
   const semitones = 12 * Math.log2(freq / MIN_FREQ);
   const octaves = Math.floor(semitones / 12);
   let slotsIntoOctave = semitones % 12;
-  if (slotsIntoOctave > 8) slotsIntoOctave += 2;
-  else if (slotsIntoOctave > 3) slotsIntoOctave += 1;
-  return (octaves * KEY_SLOTS_PER_OCTAVE * stepPx) + (slotsIntoOctave * stepPx);
+  if (slotsIntoOctave >= 8) slotsIntoOctave += 2;
+  else if (slotsIntoOctave >= 3) slotsIntoOctave += 1;
+  const px = (octaves * (KEY_SLOTS_PER_OCTAVE - 1) * slotPx) + ((slotsIntoOctave + 1) * slotPx);
+  return px;
 }
 
 export function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(n, max));
-}
-
-export function countKeySlots(start: Note, end: Note) {
-  const startIndex = NOTES.indexOf(start);
-  const endIndex = NOTES.indexOf(end);
-  const notes = NOTES.slice(startIndex, endIndex + 1);
-  return notes.reduce((prev, curr) => {
-    if (curr.includes('F') || curr.includes('C') && !curr.includes("#")) return prev + 2;
-    return prev + 1;
-  }, 0) - 1;
 }
 
 export function fillRect(

@@ -73,7 +73,7 @@ export type Vibrato = Settings['vibrato'];
 
 export const useSettings = defineStore('settings', () => {
   const _comp = new DynamicsCompressorNode(new AudioContext());
-  const on = false, Q = .1;
+  const on = true, Q = .1;
 
   const settings = ref<Settings>({
     defaultNote: 'E3',

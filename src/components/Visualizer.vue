@@ -36,6 +36,7 @@ const width = computed(() => props.width ?? winSize.width.value * .95);
 const height = computed(() => props.height ?? 140);
 
 function init() {
+  clear();
   app.value = new PIXI.Application({
     view: canvas.value,
     width: canvas.value?.clientWidth,
@@ -46,9 +47,19 @@ function init() {
   g.value = new PIXI.Graphics();
   app.value.stage.addChild(g.value);
   overlay.value = new PIXI.Graphics();
-  app.value.stage.addChild(overlay.value);
-  renderedOverlay.value = false;
+  if (props.vtype === VisType.POWER) app.value.stage.addChild(overlay.value);
 }
+
+function clear() {
+  g.value?.clear();
+  g.value?.removeChildren();
+  overlay.value?.clear();
+  overlay.value?.removeChildren();
+  app.value?.stage.removeChildren();
+  if (player.rafId) cancelAnimationFrame(player.rafId);
+  player.rafId = app.value = g.value = overlay.value = undefined;
+}
+
 
 watch(() => props.vtype, init);
 
@@ -173,14 +184,6 @@ function renderWave(data: Metrics) {
     x += sliceWidth;
   }
   g.value.lineTo(width.value, height.value / 2);
-}
-
-function clear() {
-  g.value?.clear();
-  overlay.value?.clear();
-  overlay.value?.removeChildren();
-  if (player.rafId) cancelAnimationFrame(player.rafId);
-  player.rafId = app.value = g.value = overlay.value = undefined;
 }
 
 onUnmounted(() => {

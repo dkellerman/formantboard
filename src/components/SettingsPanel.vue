@@ -78,7 +78,7 @@ watch([settings.value.formants.specs[vowel.value]], setFormants);
 <style scoped lang="scss">
 .settings {
   width: 100%;
-  padding: 0 20px;
+  padding: 0 40px;
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
