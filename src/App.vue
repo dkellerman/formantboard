@@ -4,7 +4,9 @@
   <v-layout>
     <v-app-bar>
       <v-app-bar-title>
-        <router-link to="/">FormantBoard</router-link>
+        <router-link to="/">
+          FormantBoard
+        </router-link>
       </v-app-bar-title>
     </v-app-bar>
     <v-main>

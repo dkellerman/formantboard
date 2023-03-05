@@ -69,8 +69,8 @@ export const usePlayer = defineStore('player', () => {
     }
 
     // pre-emphasis
-    if (h.preemphasis) {
-      const preemph = createPreEmphasisFilter(ctx, frequency);
+    if (settings.preemphasis.on) {
+      const preemph = createPreEmphasisFilter(ctx, settings.preemphasis);
       harmonicsOutput.connect(preemph);
       preemph.connect(sourceGain);
     } else {

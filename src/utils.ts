@@ -41,7 +41,9 @@ export function freq2note(freq: number) {
 }
 
 export function noteOrFreq2freq(val: Note|number) {
-  return typeof val === 'number' ? val : note2freq(val);
+  const freq = parseFloat(String(val));
+  if (Number.isNaN(freq)) return note2freq(val as Note);
+  return freq;
 }
 
 export function midi2note(midi: number) {

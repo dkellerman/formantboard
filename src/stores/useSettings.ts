@@ -22,7 +22,12 @@ export type Settings = {
     max: number;
     maxFreq: number;
     tilt: number;
-    preemphasis: boolean;
+  };
+  preemphasis: {
+    on: boolean;
+    frequency: number;
+    Q: number;
+    gain: number;
   };
   tube: {
     on: boolean;
@@ -94,7 +99,12 @@ export const useSettings = defineStore('settings', () => {
       max: 40,
       maxFreq: 22050,
       tilt: 0.0,
-      preemphasis: true,
+    },
+    preemphasis: {
+      on: true,
+      frequency: 18000,
+      Q: 0.1,
+      gain: 12.0,
     },
     flutter: {
       on: true,

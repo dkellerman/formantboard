@@ -27,9 +27,12 @@ export function createHarmonics(
 
   for (let i = 0; i < maxHarmonics; i++) {
     const freq = baseFrequency * (i + 1);
-    if (freq > maxFrequency) break;
+    if (freq > Math.min(maxFrequency, 22050)) break;
     const hOsc = new OscillatorNode(ctx, { type: sourceType, frequency: freq });
     const gainVal = customGains[i] ?? (10 ** (tilt / 20)) ** (i + 1);
+    // const prevGain = harmonics[i - 1]?.[1].gain.value ?? 1.0;
+    // const gainVal = prevGain * (10 ** (tilt / 20));
+    // const gainVal = Math.min(9, customGains[i] ?? (10 ** (tilt / 20)) ** (i + 1));
     const hGain = new GainNode(ctx, { gain: gainVal });
     hOsc.connect(hGain);
     harmonics.push([hOsc, hGain]);
@@ -62,7 +65,11 @@ export function createTube(ctx: AudioContext, frequency: number): BiquadFilterNo
   });
 }
 
-export function createPreEmphasisFilter(ctx: AudioContext, frequency: number): BiquadFilterNode {
-  const filter = new BiquadFilterNode(ctx, { type: 'highpass', frequency, Q: 0 });
+export function createPreEmphasisFilter(ctx: AudioContext, { frequency, Q, gain }: {
+  frequency: number;
+  Q: number;
+  gain: number;
+}): BiquadFilterNode {
+  const filter = new BiquadFilterNode(ctx, { type: 'peaking', frequency, Q, gain });
   return filter;
 }
