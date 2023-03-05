@@ -4,6 +4,8 @@ import VowelSelector from '../components/VowelSelector.vue';
 import F0Selector from '../components/F0Selector.vue';
 import Visualizer from '../components/Visualizer.vue';
 import MidiButton from '../components/MidiButton.vue';
+import Keyboard from '../components/Keyboard.vue';
+import PianoBar from '../components/PianoBar.vue';
 
 const sources = [
   { title: 'Tone', value: 'osc' },
@@ -21,9 +23,11 @@ const allEffects = ref(true);
 const metrics = useMetrics();
 const player = usePlayer();
 const showHGains = ref(false);
+const keyboard = ref<InstanceType<typeof Keyboard>>();
 const { vowel } = storeToRefs(useVowel());
 const { settings } = storeToRefs(useSettings());
 const { flutter, harmonics, compression, formants, tube, vibrato, f0, preemphasis } = settings.value;
+const formantSpec = computed(() => formants.specs[vowel.value]);
 
 const r = () => f0selector.value?.restartF0();
 
@@ -45,9 +49,11 @@ onMounted(() => {
 
 <template>
   <section class="sandbox">
-    <MidiButton />
+    <MidiButton :keyboard="keyboard" />
     <Visualizer :vtype="VisType.WAVE" :height="80" />
     <Visualizer :vtype="VisType.POWER" :height="80" />
+    <PianoBar :height="80" :harmonics="metrics.harmonics" :formant-spec="formantSpec" />
+    <Keyboard ref="keyboard" @key-on="player?.play" @key-off="player?.stop" :height="80" />
 
     <fieldset>
       <label>
@@ -141,7 +147,7 @@ onMounted(() => {
 <style scoped lang="scss">
 section.sandbox {
   padding: 20px;
-  .visualizer, .keyboard {
+  .visualizer, .keyboard, .bar {
     margin-top: -10px;
   }
   fieldset:first-of-type {

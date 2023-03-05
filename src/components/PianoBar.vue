@@ -13,7 +13,7 @@ const formantSpecs = computed(() => props.formantSpec?.filter(f => f.frequency <
 const harmonics = computed(() => props.harmonics?.filter(([f])=> f <= MAX_FREQ) ?? []);
 const mounted = ref(false);
 const { width: winWidth } = useWindowSize();
-const width = computed(() => props.width ?? document.querySelector('.keyboard')?.scrollWidth ?? winWidth.value);
+const width = computed(() => props.width ?? winWidth.value * .95);
 const height = computed(() => props.height || 80);
 
 function hstyle(h: [number, number]) {
