@@ -17,9 +17,13 @@ const micRafId = ref<number>();
 
 async function enableMic() {
   const ctx = player.analyzer.context as AudioContext;
+  if (player.rafId) {
+    player.output.disconnect(player.analyzer);
+  } else {
+    micRafId.value = requestAnimationFrame(player.analyze);
+  }
   mic.value = await createMicSource(ctx);
   mic.value.connect(player.analyzer);
-  if (!player.rafId) micRafId.value = requestAnimationFrame(player.analyze);
 }
 
 function disableMic() {
@@ -27,6 +31,7 @@ function disableMic() {
   micRafId.value = undefined;
   mic.value?.disconnect();
   mic.value = undefined;
+  if (player.rafId) player.output.connect(player.analyzer);
 }
 
 onUnmounted(() => {
