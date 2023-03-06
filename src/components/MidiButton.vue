@@ -48,7 +48,7 @@ defineExpose({
 
 <template>
   <section class="midi">
-    <v-btn v-if="props.showButton && midi.status === MidiStatus.Disabled" @click="enableMidi">
+    <v-btn v-if="props.showButton && midi.status === MidiStatus.Disabled" @click="enableMidi" prepend-icon="mdi-midi">
       {{ props.text }}
     </v-btn>
   </section>

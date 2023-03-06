@@ -50,7 +50,7 @@ onMounted(() => {
 <template>
   <section class="sandbox">
     <fieldset class="actions">
-      <MidiButton :keyboard="keyboard" />
+      <MidiButton :keyboard="keyboard" text="MIDI" />
       <MicButton />
     </fieldset>
 

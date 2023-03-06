@@ -48,10 +48,16 @@ defineExpose({
   <section class="mic">
     <v-btn
       v-if="props.showButton"
-      :prepend-icon="mic ? 'mdi-stop' : 'mdi-record'"
+      :prepend-icon="mic ? 'mdi-stop' : 'mdi-microphone'"
       @click="!mic ? enableMic() : disableMic()"
     >
       {{ mic ? props.stopText : props.startText }}
     </v-btn>
   </section>
 </template>
+
+<style scoped lang="scss">
+:deep(.mdi-microphone), :deep(.mdi-stop) {
+  color: red;
+}
+</style>
