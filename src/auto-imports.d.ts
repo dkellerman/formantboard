@@ -57,6 +57,7 @@ declare global {
   const effectScope: typeof import('vue')['effectScope']
   const extendRef: typeof import('@vueuse/core')['extendRef']
   const fillRect: typeof import('./utils')['fillRect']
+  const formantPxRange: typeof import('./utils')['formantPxRange']
   const freq2note: typeof import('./utils')['freq2note']
   const freq2px: typeof import('./utils')['freq2px']
   const freq2semitones: typeof import('./utils')['freq2semitones']
@@ -385,6 +386,7 @@ declare module 'vue' {
     readonly effectScope: UnwrapRef<typeof import('vue')['effectScope']>
     readonly extendRef: UnwrapRef<typeof import('@vueuse/core')['extendRef']>
     readonly fillRect: UnwrapRef<typeof import('./utils')['fillRect']>
+    readonly formantPxRange: UnwrapRef<typeof import('./utils')['formantPxRange']>
     readonly freq2note: UnwrapRef<typeof import('./utils')['freq2note']>
     readonly freq2px: UnwrapRef<typeof import('./utils')['freq2px']>
     readonly freq2semitones: UnwrapRef<typeof import('./utils')['freq2semitones']>

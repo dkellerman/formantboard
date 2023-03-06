@@ -45,17 +45,6 @@ watch([settings.value.formants.specs[vowel.value]], setFormants);
     <VowelSelector @change="f0selector?.restartF0" />
 
     <v-text-field
-      class="max-harmonics"
-      label="Harmonics"
-      v-model="settings.harmonics.max"
-      @change="f0selector?.restartF0"
-      type="number"
-      suffix="max"
-      :min="0"
-      :max="100"
-    />
-
-    <v-text-field
       class="tilt"
       label="Tilt"
       v-model="settings.harmonics.tilt"

@@ -23,9 +23,7 @@ function hstyle(h: [number, number]) {
 }
 
 function fstyle(fs: FormantSpec[number]) {
-  const bandwidth = fs.frequency * fs.Q;
-  const x1 = freq2px(fs.frequency - (bandwidth / 2), width.value);
-  const x2 = freq2px(fs.frequency + (bandwidth / 2), width.value);
+  const [x1, x2] = formantPxRange(fs, width.value);
   if (x1 === null || x2 === null) return 'display: none;';
   return [
     `left: ${x1}px`,

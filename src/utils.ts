@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import * as PIXI from 'pixi.js';
+import { FormantBandSpec } from 'stores/useSettings';
 import tinycolor from 'tinycolor2';
 
 export const NOTE_LETTERS: string[] = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
@@ -67,6 +68,13 @@ export function freq2px(freq: number, width: number) {
   return px;
 }
 
+export function formantPxRange(f: FormantBandSpec, width: number) {
+  const bandwidth = f.frequency * f.Q;
+  const x1 = freq2px(f.frequency - (bandwidth / 2), width);
+  const x2 = freq2px(f.frequency + (bandwidth / 2), width);
+  return [x1, x2];
+}
+
 export function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(n, max));
 }
@@ -78,12 +86,13 @@ export function fillRect(
   w: number,
   h: number,
   color: string,
+  alpha?: number,
   borderColor?: string,
   borderWidth?: number,
 ) {
   const c = str2hexColor(color);
   const bc = borderColor ? str2hexColor(borderColor) : c;
-  g.beginFill(c);
+  g.beginFill(c, alpha);
   g.lineStyle(borderWidth ?? 1, bc);
   g.drawRect(x, y, w, h);
   g.endFill();

@@ -46,7 +46,7 @@ export const usePlayer = defineStore('player', () => {
     // set the audio source
     let source: AudioScheduledSourceNode;
     let sourceGain: GainNode;
-    let mustControlSource = true;
+    const mustControlSource = true;
     // if (settings.f0.source === 'noise')
     //   [source, sourceGain, mustControlSource] = [noise.value, noiseGain, false];
     // else

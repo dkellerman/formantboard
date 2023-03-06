@@ -25,13 +25,13 @@ const props = withDefaults(defineProps<Props>(), {
 
 const player = usePlayer();
 const metrics = useMetrics();
+const { vowel } = storeToRefs(useVowel());
 const { settings } = storeToRefs(useSettings());
 const id = computed(() => `viz-${props.vtype}`);
 const app = ref<PIXI.Application>();
 const g = ref<PIXI.Graphics>();
 const overlay = ref<PIXI.Graphics>();
 const canvas = ref<HTMLCanvasElement>();
-const renderedOverlay = ref(false);
 const winSize = useWindowSize();
 const width = computed(() => props.width ?? winSize.width.value * .95);
 const height = computed(() => props.height ?? 140);
@@ -49,7 +49,10 @@ function init() {
   g.value = new PIXI.Graphics();
   app.value.stage.addChild(g.value);
   overlay.value = new PIXI.Graphics();
-  if (props.vtype === VisType.POWER) app.value.stage.addChild(overlay.value);
+  if (props.vtype === VisType.POWER) {
+    app.value.stage.addChild(overlay.value);
+    renderOverlay();
+  }
 }
 
 function clear() {
@@ -64,6 +67,7 @@ function clear() {
 
 
 watch(() => props.vtype, init);
+watch(() => [JSON.stringify(settings.value.formants.specs), vowel.value], renderOverlay);
 
 onMounted(() => {
   init();
@@ -83,10 +87,9 @@ onUnmounted(() => {
   player.removeAnalyzerListener(id.value);
 });
 
-function makeFreqBins(data: Float32Array|Uint8Array) {
+function makeFreqBins(binCount: number) {
   if (!canvas.value) return [];
 
-  const binCount = data.length;
   const bins: FFTBin[] = [];
   const fwidth = (metrics.sampleRate / 2) / binCount;
 
@@ -101,28 +104,39 @@ function makeFreqBins(data: Float32Array|Uint8Array) {
   return bins;
 }
 
-function renderFreqLabels(bins: FFTBin[]) {
-  if (!canvas.value || !overlay.value) return;
-
+function renderOverlay() {
+  if (!overlay.value || !canvas.value) return;
   overlay.value.clear();
-  overlay.value.lineStyle(1, 0x444444);
 
+  const bins = makeFreqBins(settings.value.analyzer.fftSize / 2);
   for (let i = 0; i < bins.length; i++) {
     const bin = bins[i];
     if (bin.freq2 < FREQUENCIES[0] || bin.freq1 > FREQUENCIES[FREQUENCIES.length - 1])
       continue;
 
-    const w = bin.x2 - bin.x1;
-    overlay.value.moveTo(bin.x1, 0);
-    overlay.value.lineTo(bin.x1, canvas.value.clientHeight);
-
-    if (w > 18 || (i % 30 === 0)) {
-      const label = `${bin.freq1.toFixed(0)}${w > 40 ? ' hz' : ''}`
-      const text = new PIXI.Text(label, { fill: str2hexColor(viz.color), fontSize: 10 });
-      text.x = bin.x1 + 3;
-      text.y = 5;
-      overlay.value.addChild(text);
+    // bin lines
+    overlay.value.lineStyle(1, 0x444444);
+    if (bin.freq1 < 650) {
+      overlay.value.moveTo(bin.x1, 0);
+      overlay.value.lineTo(bin.x1, canvas.value.clientHeight);
     }
+
+    // labels:
+    // if (i < 15 || i % 50 === 0) {
+    //   const w = bin.x2 - bin.x1;
+    //   const label = `${bin.freq1.toFixed(0)}${w > 40 ? ' hz' : ''}`
+    //   const text = new PIXI.Text(label, { fill: str2hexColor(viz.color), fontSize: 10 });
+    //   text.x = bin.x1 + 3;
+    //   text.y = 5;
+    //   overlay.value.addChild(text);
+  }
+
+  // formants
+  overlay.value.lineStyle(2, 0x000000);
+  for (const fspec of settings.value.formants.specs[vowel.value]) {
+    const [fx1, fx2] = formantPxRange(fspec, width.value);
+    const clr = fspec.on ? 'forestgreen' : '#664444';
+    fillRect(overlay.value, fx1, 0, fx2 - fx1, height.value, clr, 0.4, 'black', 1);
   }
 }
 
@@ -130,21 +144,12 @@ function renderPower(data: Metrics, analyzer: AnalyserNode) {
   if (!canvas.value || !g.value) return;
 
   const dataArray = data.freqData;
-
-  // render overlay once
-  let bins;
-  if (!renderedOverlay.value) {
-    bins = makeFreqBins(data.freqData);
-    renderFreqLabels(bins);
-    renderedOverlay.value = true;
-  }
-  // otherwise check that we have any values to render
   if (dataArray.every(v => v === -Infinity)) return;
-  bins = bins || makeFreqBins(data.freqData);
 
-  g.value.clear();
+  const bins = makeFreqBins(data.freqData.length);
   const { maxDecibels, minDecibels } = analyzer;
 
+  g.value.clear();
   for (const bin of bins) {
     const db = dataArray[bin.bufferIndex];
     const pct = dataArray instanceof Float32Array
