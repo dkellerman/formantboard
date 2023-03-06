@@ -4,18 +4,19 @@ export const useMetrics = defineStore('metrics', () => {
   const harmonics = ref<[number, number][]>([]);
   const compression = ref(0.0);
   const latency = ref(0.0);
-  const freqData = ref<Float32Array|Uint8Array>(settings.analyzer.useFloatData
-    ? new Float32Array(settings.analyzer.fftSize / 2)
-    : new Uint8Array(settings.analyzer.fftSize / 2));
-  const timeData = ref<Float32Array|Uint8Array>(settings.analyzer.useFloatData
-    ? new Float32Array(settings.analyzer.fftSize / 2)
-    : new Uint8Array(settings.analyzer.fftSize / 2));
+  const sampleRate = ref<number>();
+  const frequencyBinCount = ref<number>(0);
+  const DataArrayType = computed(() => settings.analyzer.useFloatData ? Float32Array : Uint8Array);
+  const freqData = computed<Float32Array|Uint8Array>(() => new DataArrayType.value(frequencyBinCount.value));
+  const timeData = computed<Float32Array|Uint8Array>(() => new DataArrayType.value(frequencyBinCount.value));
 
   return {
     rms,
     harmonics,
     compression,
     latency,
+    frequencyBinCount,
+    sampleRate,
     freqData,
     timeData,
   };

@@ -34,6 +34,7 @@ const renderedOverlay = ref(false);
 const winSize = useWindowSize();
 const width = computed(() => props.width ?? winSize.width.value * .95);
 const height = computed(() => props.height ?? 140);
+const viz = settings.value.viz;
 
 function init() {
   clear();
@@ -41,8 +42,8 @@ function init() {
     view: canvas.value,
     width: canvas.value?.clientWidth,
     height: canvas.value?.clientHeight,
-    background: '#010101',
-    antialias: true,
+    background: viz.background,
+    antialias: viz.antialias,
   });
   g.value = new PIXI.Graphics();
   app.value.stage.addChild(g.value);
@@ -111,14 +112,12 @@ function renderFreqLabels(bins: FFTBin[]) {
       continue;
 
     const w = bin.x2 - bin.x1;
-    if (w > 5) {
-      overlay.value.moveTo(bin.x1, 0);
-      overlay.value.lineTo(bin.x1, canvas.value.clientHeight);
-    }
+    overlay.value.moveTo(bin.x1, 0);
+    overlay.value.lineTo(bin.x1, canvas.value.clientHeight);
 
     if (w > 18 || (i % 30 === 0)) {
       const label = `${bin.freq1.toFixed(0)}${w > 40 ? ' hz' : ''}`
-      const text = new PIXI.Text(label, { fill: 0xffffff, fontSize: 10 });
+      const text = new PIXI.Text(label, { fill: viz.color, fontSize: 10 });
       text.x = bin.x1 + 3;
       text.y = 5;
       overlay.value.addChild(text);
@@ -143,7 +142,7 @@ function renderPower(data: Metrics, analyzer: AnalyserNode) {
   bins = bins || makeFreqBins(data.freqData);
 
   g.value.clear();
-  g.value.lineStyle(2, 0xffffff);
+  g.value.lineStyle(viz.lineWidth, viz.color);
   const { maxDecibels, minDecibels } = analyzer;
 
   for (const bin of bins) {
@@ -153,14 +152,8 @@ function renderPower(data: Metrics, analyzer: AnalyserNode) {
       : db / 256.0;
     const h = (canvas.value.clientHeight - 1) * pct;
     const y = canvas.value.clientHeight - h + 5;
-    // rectangles:
-    //  g.value.moveTo(bin.x1, canvas.value.clientHeight);
-    //  g.value.lineTo(bin.x1, y);
-    //  g.value.lineTo(bin.x2, y);
-    //  g.value.lineTo(bin.x2, canvas.value.clientHeight);
-    // line:
-    if (bin.bufferIndex === 0) g.value.moveTo(bin.x1, canvas.value.clientHeight);
-    g.value.lineTo(bin.x2, y);
+    const hsl = `hsl(300, 100%, ${(pct * 100) / 2}%)`;
+    fillRect(g.value, bin.x1, y, bin.x2 - bin.x1, h, hsl);
   }
 }
 
@@ -171,7 +164,7 @@ function renderWave(data: Metrics) {
   if (dataArray.every(v => v === 128)) return;
 
   g.value.clear();
-  g.value.lineStyle(2, 0xffffff);
+  g.value.lineStyle(viz.lineWidth, viz.color);
 
   const bufferLength = dataArray.length;
   const sliceWidth = width.value / bufferLength;
