@@ -7,7 +7,7 @@ import Visualizer from '../components/Visualizer.vue';
 const player = usePlayer();
 const { settings } = storeToRefs(useSettings());
 const { visType } = storeToRefs(useVisType());
-const { vowel } = storeToRefs(useVowel());
+const { vowelSpec } = storeToRefs(useVowel());
 const metrics = useMetrics();
 const keyboard = ref<InstanceType<typeof Keyboard>>();
 </script>
@@ -17,11 +17,7 @@ const keyboard = ref<InstanceType<typeof Keyboard>>();
     <template v-if="keyboard">
       <SettingsPanel ref="settingsPanel" />
       <Visualizer v-if="settings.viz.on" :vtype="visType" :width="keyboard.width" />
-      <PianoBar
-        :harmonics="metrics.harmonics ?? []"
-        :formant-spec="settings.formants.specs[vowel]"
-        :width="keyboard.width"
-      />
+      <PianoBar :harmonics="metrics.harmonics ?? []" :vowel-spec="vowelSpec" :width="keyboard.width" />
     </template>
     <Keyboard
       ref="keyboard"
@@ -40,6 +36,5 @@ section {
   .midi {
     margin-top: 40px;
   }
-
 }
 </style>

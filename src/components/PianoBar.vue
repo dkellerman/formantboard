@@ -1,15 +1,14 @@
 <script setup lang="ts">
-import type { FormantSpec } from '../stores/useSettings';
+import type { Formant, VowelSpec } from '../stores/useSettings';
 
 interface Props {
-  formantSpec: FormantSpec;
+  vowelSpec: VowelSpec;
   harmonics: [number, number][];
   width?: number;
   height?: number;
 }
 
 const props = defineProps<Props>();
-const formantSpecs = computed(() => props.formantSpec?.filter(f => f.frequency <= MAX_FREQ) ?? []);
 const harmonics = computed(() => props.harmonics?.filter(([f])=> f <= MAX_FREQ) ?? []);
 const mounted = ref(false);
 const { width: winWidth } = useWindowSize();
@@ -22,8 +21,8 @@ function hstyle(h: [number, number]) {
   return `left: ${x}px`;
 }
 
-function fstyle(fs: FormantSpec[number]) {
-  const [x1, x2] = formantPxRange(fs, width.value);
+function fstyle(formant: Formant) {
+  const [x1, x2] = formantPxRange(formant, width.value);
   if (x1 === null || x2 === null) return 'display: none;';
   return [
     `left: ${x1}px`,
@@ -54,7 +53,7 @@ onMounted(() => mounted.value = true);
         </v-tooltip>
       </li>
 
-      <li v-for="fs, idx of formantSpecs" :class="`f ${fs.on ? 'on' : 'off'}`" :style="fstyle(fs)" :key="`F${idx + 1}`">
+      <li v-for="fs, idx of vowelSpec" :class="`f ${fs.on ? 'on' : 'off'}`" :style="fstyle(fs)" :key="`F${idx + 1}`">
         <!-- F{{ idx + 1 }} -->&nbsp;
         <v-tooltip activator="parent" location="top" open-on-hover>
           <div>Formant F{{ idx + 1 }} [{{ fs.on ? 'ON' : 'OFF' }}]</div>

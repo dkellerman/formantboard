@@ -39,11 +39,7 @@ export type Settings = {
   };
   formants: {
     on: boolean;
-    specs: Record<Vowel, Array<{
-      frequency: number;
-      Q: number;
-      on: boolean;
-    }>>;
+    vowels: Record<Vowel, Array<Formant>>;
   };
   compression: DynamicsCompressorOptions & {
     on: boolean;
@@ -71,14 +67,20 @@ export type Settings = {
   };
 };
 
-export type FormantSpecs = Settings['formants']['specs'];
-export type FormantSpec = FormantSpecs[Vowel];
-export type FormantBandSpec = FormantSpecs[Vowel][number];
+export type Formant = {
+  on: boolean;
+  frequency: number;
+  Q: number;
+  gain: number;
+};
+
+export type VowelSpecs = Settings['formants']['vowels'];
+export type VowelSpec = VowelSpecs[Vowel];
 export type Vibrato = Settings['vibrato'];
 
 export const useSettings = defineStore('settings', () => {
-  const _comp = new DynamicsCompressorNode(new AudioContext());
-  const on = true, Q = .1;
+  const compressorDefaults = new DynamicsCompressorNode(new AudioContext());
+  const formantDefaults = { on: true, Q: .1, gain: .5 };
 
   const settings = ref<Settings>({
     defaultNote: 'E3',
@@ -129,11 +131,11 @@ export const useSettings = defineStore('settings', () => {
     },
     compression: {
       on: false,
-      threshold: 0.0, // _comp.threshold.value,
-      knee: _comp.knee.value,
-      ratio: _comp.ratio.value,
-      attack: _comp.attack.value,
-      release: _comp.release.value,
+      threshold: 0.0, // compressorDefaults.threshold.value,
+      knee: compressorDefaults.knee.value,
+      ratio: compressorDefaults.ratio.value,
+      attack: compressorDefaults.attack.value,
+      release: compressorDefaults.release.value,
     },
     tube: {
       on: false,
@@ -146,54 +148,54 @@ export const useSettings = defineStore('settings', () => {
     },
     formants: {
       on: true,
-      specs: {
+      vowels: {
         [Vowels.ɑ]: [
-          { frequency: 800, Q: Q ?? 0.0625, on },
-          { frequency: 1200, Q: Q ?? 0.0833, on },
-          { frequency: 2500, Q: Q ?? 0.04, on },
-          { frequency: 2700, Q: Q ?? 0.037, on },
-          { frequency: 2900, Q: Q ?? 0.0345, on },
-          { frequency: 3500, Q: Q ?? 0.0345, on },
+          { ...formantDefaults, frequency: 800 },
+          { ...formantDefaults, frequency: 1200 },
+          { ...formantDefaults, frequency: 2500 },
+          { ...formantDefaults, frequency: 2700 },
+          { ...formantDefaults, frequency: 2900 },
+          { ...formantDefaults, frequency: 3500 },
         ],
         [Vowels.i]: [
-          { frequency: 300, Q: Q ?? 0.067, on },
-          { frequency: 2200, Q: Q ?? 0.0455, on },
-          { frequency: 2800, Q: Q ?? 0.0357, on },
+          { ...formantDefaults, frequency: 300 },
+          { ...formantDefaults, frequency: 2200 },
+          { ...formantDefaults, frequency: 2800 },
         ],
         [Vowels.ɪ]: [
-          { frequency: 400, Q: Q ?? 0.05, on },
-          { frequency: 1700, Q: Q ?? 0.0353, on },
-          { frequency: 2400, Q: Q ?? 0.0292, on },
+          { ...formantDefaults, frequency: 400 },
+          { ...formantDefaults, frequency: 1700 },
+          { ...formantDefaults, frequency: 2400 },
         ],
         [Vowels.ɛ]: [
-          { frequency: 600, Q: Q ?? 0.067, on },
-          { frequency: 1700, Q: Q ?? 0.0471, on },
-          { frequency: 2400, Q: Q ?? 0.0417, on },
+          { ...formantDefaults, frequency: 600 },
+          { ...formantDefaults, frequency: 1700 },
+          { ...formantDefaults, frequency: 2400 },
         ],
         [Vowels.æ]: [
-          { frequency: 730, Q: Q ?? 0.0548, on },
-          { frequency: 1090, Q: Q ?? 0.0734, on },
-          { frequency: 2560, Q: Q ?? 0.0391, on },
+          { ...formantDefaults, frequency: 730 },
+          { ...formantDefaults, frequency: 1090 },
+          { ...formantDefaults, frequency: 2560 },
         ],
         [Vowels.ɔ]: [
-          { frequency: 500, Q: Q ?? 0.16, on },
-          { frequency: 800, Q: Q ?? 0.1125, on },
-          { frequency: 2830, Q: Q ?? 0.0356, on },
+          { ...formantDefaults, frequency: 500 },
+          { ...formantDefaults, frequency: 800 },
+          { ...formantDefaults, frequency: 2830 },
         ],
         [Vowels.ʊ]: [
-          { frequency: 325, Q: Q ?? 0.3077, on },
-          { frequency: 700, Q: Q ?? 0.1429, on },
-          { frequency: 2530, Q: Q ?? 0.0315, on },
+          { ...formantDefaults, frequency: 325 },
+          { ...formantDefaults, frequency: 700 },
+          { ...formantDefaults, frequency: 2530 },
         ],
         [Vowels.u]: [
-          { frequency: 325, Q: Q ?? 0.3077, on },
-          { frequency: 700, Q: Q ?? 0.1429, on },
-          { frequency: 2530, Q: Q ?? 0.0315, on },
+          { ...formantDefaults, frequency: 325 },
+          { ...formantDefaults, frequency: 700 },
+          { ...formantDefaults, frequency: 2530 },
         ],
         [Vowels.ə]: [
-          { frequency: 600, Q: Q ?? 0.1667, on },
-          { frequency: 1000, Q: Q ?? 0.1, on },
-          { frequency: 2400, Q: Q ?? 0.0417, on },
+          { ...formantDefaults, frequency: 600 },
+          { ...formantDefaults, frequency: 1000 },
+          { ...formantDefaults, frequency: 2400 },
         ],
       },
     },

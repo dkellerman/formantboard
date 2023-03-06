@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Note } from '../utils';
-import { Vowel } from './useVowel';
 import type { Metrics } from './useMetrics';
 
 interface AnalyzerListener {
@@ -9,10 +8,10 @@ interface AnalyzerListener {
 
 export const usePlayer = defineStore('player', () => {
   const { settings } = useSettings();
+  const { vowelSpec } = storeToRefs(useVowel());
   const metrics = useMetrics();
   const playing: Record<number, (stopAnalysis: boolean) => void> = {};
   const volume = ref(100.0);
-  const vowel = ref<Vowel>(settings.defaultVowel);
   const audioContext = computed(() => new AudioContext(settings.audioContextConfig));
   const noise = computed(() => {
     const n = createWhiteNoise(audioContext.value);
@@ -22,7 +21,6 @@ export const usePlayer = defineStore('player', () => {
   const compressor = computed(() => new DynamicsCompressorNode(audioContext.value, settings.compression));
   const analyzer = computed(() => new AnalyserNode(audioContext.value, settings.analyzer));
   const analyzerListeners = ref<Record<string, AnalyzerListener>>({});
-  const formantSpec = computed(() => settings.formants.specs[vowel.value]);
   const output = ref(new GainNode(audioContext.value, { gain: volume.value / 100.0 }));
   const rafId = ref<number>(); // requestAnimationFrame id
 
@@ -116,7 +114,7 @@ export const usePlayer = defineStore('player', () => {
     // formants
     let formants: BiquadFilterNode[];
     if (settings.formants.on) {
-      formants = createFormants(ctx, formantSpec.value);
+      formants = createFormants(ctx, vowelSpec.value);
       for (const formant of formants) {
         sourceGain.connect(formant);
         formant.connect(tubeGain);
@@ -213,6 +211,5 @@ export const usePlayer = defineStore('player', () => {
     removeAnalyzerListener,
     analyze,
     volume,
-    vowel,
   };
 });

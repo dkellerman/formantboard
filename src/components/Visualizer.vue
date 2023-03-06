@@ -27,7 +27,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const player = usePlayer();
 const metrics = useMetrics();
-const { vowel } = storeToRefs(useVowel());
+const { vowelSpec } = storeToRefs(useVowel());
 const { settings } = storeToRefs(useSettings());
 const id = computed(() => `viz-${props.vtype}`);
 const app = ref<PIXI.Application>();
@@ -75,7 +75,7 @@ function clear() {
 
 
 watch(() => props.vtype, init);
-watch(() => [JSON.stringify(settings.value.formants.specs), vowel.value], renderOverlay);
+watch(() => JSON.stringify(vowelSpec.value), renderOverlay);
 
 onMounted(() => {
   init();
@@ -142,9 +142,9 @@ function renderOverlay() {
 
   // formants
   overlay.value.lineStyle(2, 0x000000);
-  for (const fspec of settings.value.formants.specs[vowel.value]) {
-    const [fx1, fx2] = formantPxRange(fspec, width.value);
-    const clr = fspec.on ? 'forestgreen' : '#664444';
+  for (const formant of vowelSpec.value) {
+    const [fx1, fx2] = formantPxRange(formant, width.value);
+    const clr = formant.on ? 'forestgreen' : '#664444';
     fillRect(overlay.value, fx1, 0, fx2 - fx1, height.value, clr, 0.4, 'black', 1);
   }
 }

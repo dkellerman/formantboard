@@ -20,6 +20,7 @@ declare global {
   const VOWEL_WORDS: typeof import('./stores/useVowel')['VOWEL_WORDS']
   const VisType: typeof import('./stores/useVisType')['VisType']
   const Vowels: typeof import('./stores/useVowel')['Vowels']
+  const WASMNode: typeof import('./wasm')['WASMNode']
   const WHITE_KEYS: typeof import('./utils')['WHITE_KEYS']
   const acceptHMRUpdate: typeof import('pinia')['acceptHMRUpdate']
   const asyncComputed: typeof import('@vueuse/core')['asyncComputed']
@@ -38,12 +39,14 @@ declare global {
   const createGlobalState: typeof import('@vueuse/core')['createGlobalState']
   const createHarmonics: typeof import('./nodes')['createHarmonics']
   const createInjectionState: typeof import('@vueuse/core')['createInjectionState']
+  const createMicSource: typeof import('./nodes')['createMicSource']
   const createPinia: typeof import('pinia')['createPinia']
   const createPreEmphasisFilter: typeof import('./nodes')['createPreEmphasisFilter']
   const createReactiveFn: typeof import('@vueuse/core')['createReactiveFn']
   const createSharedComposable: typeof import('@vueuse/core')['createSharedComposable']
   const createTube: typeof import('./nodes')['createTube']
   const createUnrefFn: typeof import('@vueuse/core')['createUnrefFn']
+  const createWASMAudioWorklet: typeof import('./wasm')['createWASMAudioWorklet']
   const createWhiteNoise: typeof import('./nodes')['createWhiteNoise']
   const customRef: typeof import('vue')['customRef']
   const debouncedRef: typeof import('@vueuse/core')['debouncedRef']
@@ -349,6 +352,7 @@ declare module 'vue' {
     readonly VOWEL_WORDS: UnwrapRef<typeof import('./stores/useVowel')['VOWEL_WORDS']>
     readonly VisType: UnwrapRef<typeof import('./stores/useVisType')['VisType']>
     readonly Vowels: UnwrapRef<typeof import('./stores/useVowel')['Vowels']>
+    readonly WASMNode: UnwrapRef<typeof import('./wasm')['WASMNode']>
     readonly WHITE_KEYS: UnwrapRef<typeof import('./utils')['WHITE_KEYS']>
     readonly acceptHMRUpdate: UnwrapRef<typeof import('pinia')['acceptHMRUpdate']>
     readonly asyncComputed: UnwrapRef<typeof import('@vueuse/core')['asyncComputed']>
@@ -367,12 +371,14 @@ declare module 'vue' {
     readonly createGlobalState: UnwrapRef<typeof import('@vueuse/core')['createGlobalState']>
     readonly createHarmonics: UnwrapRef<typeof import('./nodes')['createHarmonics']>
     readonly createInjectionState: UnwrapRef<typeof import('@vueuse/core')['createInjectionState']>
+    readonly createMicSource: UnwrapRef<typeof import('./nodes')['createMicSource']>
     readonly createPinia: UnwrapRef<typeof import('pinia')['createPinia']>
     readonly createPreEmphasisFilter: UnwrapRef<typeof import('./nodes')['createPreEmphasisFilter']>
     readonly createReactiveFn: UnwrapRef<typeof import('@vueuse/core')['createReactiveFn']>
     readonly createSharedComposable: UnwrapRef<typeof import('@vueuse/core')['createSharedComposable']>
     readonly createTube: UnwrapRef<typeof import('./nodes')['createTube']>
     readonly createUnrefFn: UnwrapRef<typeof import('@vueuse/core')['createUnrefFn']>
+    readonly createWASMAudioWorklet: UnwrapRef<typeof import('./wasm')['createWASMAudioWorklet']>
     readonly createWhiteNoise: UnwrapRef<typeof import('./nodes')['createWhiteNoise']>
     readonly customRef: UnwrapRef<typeof import('vue')['customRef']>
     readonly debouncedRef: UnwrapRef<typeof import('@vueuse/core')['debouncedRef']>

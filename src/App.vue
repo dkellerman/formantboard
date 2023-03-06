@@ -24,7 +24,7 @@ const drawer = ref(false);
         </v-list-item>
         <v-list-item>
           <router-link to="/sandbox">
-            Hyper-Advanced Control Center
+            Sandbox
           </router-link>
         </v-list-item>
         <v-list-item>

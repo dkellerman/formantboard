@@ -1,4 +1,4 @@
-import type { FormantSpec } from './stores/useSettings';
+import type { VowelSpec } from './stores/useSettings';
 
 export function createWhiteNoise(ctx: AudioContext) {
   const buffer = ctx.createBuffer(1, ctx.sampleRate * 3, ctx.sampleRate);
@@ -41,16 +41,14 @@ export function createHarmonics(
   return harmonics;
 }
 
-export function createFormants(ctx: AudioContext, formantSpec: FormantSpec): BiquadFilterNode[] {
+export function createFormants(ctx: AudioContext, vowelSpec: VowelSpec): BiquadFilterNode[] {
   const formants: BiquadFilterNode[] = [];
 
-  for (const bandSpec of formantSpec) {
-    if (!bandSpec.on) continue;
+  for (const formantConfig of vowelSpec) {
+    if (!formantConfig.on) continue;
     const formant = new BiquadFilterNode(ctx, {
       type: 'peaking',
-      frequency: bandSpec.frequency,
-      // gain: 2.0,
-      Q: bandSpec.Q,
+      ...formantConfig,
     });
     formants.push(formant);
   }
@@ -72,4 +70,14 @@ export function createPreEmphasisFilter(ctx: AudioContext, { frequency, Q, gain 
 }): BiquadFilterNode {
   const filter = new BiquadFilterNode(ctx, { type: 'peaking', frequency, Q, gain });
   return filter;
+}
+
+export async function createMicSource(ctx: AudioContext) {
+  // TODO: config: rm noise cancellation etc
+  const mediaStream = await window.navigator.mediaDevices.getUserMedia({
+    audio: true,
+    video: false,
+  });
+  const audioSource = ctx.createMediaStreamSource(mediaStream);
+  return audioSource;
 }

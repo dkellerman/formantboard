@@ -24,10 +24,9 @@ const metrics = useMetrics();
 const player = usePlayer();
 const showHGains = ref(false);
 const keyboard = ref<InstanceType<typeof Keyboard>>();
-const { vowel } = storeToRefs(useVowel());
+const { vowelSpec } = storeToRefs(useVowel());
 const { settings } = storeToRefs(useSettings());
 const { flutter, harmonics, compression, formants, tube, vibrato, f0, preemphasis } = settings.value;
-const formantSpec = computed(() => formants.specs[vowel.value]);
 
 const r = () => f0selector.value?.restartF0();
 
@@ -51,7 +50,7 @@ onMounted(() => {
   <section class="sandbox">
     <!-- <Visualizer :vtype="VisType.WAVE" :height="80" /> -->
     <Visualizer :vtype="VisType.POWER" :height="80" combined />
-    <PianoBar :height="80" :harmonics="metrics.harmonics" :formant-spec="formantSpec" />
+    <PianoBar :height="80" :harmonics="metrics.harmonics" :vowel-spec="vowelSpec" />
     <Keyboard ref="keyboard" @key-on="player?.play" @key-off="player?.stop" :height="80" />
     <MidiButton :keyboard="keyboard" />
 
@@ -120,12 +119,13 @@ onMounted(() => {
         <VowelSelector />
       </div>
     </fieldset>
-    <div v-for="_, idx in [...Array(5).fill(0)]">
-      <fieldset v-if="formants.specs[vowel][idx]">
-        <label><v-switch :label="`F${idx+1}`" v-model="formants.specs[vowel][idx].on" @change="r" /></label>
+    <div v-for="formant, idx in vowelSpec">
+      <fieldset>
+        <label><v-switch :label="`F${idx+1}`" v-model="formant.on" @change="r" /></label>
         <div>
-          <v-num label="Freq" v-model="formants.specs[vowel][idx].frequency" @change="r" suffix="hz" step="50" />
-          <v-num label="Q" v-model="formants.specs[vowel][idx].Q" @change="r" max="1" step=".01" />
+          <v-num label="Freq" v-model="formant.frequency" @change="r" suffix="hz" step="50" />
+          <v-num label="Q" v-model="formant.Q" @change="r" max="1" step=".01" />
+          <v-num label="Gain" v-model="formant.gain" @change="r" step=".1" />
         </div>
       </fieldset>
     </div>

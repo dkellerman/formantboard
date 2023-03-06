@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import * as PIXI from 'pixi.js';
-import { FormantBandSpec } from 'stores/useSettings';
+import type { Formant } from 'stores/useSettings';
 import tinycolor from 'tinycolor2';
 
 export const NOTE_LETTERS: string[] = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
@@ -68,7 +68,7 @@ export function freq2px(freq: number, width: number) {
   return px;
 }
 
-export function formantPxRange(f: FormantBandSpec, width: number) {
+export function formantPxRange(f: Formant, width: number) {
   const bandwidth = f.frequency * f.Q;
   const x1 = freq2px(f.frequency - (bandwidth / 2), width);
   const x2 = freq2px(f.frequency + (bandwidth / 2), width);
