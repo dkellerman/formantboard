@@ -73,6 +73,8 @@ defineExpose({
         @mouseup="() => { dragging = false; stop(id); }"
         @mouseenter="() => { dragging && play(id) }"
         @mouseout="() => { stop(id); }"
+        @touchstart.prevent="() => { dragging = true; play(id); }"
+        @touchend="() => { dragging = false; stop(id); }"
       >
         <label>
           <div>{{ id.replace('s', '#') }}</div>
