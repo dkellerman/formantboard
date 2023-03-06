@@ -195,7 +195,6 @@ export const usePlayer = defineStore('player', () => {
       analyzer.value.getByteFrequencyData(metrics.freqData as Uint8Array);
       metrics.rms = 20.0 * Math.log10(rms([...metrics.freqData], 256.0));
     }
-
     for (const l of Object.values(analyzerListeners.value)) {
       l.onFrame(metrics, analyzer.value);
     }

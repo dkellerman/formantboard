@@ -13,14 +13,18 @@ const props = withDefaults(defineProps<Props>(), {
 
 const player = usePlayer();
 const mic = ref<MediaStreamAudioSourceNode>();
+const micRafId = ref<number>();
 
 async function enableMic() {
   const ctx = player.analyzer.context as AudioContext;
   mic.value = await createMicSource(ctx);
   mic.value.connect(player.analyzer);
+  if (!player.rafId) micRafId.value = requestAnimationFrame(player.analyze);
 }
 
 function disableMic() {
+  if (micRafId.value) cancelAnimationFrame(micRafId.value);
+  micRafId.value = undefined;
   mic.value?.disconnect();
   mic.value = undefined;
 }
