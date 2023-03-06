@@ -25,7 +25,7 @@ function activateKey(id: string) {
   if (k) {
     k.classList.add('active');
     /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-    (k as any).scrollIntoViewIfNeeded?.(false);
+    // (k as any).scrollIntoViewIfNeeded?.(false);
   }
 }
 
@@ -33,9 +33,9 @@ function deactivateKey(id: string) {
   getKeyById(id)?.classList.remove('active');
 }
 
-function scrollToKey(id: string, behavior: 'auto' | 'smooth' = 'auto') {
-  getKeyById(id)?.scrollIntoView({ behavior, inline: 'center' });
-}
+// function scrollToKey(id: string, behavior: 'auto' | 'smooth' = 'auto') {
+//   getKeyById(id)?.scrollIntoView({ behavior, inline: 'center' });
+// }
 
 function getKeyClass(id: string) {
   return `key ${id.substring(0, id.length - 1).toUpperCase()} ${id.length === 3 ? 'black' : 'white'}`;
@@ -53,7 +53,7 @@ function stop(id: string) {
 
 onMounted(async () => {
   // TODO: kb keys
-  scrollToKey('C4');
+  // scrollToKey('C4');
 });
 
 defineExpose({

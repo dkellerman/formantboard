@@ -52,7 +52,7 @@ onMounted(() => {
     <MidiButton :keyboard="keyboard" />
     <Visualizer :vtype="VisType.WAVE" :height="80" />
     <Visualizer :vtype="VisType.POWER" :height="80" />
-    <PianoBar :height="80" :harmonics="metrics.harmonics" :formant-spec="formantSpec" />
+    <!-- <PianoBar :height="80" :harmonics="metrics.harmonics" :formant-spec="formantSpec" /> -->
     <Keyboard ref="keyboard" @key-on="player?.play" @key-off="player?.stop" :height="80" />
 
     <fieldset>

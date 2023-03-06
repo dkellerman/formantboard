@@ -1,14 +1,30 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+const drawer = ref(false);
+</script>
 
 <template>
   <v-layout>
-    <v-app-bar>
+    <v-app-bar density="compact">
+      <template v-slot:prepend>
+        <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
+      </template>
       <v-app-bar-title>
         <router-link to="/">
           FormantBoard
         </router-link>
       </v-app-bar-title>
     </v-app-bar>
+
+    <v-navigation-drawer v-model="drawer" location="left" temporary :width="375" color="#eeeeff">
+      <v-list>
+        <v-list-item><router-link to="/">Home</router-link></v-list-item>
+        <v-list-item><router-link to="/sandbox">Hyper-Advanced Control Center</router-link></v-list-item>
+        <v-list-item><router-link to="https://github.com/dkellerman/formantboard">Github</router-link></v-list-item>
+        <v-list-item><router-link to="https://bipium.com">Metronome</router-link></v-list-item>
+        <v-list-item><router-link to="https://rhymium.com">Rhyme Dictionary</router-link></v-list-item>
+      </v-list>
+    </v-navigation-drawer>
+
     <v-main>
       <router-view />
     </v-main>
@@ -17,10 +33,20 @@
 
 <style scoped lang="scss">
 .v-toolbar {
-  background: aliceblue;
   a {
     color: black;
     text-decoration: none;
+  }
+}
+
+.v-navigation-drawer {
+  a {
+    color: black;
+    text-decoration: none;
+    font-size: 20px;
+    &:hover {
+      text-decoration: underline;
+    }
   }
 }
 
