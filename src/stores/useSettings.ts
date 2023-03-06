@@ -16,6 +16,11 @@ export type Settings = {
   };
   viz: {
     on: boolean;
+    antialias: boolean;
+    background: string;
+    color: string;
+    lineWidth: number;
+    hue: number;
   };
   harmonics: {
     on: boolean;
@@ -85,6 +90,11 @@ export const useSettings = defineStore('settings', () => {
     },
     viz: {
       on: true,
+      antialias: true,
+      background: '#010101',
+      color: '#fff',
+      lineWidth: 2,
+      hue: 300,
     },
     f0: {
       on: true,
@@ -131,8 +141,8 @@ export const useSettings = defineStore('settings', () => {
     analyzer: {
       on: true,
       useFloatData: false,
-      fftSize: 2048,
-      smoothingTimeConstant: 0.7,
+      fftSize: 4096,
+      smoothingTimeConstant: 0,
     },
     formants: {
       on: true,

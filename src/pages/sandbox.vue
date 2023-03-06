@@ -146,7 +146,7 @@ onMounted(() => {
 
 <style scoped lang="scss">
 section.sandbox {
-  padding: 20px;
+  padding: 10px 20px;
   .visualizer, .keyboard, .bar {
     margin-top: -10px;
   }

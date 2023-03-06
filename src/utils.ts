@@ -24,7 +24,7 @@ export type Note = typeof NOTES[number];
 export type NoteFreq = typeof FREQUENCIES[number];
 
 export function note2semitones(note: string) {
-  return NOTES.indexOf(note);
+  return NOTES.indexOf(note.toUpperCase());
 }
 
 export function freq2semitones(freq: number) {
@@ -32,13 +32,14 @@ export function freq2semitones(freq: number) {
 }
 
 export function note2freq(note: string) {
-  return FREQUENCIES[NOTES.indexOf(note)];
+  return FREQUENCIES[NOTES.indexOf(note.toUpperCase())];
 }
 
 export function freq2note(freq: number) {
   const f = FREQUENCIES.reduce((prev, curr) => {
     return (Math.abs(curr)- freq) < Math.abs(prev - freq) ? curr : prev;
   });
+  // TODO: return +/- cents for rounded vals
   return NOTES[FREQUENCIES.indexOf(f)];
 }
 
@@ -80,12 +81,20 @@ export function fillRect(
   borderColor?: string,
   borderWidth?: number,
 ) {
-  const c = parseInt(tinycolor(color).toHexString().slice(1), 16);
-  const bc = borderColor ? parseInt(tinycolor(borderColor).toHexString().slice(1), 16) : c;
+  const c = str2hexColor(color);
+  const bc = borderColor ? str2hexColor(borderColor) : c;
   g.beginFill(c);
   g.lineStyle(borderWidth ?? 1, bc);
   g.drawRect(x, y, w, h);
   g.endFill();
+}
+
+export function str2hexColor(val: string) {
+  return parseInt(tinycolor(val).toHexString().slice(1), 16);
+}
+
+export function hsl(h: number, s: number, l: number) {
+  return `hsl(${h}, ${s}%, ${l}%)`;
 }
 
 export function debug(...args: any[]) {
