@@ -158,14 +158,10 @@ section.sandbox {
   .keyboard {
     margin-top: -20px;
   }
-  fieldset:first-of-type {
-    margin-top: 20px;
-  }
   fieldset.actions {
     border: 0;
     gap: 10px;
-    justify-content: flex-end;
-    padding: 0 30px;
+    padding-right: 30px;
   }
   fieldset {
     display: flex;

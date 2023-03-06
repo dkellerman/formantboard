@@ -39,7 +39,7 @@ const drawer = ref(false);
         </v-list-item>
         <v-list-item>
           <a href="https://rhymium.com">
-            Rhyme Dictionary
+            Song Rhymes
           </a>
         </v-list-item>
       </v-list>
