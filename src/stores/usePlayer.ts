@@ -57,16 +57,16 @@ export const usePlayer = defineStore('player', () => {
 
     // create harmonics (osc source only) -> oscillators feed into source node
     // and harmonics feed into harmonicsOutput
-    // let harmonics: [OscillatorNode, GainNode][];
-    // const harmonicsOutput = new GainNode(ctx, { gain: 1.0 });
-    // const h = settings.harmonics;
-    // if (h.on && isTonalSource) {
-    //   harmonics = createHarmonics(ctx, frequency, h.max, h.maxFreq, h.tilt, sourceType);
-    //   harmonics.forEach(([, hGain]) => hGain.connect(harmonicsOutput));
-    //   metrics.harmonics = harmonics.map(([osc, gain]) => [osc.frequency.value, gain.gain.value]);
-    // } else {
-    //   harmonics = metrics.harmonics = [];
-    // }
+    let harmonics: [OscillatorNode, GainNode][];
+    const harmonicsOutput = new GainNode(ctx, { gain: 1.0 });
+    const h = settings.harmonics;
+    if (h.on && isTonalSource) {
+      harmonics = createHarmonics(ctx, frequency, h.max, h.maxFreq, h.tilt, sourceType);
+      harmonics.forEach(([, hGain]) => hGain.connect(harmonicsOutput));
+      metrics.harmonics = harmonics.map(([osc, gain]) => [osc.frequency.value, gain.gain.value]);
+    } else {
+      harmonics = metrics.harmonics = [];
+    }
 
     // pre-emphasis
     // if (settings.preemphasis.on) {

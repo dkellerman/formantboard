@@ -7,6 +7,7 @@ interface Props {
   width?: number;
   height?: number;
   vtype?: VisType;
+  combined?: boolean;
 }
 
 interface FFTBin {
@@ -21,6 +22,7 @@ const props = withDefaults(defineProps<Props>(), {
   width: undefined,
   height: undefined,
   vtype: VisType.POWER,
+  combined: false,
 });
 
 const player = usePlayer();
@@ -29,7 +31,8 @@ const { vowel } = storeToRefs(useVowel());
 const { settings } = storeToRefs(useSettings());
 const id = computed(() => `viz-${props.vtype}`);
 const app = ref<PIXI.Application>();
-const g = ref<PIXI.Graphics>();
+const gWave = ref<PIXI.Graphics>();
+const gPower = ref<PIXI.Graphics>();
 const overlay = ref<PIXI.Graphics>();
 const canvas = ref<HTMLCanvasElement>();
 const winSize = useWindowSize();
@@ -46,23 +49,28 @@ function init() {
     background: str2hexColor(viz.background),
     antialias: viz.antialias,
   });
-  g.value = new PIXI.Graphics();
-  app.value.stage.addChild(g.value);
+  gWave.value = new PIXI.Graphics();
+  gPower.value = new PIXI.Graphics();
   overlay.value = new PIXI.Graphics();
+  app.value.stage.addChild(overlay.value);
+  app.value.stage.addChild(gPower.value);
+  app.value.stage.addChild(gWave.value);
+
   if (props.vtype === VisType.POWER) {
-    app.value.stage.addChild(overlay.value);
     renderOverlay();
   }
 }
 
 function clear() {
-  g.value?.clear();
-  g.value?.removeChildren();
+  gWave.value?.clear();
+  gWave.value?.removeChildren();
+  gPower.value?.clear();
+  gPower.value?.removeChildren();
   overlay.value?.clear();
   overlay.value?.removeChildren();
   app.value?.stage.removeChildren();
   if (player.rafId) cancelAnimationFrame(player.rafId);
-  player.rafId = app.value = g.value = overlay.value = undefined;
+  player.rafId = app.value = gWave.value = gPower.value = overlay.value = undefined;
 }
 
 
@@ -76,6 +84,7 @@ onMounted(() => {
       if (!app.value) init();
       if (props.vtype === VisType.POWER) {
         renderPower(data, analyzer);
+        if (props.combined) renderWave(data);
       } else if (props.vtype === VisType.WAVE) {
         renderWave(data);
       }
@@ -141,7 +150,7 @@ function renderOverlay() {
 }
 
 function renderPower(data: Metrics, analyzer: AnalyserNode) {
-  if (!canvas.value || !g.value) return;
+  if (!canvas.value || !gPower.value) return;
 
   const dataArray = data.freqData;
   if (dataArray.every(v => v === -Infinity)) return;
@@ -149,7 +158,7 @@ function renderPower(data: Metrics, analyzer: AnalyserNode) {
   const bins = makeFreqBins(data.freqData.length);
   const { maxDecibels, minDecibels } = analyzer;
 
-  g.value.clear();
+  gPower.value.clear();
   for (const bin of bins) {
     const db = dataArray[bin.bufferIndex];
     const pct = dataArray instanceof Float32Array
@@ -157,18 +166,18 @@ function renderPower(data: Metrics, analyzer: AnalyserNode) {
       : db / 256.0;
     const h = (canvas.value.clientHeight - 1) * pct;
     const y = canvas.value.clientHeight - h + 5;
-    fillRect(g.value, bin.x1, y, bin.x2 - bin.x1, h, hsl(viz.hue, 100, (pct * 100) / 2));
+    fillRect(gPower.value, bin.x1, y, bin.x2 - bin.x1, h, hsl(viz.hue, 100, (pct * 100) / 2));
   }
 }
 
 function renderWave(data: Metrics) {
-  if (!canvas.value || !g.value) return;
+  if (!canvas.value || !gWave.value) return;
 
   const dataArray = data.timeData;
   if (dataArray.every(v => v === 128)) return;
 
-  g.value.clear();
-  g.value.lineStyle(viz.lineWidth, str2hexColor(viz.color));
+  gWave.value.clear();
+  gWave.value.lineStyle(viz.lineWidth, str2hexColor(viz.color));
 
   const bufferLength = dataArray.length;
   const sliceWidth = width.value / bufferLength;
@@ -177,10 +186,10 @@ function renderWave(data: Metrics) {
   for (let i = 0; i < bufferLength; i++) {
     const val = dataArray[i] / 128.0;
     const y = val * (height.value / 2);
-    if (i === 0) g.value.moveTo(x, y); else g.value.lineTo(x, y);
+    if (i === 0) gWave.value.moveTo(x, y); else gWave.value.lineTo(x, y);
     x += sliceWidth;
   }
-  g.value.lineTo(width.value, height.value / 2);
+  gWave.value.lineTo(width.value, height.value / 2);
 }
 
 onUnmounted(() => {
