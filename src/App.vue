@@ -28,19 +28,19 @@ const drawer = ref(false);
           </router-link>
         </v-list-item>
         <v-list-item>
-          <router-link to="https://github.com/dkellerman/formantboard">
+          <a href="https://github.com/dkellerman/formantboard">
             Github
-          </router-link>
+          </a>
         </v-list-item>
         <v-list-item>
-          <router-link to="https://bipium.com">
+          <a href="https://bipium.com">
             Metronome
-          </router-link>
+          </a>
         </v-list-item>
         <v-list-item>
-          <router-link to="https://rhymium.com">
+          <a href="https://rhymium.com">
             Rhyme Dictionary
-          </router-link>
+          </a>
         </v-list-item>
       </v-list>
     </v-navigation-drawer>

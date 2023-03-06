@@ -4,12 +4,14 @@ import Keyboard from './Keyboard.vue';
 
 interface Props {
   showButton?: boolean;
+  text?: string;
   keyboard?: InstanceType<typeof Keyboard>;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   showButton: true,
   keyboard: undefined,
+  text: 'Enable MIDI',
 });
 
 const midi = useMidi();
@@ -47,7 +49,7 @@ defineExpose({
 <template>
   <section class="midi">
     <v-btn v-if="props.showButton && midi.status === MidiStatus.Disabled" @click="enableMidi">
-      Enable MIDI
+      {{ props.text }}
     </v-btn>
   </section>
 </template>

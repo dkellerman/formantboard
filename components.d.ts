@@ -12,6 +12,7 @@ declare module '@vue/runtime-core' {
     F0Selector: typeof import('./src/components/F0Selector.vue')['default']
     FormantBar: typeof import('./src/components/FormantBar.vue')['default']
     Keyboard: typeof import('./src/components/Keyboard.vue')['default']
+    MicButton: typeof import('./src/components/MicButton.vue')['default']
     MidiButton: typeof import('./src/components/MidiButton.vue')['default']
     MidiInput: typeof import('./src/components/MidiInput.vue')['default']
     PianoBar: typeof import('./src/components/PianoBar.vue')['default']

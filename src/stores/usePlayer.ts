@@ -210,6 +210,7 @@ export const usePlayer = defineStore('player', () => {
     addAnalyzerListener,
     removeAnalyzerListener,
     analyze,
+    analyzer,
     volume,
   };
 });

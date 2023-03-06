@@ -6,6 +6,7 @@ import Visualizer from '../components/Visualizer.vue';
 import MidiButton from '../components/MidiButton.vue';
 import Keyboard from '../components/Keyboard.vue';
 import PianoBar from '../components/PianoBar.vue';
+import MicButton from '../components/MicButton.vue';
 
 const sources = [
   { title: 'Tone', value: 'osc' },
@@ -48,11 +49,15 @@ onMounted(() => {
 
 <template>
   <section class="sandbox">
+    <fieldset class="actions">
+      <MidiButton :keyboard="keyboard" />
+      <MicButton />
+    </fieldset>
+
     <!-- <Visualizer :vtype="VisType.WAVE" :height="80" /> -->
     <Visualizer :vtype="VisType.POWER" :height="80" combined />
     <PianoBar :height="80" :harmonics="metrics.harmonics" :vowel-spec="vowelSpec" />
     <Keyboard ref="keyboard" @key-on="player?.play" @key-off="player?.stop" :height="80" />
-    <MidiButton :keyboard="keyboard" />
 
     <fieldset>
       <label>
@@ -156,6 +161,12 @@ section.sandbox {
   fieldset:first-of-type {
     margin-top: 20px;
   }
+  fieldset.actions {
+    border: 0;
+    gap: 10px;
+    justify-content: flex-end;
+    padding: 0 30px;
+  }
   fieldset {
     display: flex;
     flex-flow: row nowrap;
@@ -191,12 +202,6 @@ section.sandbox {
       }
     }
   }
-  .midi {
-    float: right;
-    margin-right: 20px;
-    margin-top: 5px;
-  }
-
   meter {
     margin-top: 10px;
   }

@@ -72,7 +72,7 @@ export function createPreEmphasisFilter(ctx: AudioContext, { frequency, Q, gain 
   return filter;
 }
 
-export async function createMicSource(ctx: AudioContext) {
+export async function createMicSource(ctx: AudioContext): Promise<MediaStreamAudioSourceNode> {
   // TODO: config: rm noise cancellation etc
   const mediaStream = await window.navigator.mediaDevices.getUserMedia({
     audio: true,
