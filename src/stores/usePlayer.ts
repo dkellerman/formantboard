@@ -41,19 +41,19 @@ export const usePlayer = defineStore('player', () => {
     const sourceType = settings.f0.sourceType as OscillatorType;
     const osc = new OscillatorNode(ctx, { frequency, type: sourceType });
     const oscGain = new GainNode(ctx, { gain: 0 });
-    // const noiseGain = new GainNode(ctx, { gain: 0 });
+    const noiseGain = new GainNode(ctx, { gain: 0 });
 
     // set the audio source
     let source: AudioScheduledSourceNode;
     let sourceGain: GainNode;
-    const mustControlSource = true;
-    // if (settings.f0.source === 'noise')
-    //   [source, sourceGain, mustControlSource] = [noise.value, noiseGain, false];
-    // else
+    let mustControlSource = true;
+    if (settings.f0.source === 'noise')
+      [source, sourceGain, mustControlSource] = [noise.value, noiseGain, false];
+    else
       [source, sourceGain] = [osc, oscGain, true];
     source.connect(sourceGain);
     const isTonalSource = 'frequency' in source;
-    // if (!settings.f0.on && isTonalSource) (source as OscillatorNode).frequency.value = 0;
+    if (!settings.f0.on && isTonalSource) (source as OscillatorNode).frequency.value = 0;
 
     // create harmonics (osc source only) -> oscillators feed into source node
     // and harmonics feed into harmonicsOutput
@@ -69,68 +69,68 @@ export const usePlayer = defineStore('player', () => {
     }
 
     // pre-emphasis
-    // if (settings.preemphasis.on) {
-    //   const preemph = createPreEmphasisFilter(ctx, settings.preemphasis);
-    //   harmonicsOutput.connect(preemph);
-    //   preemph.connect(sourceGain);
-    // } else {
-    //   harmonicsOutput.connect(sourceGain);
-    // }
+    if (settings.preemphasis.on) {
+      const preemph = createPreEmphasisFilter(ctx, settings.preemphasis);
+      harmonicsOutput.connect(preemph);
+      preemph.connect(sourceGain);
+    } else {
+      harmonicsOutput.connect(sourceGain);
+    }
 
     // apply effects to source
-    // let flutterGain: GainNode|null = null;
-    // if (settings.flutter.on && isTonalSource) {
-    //   flutterGain = new GainNode(ctx, { gain: settings.flutter.amount });
-    //   noise.value.connect(flutterGain);
-    //   flutterGain.connect((source as OscillatorNode).frequency);
-    //   for (const [hosc] of harmonics) flutterGain.connect(hosc.frequency);
-    // }
+    let flutterGain: GainNode|null = null;
+    if (settings.flutter.on && isTonalSource) {
+      flutterGain = new GainNode(ctx, { gain: settings.flutter.amount });
+      noise.value.connect(flutterGain);
+      flutterGain.connect((source as OscillatorNode).frequency);
+      for (const [hosc] of harmonics) flutterGain.connect(hosc.frequency);
+    }
 
-    // let vibratoOsc: OscillatorNode|null = null;
-    // let vibratoGain: GainNode|null = null;
-    // let vibratoJitter: GainNode|null = null;
-    // if (settings.vibrato.on && isTonalSource) {
-    //   vibratoOsc = new OscillatorNode(ctx, { frequency: settings.vibrato.rate });
-    //   vibratoGain = new GainNode(ctx, { gain: 0 });
-    //   vibratoOsc.connect(vibratoGain);
-    //   vibratoGain.connect((source as OscillatorNode).frequency);
-    //   for (const [hosc] of harmonics) vibratoGain.connect(hosc.frequency);
-    //   if (settings.vibrato.jitter) {
-    //     vibratoJitter = new GainNode(ctx, { gain: settings.vibrato.jitter });
-    //     noise.value.connect(vibratoJitter);
-    //     vibratoJitter.connect(vibratoOsc.frequency);
-    //   }
-    // }
+    let vibratoOsc: OscillatorNode|null = null;
+    let vibratoGain: GainNode|null = null;
+    let vibratoJitter: GainNode|null = null;
+    if (settings.vibrato.on && isTonalSource) {
+      vibratoOsc = new OscillatorNode(ctx, { frequency: settings.vibrato.rate });
+      vibratoGain = new GainNode(ctx, { gain: 0 });
+      vibratoOsc.connect(vibratoGain);
+      vibratoGain.connect((source as OscillatorNode).frequency);
+      for (const [hosc] of harmonics) vibratoGain.connect(hosc.frequency);
+      if (settings.vibrato.jitter) {
+        vibratoJitter = new GainNode(ctx, { gain: settings.vibrato.jitter });
+        noise.value.connect(vibratoJitter);
+        vibratoJitter.connect(vibratoOsc.frequency);
+      }
+    }
 
     // create tube and apply formants
-    // let tubeNode;
-    // let tubeGain: GainNode = new GainNode(ctx, { gain: 1 });
-    // if (settings.tube.on) {
-    //   tubeNode = createTube(ctx, frequency);
-    //   sourceGain.connect(tubeNode);
-    //   tubeNode.connect(tubeGain);
-    // } else {
-    //   sourceGain.connect(tubeGain);
-    // }
+    let tubeNode;
+    let tubeGain: GainNode = new GainNode(ctx, { gain: 1 });
+    if (settings.tube.on) {
+      tubeNode = createTube(ctx, frequency);
+      sourceGain.connect(tubeNode);
+      tubeNode.connect(tubeGain);
+    } else {
+      sourceGain.connect(tubeGain);
+    }
 
     // formants
-    // let formants: BiquadFilterNode[];
-    // if (settings.formants.on) {
-    //   formants = createFormants(ctx, formantSpec.value);
-    //   for (const formant of formants) {
-    //     sourceGain.connect(formant);
-    //     formant.connect(tubeGain);
-    //   }
-    // }
+    let formants: BiquadFilterNode[];
+    if (settings.formants.on) {
+      formants = createFormants(ctx, formantSpec.value);
+      for (const formant of formants) {
+        sourceGain.connect(formant);
+        formant.connect(tubeGain);
+      }
+    }
 
     // final leg: compression -> output
-    // if (settings.compression.on) {
-    //   tubeGain.connect(compressor.value);
-    //   compressor.value.connect(output.value);
-    // } else {
-    //   tubeGain.connect(output.value);
-    // }
-    // tubeGain.connect(output.value);
+    if (settings.compression.on) {
+      tubeGain.connect(compressor.value);
+      compressor.value.connect(output.value);
+    } else {
+      tubeGain.connect(output.value);
+    }
+    tubeGain.connect(output.value);
 
     sourceGain.connect(output.value); // XXX
     // output -> analyzer
@@ -145,26 +145,26 @@ export const usePlayer = defineStore('player', () => {
     // start/ramp source nodes
     const t = ctx.currentTime + .002;
     if (mustControlSource) source.start(t);
-    // for (const [osc] of harmonics) osc.start(t);
+    for (const [osc] of harmonics) osc.start(t);
 
     sourceGain.gain.linearRampToValueAtTime(velocity * settings.f0.keyGain, t + settings.f0.onsetTime);
-    // if (vibratoOsc && vibratoGain) {
-    //   vibratoOsc.start(t);
-    //   vibratoGain.gain.linearRampToValueAtTime(settings.vibrato.extent, t + settings.vibrato.onsetTime);
-    // }
+    if (vibratoOsc && vibratoGain) {
+      vibratoOsc.start(t);
+      vibratoGain.gain.linearRampToValueAtTime(settings.vibrato.extent, t + settings.vibrato.onsetTime);
+    }
 
     // store stop function
     playing[frequency] = (stopAnalysis = false) => {
       const t = ctx.currentTime + .05;
       sourceGain.gain.setTargetAtTime(0, t, settings.f0.decayTime);
       if (mustControlSource) source.stop(t + settings.f0.decayTime + 1);
-      // harmonics.forEach(([osc]) => { osc.stop(t); osc = undefined as any; });
-      // vibratoOsc?.stop(t);
+      harmonics.forEach(([osc]) => { osc.stop(t); osc = undefined as any; });
+      vibratoOsc?.stop(t);
       if (stopAnalysis && rafId.value) {
         cancelAnimationFrame(rafId.value);
         rafId.value = undefined;
       }
-      // source = sourceGain = harmonics = vibratoOsc = tubeGain = undefined as any;
+      source = sourceGain = harmonics = vibratoOsc = tubeGain = undefined as any;
     };
 
     metrics.latency = ctx.currentTime - startTime;

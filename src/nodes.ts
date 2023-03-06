@@ -29,7 +29,7 @@ export function createHarmonics(
     const freq = baseFrequency * (i + 1);
     if (freq > Math.min(maxFrequency, 22050)) break;
     const hOsc = new OscillatorNode(ctx, { type: sourceType, frequency: freq });
-    const gainVal = customGains[i] ?? (10 ** (tilt / 20)) ** (i + 1);
+    const gainVal = customGains[i] ?? (10 ** (tilt / 20)) ** i;
     // const prevGain = harmonics[i - 1]?.[1].gain.value ?? 1.0;
     // const gainVal = prevGain * (10 ** (tilt / 20));
     // const gainVal = Math.min(9, customGains[i] ?? (10 ** (tilt / 20)) ** (i + 1));
