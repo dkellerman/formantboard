@@ -49,11 +49,11 @@ onMounted(() => {
 
 <template>
   <section class="sandbox">
-    <MidiButton :keyboard="keyboard" />
     <Visualizer :vtype="VisType.WAVE" :height="80" />
     <Visualizer :vtype="VisType.POWER" :height="80" />
     <!-- <PianoBar :height="80" :harmonics="metrics.harmonics" :formant-spec="formantSpec" /> -->
     <Keyboard ref="keyboard" @key-on="player?.play" @key-off="player?.stop" :height="80" />
+    <MidiButton :keyboard="keyboard" />
 
     <fieldset>
       <label>
@@ -147,8 +147,11 @@ onMounted(() => {
 <style scoped lang="scss">
 section.sandbox {
   padding: 10px 20px;
-  .visualizer, .keyboard, .bar {
-    margin-top: -10px;
+  .visualizer, .bar {
+    margin-top: 0px;
+  }
+  .keyboard {
+    margin-top: -20px;
   }
   fieldset:first-of-type {
     margin-top: 20px;
@@ -189,11 +192,9 @@ section.sandbox {
     }
   }
   .midi {
-    position: fixed;
-    top: 15px;
-    right: 35px;
-    z-index: 2000;
-    padding: 0;
+    float: right;
+    margin-right: 20px;
+    margin-top: 5px;
   }
 
   meter {

@@ -15,7 +15,7 @@ const drawer = ref(false);
       </v-app-bar-title>
     </v-app-bar>
 
-    <v-navigation-drawer v-model="drawer" location="left" temporary :width="375" color="#eeeeff">
+    <v-navigation-drawer v-model="drawer" location="left" temporary :width="375" color="#f0f8ff ">
       <v-list>
         <v-list-item><router-link to="/">Home</router-link></v-list-item>
         <v-list-item><router-link to="/sandbox">Hyper-Advanced Control Center</router-link></v-list-item>
@@ -33,6 +33,7 @@ const drawer = ref(false);
 
 <style scoped lang="scss">
 .v-toolbar {
+  background: aliceblue;
   a {
     color: black;
     text-decoration: none;
