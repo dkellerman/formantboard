@@ -2,28 +2,6 @@
 export type WASMCallback = (data: WASMCallbackData) => void;
 export type WASMCallbackData = any;
 
-export async function createWASMAudioWorklet(
-  ctx: AudioContext,
-  id: string,
-  wasmUrl: string,
-  callback: () => void,
-  sampleSize = 1024,
-) {
-  const response = await window.fetch(wasmUrl);
-  const wasmBytes = await response.arrayBuffer();
-  const processorUrl = `${id}.js`;
-  try {
-    await ctx.audioWorklet.addModule(processorUrl);
-  } catch (e: any) {
-    throw new Error(
-      `Failed to load audio analyzer worklet at url: ${processorUrl}. Further info: ${e.message}`
-    );
-  }
-  const node = new WASMNode(ctx, id);
-  node.init(wasmBytes, callback, sampleSize);
-  return node;
-}
-
 export class WASMNode extends AudioWorkletNode {
   callback?: WASMCallback;
   sampleSize?: number;
@@ -32,16 +10,13 @@ export class WASMNode extends AudioWorkletNode {
     this.callback = callback;
     this.sampleSize = sampleSize;
     this.port.onmessage = (event) => this.onmessage(event.data);
-    this.port.postMessage({
-      type: "send-wasm-module",
-      wasmBytes,
-    });
+    this.port.postMessage({type: "send-wasm-module", wasmBytes });
   }
 
   onmessage(event: MessageEvent) {
     if (event.type === 'wasm-module-loaded') {
       this.port.postMessage({
-        type: "init-processor",
+        type: "init",
         sampleRate: this.context.sampleRate,
         sampleSize: this.sampleSize,
       });
@@ -49,4 +24,21 @@ export class WASMNode extends AudioWorkletNode {
       this.callback?.(event.data);
     }
   }
+}
+
+export async function createWASMAudioWorkletNode(
+  ctx: AudioContext,
+  id: string,
+  callback: WASMCallback,
+  sampleSize = 1024,
+  wasmUrl = '/lib/wasm-audio/wasm_audio_bg.wasm',
+  processorUrl: string|undefined = undefined,
+) {
+  const response = await window.fetch(wasmUrl);
+  const wasmBytes = await response.arrayBuffer();
+  processorUrl ??= `/processors/${id}.js`;
+  await ctx.audioWorklet.addModule(processorUrl);
+  const node = new WASMNode(ctx, id);
+  node.init(wasmBytes, callback, sampleSize);
+  return node;
 }

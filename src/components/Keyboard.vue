@@ -5,6 +5,7 @@ interface Props {
   height?: number;
 }
 const props = defineProps<Props>();
+const metrics = useMetrics();
 const noteIds = computed(() => NOTES.map((n) => n.replace('#', 's')));
 const dragging = ref(false);
 const { width: winWidth } = useWindowSize();
@@ -16,21 +17,31 @@ const emit = defineEmits<{
   (e: 'keyOff', note: Note): void;
 }>();
 
+watch(() => metrics.pitch?.note, (newval, oldval) => {
+  if (oldval) deactivateKey(oldval, 'detect');
+  if (newval) activateKey(newval, 'detect');
+})
+
 function getKeyById(id: string) {
   return document.getElementById(id.replace('#', 's'));
 }
 
-function activateKey(id: string) {
+function activateKey(id: string, cls?: string) {
   const k = getKeyById(id);
   if (k) {
     k.classList.add('active');
+    if (cls) k.classList.add(cls);
     /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     // (k as any).scrollIntoViewIfNeeded?.(false);
   }
 }
 
-function deactivateKey(id: string) {
-  getKeyById(id)?.classList.remove('active');
+function deactivateKey(id: string, cls?: string) {
+  const k = getKeyById(id);
+  if (k) {
+    k.classList.remove('active');
+    if (cls) k.classList.remove(cls);
+  }
 }
 
 // function scrollToKey(id: string, behavior: 'auto' | 'smooth' = 'auto') {
@@ -139,6 +150,9 @@ ul {
           -5px 5px 20px rgba(0, 0, 0, 0.2) inset,
           0 0 3px rgba(0, 0, 0, 0.2);
         background: linear-gradient(to bottom, #fff 0%, #e9e9e9 100%);
+        &.detect {
+          border-color: red;
+        }
       }
     }
 
@@ -163,6 +177,9 @@ ul {
           inset, 0 -2px 2px 3px rgba(0, 0, 0, 0.6) inset,
           0 1px 2px rgba(0, 0, 0, 0.5);
         background: linear-gradient(to right, #555 0%, #222 100%);
+        &.detect {
+          border-color: red;
+        }
       }
     }
 

@@ -130,7 +130,6 @@ export const usePlayer = defineStore('player', () => {
     }
     tubeGain.connect(output.value);
 
-    sourceGain.connect(output.value); // XXX
     // output -> analyzer
     if (settings.analyzer.on) {
       output.value.connect(analyzer.value);

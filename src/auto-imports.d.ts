@@ -41,12 +41,13 @@ declare global {
   const createInjectionState: typeof import('@vueuse/core')['createInjectionState']
   const createMicSource: typeof import('./nodes')['createMicSource']
   const createPinia: typeof import('pinia')['createPinia']
+  const createPitchDetectionNode: typeof import('./nodes')['createPitchDetectionNode']
   const createPreEmphasisFilter: typeof import('./nodes')['createPreEmphasisFilter']
   const createReactiveFn: typeof import('@vueuse/core')['createReactiveFn']
   const createSharedComposable: typeof import('@vueuse/core')['createSharedComposable']
   const createTube: typeof import('./nodes')['createTube']
   const createUnrefFn: typeof import('@vueuse/core')['createUnrefFn']
-  const createWASMAudioWorklet: typeof import('./wasm')['createWASMAudioWorklet']
+  const createWASMAudioWorkletNode: typeof import('./wasm')['createWASMAudioWorkletNode']
   const createWhiteNoise: typeof import('./nodes')['createWhiteNoise']
   const customRef: typeof import('vue')['customRef']
   const debouncedRef: typeof import('@vueuse/core')['debouncedRef']
@@ -62,6 +63,7 @@ declare global {
   const fillRect: typeof import('./utils')['fillRect']
   const formantPxRange: typeof import('./utils')['formantPxRange']
   const freq2note: typeof import('./utils')['freq2note']
+  const freq2noteCents: typeof import('./utils')['freq2noteCents']
   const freq2px: typeof import('./utils')['freq2px']
   const freq2semitones: typeof import('./utils')['freq2semitones']
   const getActivePinia: typeof import('pinia')['getActivePinia']
@@ -373,12 +375,13 @@ declare module 'vue' {
     readonly createInjectionState: UnwrapRef<typeof import('@vueuse/core')['createInjectionState']>
     readonly createMicSource: UnwrapRef<typeof import('./nodes')['createMicSource']>
     readonly createPinia: UnwrapRef<typeof import('pinia')['createPinia']>
+    readonly createPitchDetectionNode: UnwrapRef<typeof import('./nodes')['createPitchDetectionNode']>
     readonly createPreEmphasisFilter: UnwrapRef<typeof import('./nodes')['createPreEmphasisFilter']>
     readonly createReactiveFn: UnwrapRef<typeof import('@vueuse/core')['createReactiveFn']>
     readonly createSharedComposable: UnwrapRef<typeof import('@vueuse/core')['createSharedComposable']>
     readonly createTube: UnwrapRef<typeof import('./nodes')['createTube']>
     readonly createUnrefFn: UnwrapRef<typeof import('@vueuse/core')['createUnrefFn']>
-    readonly createWASMAudioWorklet: UnwrapRef<typeof import('./wasm')['createWASMAudioWorklet']>
+    readonly createWASMAudioWorkletNode: UnwrapRef<typeof import('./wasm')['createWASMAudioWorkletNode']>
     readonly createWhiteNoise: UnwrapRef<typeof import('./nodes')['createWhiteNoise']>
     readonly customRef: UnwrapRef<typeof import('vue')['customRef']>
     readonly debouncedRef: UnwrapRef<typeof import('@vueuse/core')['debouncedRef']>
@@ -394,6 +397,7 @@ declare module 'vue' {
     readonly fillRect: UnwrapRef<typeof import('./utils')['fillRect']>
     readonly formantPxRange: UnwrapRef<typeof import('./utils')['formantPxRange']>
     readonly freq2note: UnwrapRef<typeof import('./utils')['freq2note']>
+    readonly freq2noteCents: UnwrapRef<typeof import('./utils')['freq2noteCents']>
     readonly freq2px: UnwrapRef<typeof import('./utils')['freq2px']>
     readonly freq2semitones: UnwrapRef<typeof import('./utils')['freq2semitones']>
     readonly getActivePinia: UnwrapRef<typeof import('pinia')['getActivePinia']>

@@ -1,3 +1,4 @@
+import { WASMCallback } from 'wasm';
 import type { VowelSpec } from './stores/useSettings';
 
 export function createWhiteNoise(ctx: AudioContext) {
@@ -75,9 +76,19 @@ export function createPreEmphasisFilter(ctx: AudioContext, { frequency, Q, gain 
 export async function createMicSource(ctx: AudioContext): Promise<MediaStreamAudioSourceNode> {
   // TODO: config: rm noise cancellation etc
   const mediaStream = await window.navigator.mediaDevices.getUserMedia({
-    audio: true,
+    audio: {
+      channelCount: 1,
+      echoCancellation: false,
+      noiseSuppression: false,
+      autoGainControl: false,
+    },
     video: false,
   });
   const audioSource = ctx.createMediaStreamSource(mediaStream);
   return audioSource;
 }
+
+export async function createPitchDetectionNode(ctx: AudioContext, callback: WASMCallback) {
+  return createWASMAudioWorkletNode(ctx, 'PitchProcessor', callback, 1024);
+}
+

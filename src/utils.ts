@@ -32,29 +32,35 @@ export function freq2semitones(freq: number) {
   return FREQUENCIES.indexOf(freq);
 }
 
-export function note2freq(note: string) {
+export function note2freq(note: string): number {
   return FREQUENCIES[NOTES.indexOf(note.toUpperCase())];
 }
 
-export function freq2note(freq: number) {
+export function freq2note(freq: number): Note {
   const f = FREQUENCIES.reduce((prev, curr) => {
     return (Math.abs(curr)- freq) < Math.abs(prev - freq) ? curr : prev;
   });
-  // TODO: return +/- cents for rounded vals
   return NOTES[FREQUENCIES.indexOf(f)];
 }
 
-export function noteOrFreq2freq(val: Note|number) {
+export function freq2noteCents(freq: number): [Note, number] {
+  const note = freq2note(freq);
+  const noteFreq = note2freq(note);
+  const cents = Math.round(1200 * Math.log2(freq / noteFreq));
+  return [note, cents];
+}
+
+export function noteOrFreq2freq(val: Note|number): number {
   const freq = parseFloat(String(val));
   if (Number.isNaN(freq)) return note2freq(val as Note);
   return freq;
 }
 
-export function midi2note(midi: number) {
+export function midi2note(midi: number): Note {
   return NOTES[midi - 33];
 }
 
-export function freq2px(freq: number, width: number) {
+export function freq2px(freq: number, width: number): number {
   if (freq < MIN_FREQ) return 0;
   if (freq > MAX_FREQ) return width;
 
@@ -68,14 +74,14 @@ export function freq2px(freq: number, width: number) {
   return px;
 }
 
-export function formantPxRange(f: Formant, width: number) {
+export function formantPxRange(f: Formant, width: number): [number, number] {
   const bandwidth = f.frequency * f.Q;
   const x1 = freq2px(f.frequency - (bandwidth / 2), width);
   const x2 = freq2px(f.frequency + (bandwidth / 2), width);
   return [x1, x2];
 }
 
-export function clamp(n: number, min: number, max: number) {
+export function clamp(n: number, min: number, max: number): number {
   return Math.max(min, Math.min(n, max));
 }
 

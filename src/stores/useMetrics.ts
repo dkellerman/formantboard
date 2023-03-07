@@ -1,3 +1,11 @@
+import type { Note } from "../utils";
+
+interface Pitch {
+  freq: number;
+  note: Note;
+  cents: number;
+}
+
 export const useMetrics = defineStore('metrics', () => {
   const { settings } = useSettings();
   const rms = ref(0.0);
@@ -6,6 +14,7 @@ export const useMetrics = defineStore('metrics', () => {
   const latency = ref(0.0);
   const sampleRate = ref<number>(settings.audioContextConfig.sampleRate);
   const frequencyBinCount = ref<number>(0);
+  const pitch = ref<Pitch>();
   const DataArrayType = computed(() => settings.analyzer.useFloatData ? Float32Array : Uint8Array);
   const freqData = computed<Float32Array|Uint8Array>(() => new DataArrayType.value(frequencyBinCount.value));
   const timeData = computed<Float32Array|Uint8Array>(() => new DataArrayType.value(frequencyBinCount.value));
@@ -15,6 +24,7 @@ export const useMetrics = defineStore('metrics', () => {
     harmonics,
     compression,
     latency,
+    pitch,
     frequencyBinCount,
     sampleRate,
     freqData,
