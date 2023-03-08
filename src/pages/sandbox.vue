@@ -50,11 +50,18 @@ onMounted(() => {
 <template>
   <section class="sandbox">
     <fieldset class="actions">
-      <MidiButton :keyboard="keyboard" text="MIDI" />
-      <MicButton />
+      <div>
+        <MidiButton :keyboard="keyboard" text="MIDI" />
+        <MicButton />
+        <div v-if="metrics.pitch" style="margin-left: 20px; font-family: monospace">
+          Pitch:
+          {{ metrics.pitch.freq.toFixed(1) }}hz
+          [{{ metrics.pitch.note }}
+          {{ metrics.pitch.cents > 0 ? '+' : ''}}{{ metrics.pitch.cents }}c]
+        </div>
+      </div>
     </fieldset>
 
-    <!-- <Visualizer :vtype="VisType.WAVE" :height="80" /> -->
     <Visualizer :vtype="VisType.POWER" :height="80" combined />
     <PianoBar :height="80" :harmonics="metrics.harmonics" :vowel-spec="vowelSpec" />
     <Keyboard ref="keyboard" @key-on="player?.play" @key-off="player?.stop" :height="80" />
@@ -182,9 +189,9 @@ section.sandbox {
     & > div {
       display: flex;
       flex-wrap: wrap;
+      gap: 10px;
       .v-text-field, .v-switch, .vowel-selector, .v-checkbox {
         width: 150px;
-        margin-right: 10px;
         flex: unset;
       }
       .vowel-selector {
@@ -204,6 +211,10 @@ section.sandbox {
 
   .bar {
     display: none;
+  }
+
+  [readonly] {
+    font-family: monospace;
   }
 }
 </style>

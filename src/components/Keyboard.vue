@@ -104,8 +104,7 @@ $blackKeyHeight: 57%;
 
 .keyboard {
   width: calc(1px * v-bind(width));
-  min-width: 800px;
-  overflow: auto;
+  overflow: hidden;
 }
 
 ul {

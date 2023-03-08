@@ -38,7 +38,7 @@ export function note2freq(note: string): number {
 
 export function freq2note(freq: number): Note {
   const f = FREQUENCIES.reduce((prev, curr) => {
-    return (Math.abs(curr)- freq) < Math.abs(prev - freq) ? curr : prev;
+    return (Math.abs(curr) - freq) < Math.abs(prev - freq) ? curr : prev;
   });
   return NOTES[FREQUENCIES.indexOf(f)];
 }

@@ -24,7 +24,15 @@ const keyboard = ref<InstanceType<typeof Keyboard>>();
       @key-on="(note: string, v) => player.play(note, v)"
       @key-off="(note: string) => player?.stop(note)"
     />
-    <MidiButton :keyboard="keyboard" />
+    <div>
+      <MidiButton :keyboard="keyboard" />
+      <MicButton />
+    </div>
+    <div v-if="metrics.pitch" style="font-family: monospace; width: 175px">
+      {{ metrics.pitch.freq.toFixed(1) }}hz
+      [{{ metrics.pitch.note }}
+      {{ metrics.pitch.cents > 0 ? '+' : '' }}{{ metrics.pitch.cents }}c]
+    </div>
   </section>
 </template>
 
@@ -33,8 +41,10 @@ section {
   display: flex;
   flex-direction: column;
   align-items: center;
-  .midi {
-    margin-top: 40px;
+  .midi, .mic {
+    margin: 40px 10px;
+    display: inline-block;
+    vertical-align: top;
   }
 }
 </style>

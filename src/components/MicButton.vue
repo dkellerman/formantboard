@@ -14,6 +14,7 @@ const props = withDefaults(defineProps<Props>(), {
 const player = usePlayer();
 const mic = ref<MediaStreamAudioSourceNode>();
 const metrics = useMetrics();
+const listening = ref(false);
 const micRafId = ref<number>();
 
 async function enableMic() {
@@ -35,6 +36,7 @@ async function enableMic() {
     };
   });
   mic.value.connect(pitchDetection);
+  listening.value = true;
 }
 
 function disableMic() {
@@ -43,6 +45,7 @@ function disableMic() {
   mic.value?.disconnect();
   mic.value = undefined;
   if (player.rafId) player.output.connect(player.analyzer);
+  listening.value = false;
 }
 
 onUnmounted(() => {
@@ -52,6 +55,7 @@ onUnmounted(() => {
 defineExpose({
   enableMic,
   mic,
+  listening,
 });
 </script>
 

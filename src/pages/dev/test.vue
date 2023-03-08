@@ -1,11 +1,9 @@
 <script setup lang="ts">
-const px = [
-  freq2px(415, 1000),
-  freq2px(427.5, 1000),
-  freq2px(440, 1000),
-];
+const freqs = [439,440,441,410];
 </script>
 
 <template>
-  {{ px }}
+  <div v-for="f of freqs" :key="f">
+    {{ f }} : {{ freq2noteCents(f) }}
+  </div>
 </template>

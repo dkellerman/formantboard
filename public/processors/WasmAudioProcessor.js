@@ -30,6 +30,7 @@ export default class WasmAudioProcessor extends AudioWorkletProcessor {
   process(inputs) {
     const inputChannels = inputs[0];
     const inputSamples = inputChannels[0];
+    if (!inputSamples) return;
 
     if (this.totalSamples < this.sampleSize) {
       for (const sampleValue of inputSamples) {

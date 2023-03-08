@@ -89,6 +89,6 @@ export async function createMicSource(ctx: AudioContext): Promise<MediaStreamAud
 }
 
 export async function createPitchDetectionNode(ctx: AudioContext, callback: WASMCallback) {
-  return createWASMAudioWorkletNode(ctx, 'PitchProcessor', callback, 1024);
+  return createWASMAudioWorkletNode(ctx, 'PitchProcessor', callback, 4096);
 }
 
