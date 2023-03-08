@@ -6,7 +6,7 @@ import tinycolor from 'tinycolor2';
 export const CANONICAL_NOTES: Record<string, string> = {
   'C': 'C', 'C#': 'C#', 'Db': 'C#', 'D': 'D', 'D#': 'D#', 'Eb': 'D#', 'E': 'E',
   'F': 'F', 'F#': 'F#', 'Gb': 'F#', 'G': 'G', 'G#': 'G#', 'Ab': 'G#', 'A': 'A',
-  'A#': 'A#', 'Bb': 'A#', 'B': 'B',
+  'A#': 'A#', 'Bb': 'A#', 'B': 'B', 'B#': 'C', 'E#': 'F', 'Fb': 'E', 'Cb': 'B',
 };
 
 export const NOTE_LETTERS: string[] = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
@@ -33,7 +33,10 @@ export const KEY_SLOTS_PER_OCTAVE = 15;
 export const NOTE_RE = /^([a-gA-G])(#|b)?([0-8])?$/;
 
 export function note2canon(note: Note): string {
-  const m = note.match(NOTE_RE);
+  const n = note?.replaceAll(' ', '')
+    .replace(/flat|-/i, 'b')
+    .replace(/(s(harp)?)|\+/i, '#');
+  const m = n.match(NOTE_RE);
   if (!m) throw new Error(`Invalid note: ${note}`);
   const letter = m[1].toUpperCase(), inc = m[2] ?? '', octave = m[3] ?? '3';
   if (!inc) return letter + octave;
