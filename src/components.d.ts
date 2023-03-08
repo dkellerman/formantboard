@@ -9,19 +9,19 @@ export {}
 
 declare module '@vue/runtime-core' {
   export interface GlobalComponents {
-    F0Selector: typeof import('./src/components/F0Selector.vue')['default']
+    F0Selector: typeof import('./components/F0Selector.vue')['default']
     FormantBar: typeof import('./src/components/FormantBar.vue')['default']
-    Keyboard: typeof import('./src/components/Keyboard.vue')['default']
-    MicButton: typeof import('./src/components/MicButton.vue')['default']
-    MidiButton: typeof import('./src/components/MidiButton.vue')['default']
+    Keyboard: typeof import('./components/Keyboard.vue')['default']
+    MicButton: typeof import('./components/MicButton.vue')['default']
+    MidiButton: typeof import('./components/MidiButton.vue')['default']
     MidiInput: typeof import('./src/components/MidiInput.vue')['default']
-    PianoBar: typeof import('./src/components/PianoBar.vue')['default']
+    PianoBar: typeof import('./components/PianoBar.vue')['default']
     PIXIAnalyzer: typeof import('./src/components/PIXIAnalyzer.vue')['default']
     Player: typeof import('./src/components/Player.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
-    SettingsPanel: typeof import('./src/components/SettingsPanel.vue')['default']
-    Visualizer: typeof import('./src/components/Visualizer.vue')['default']
-    VowelSelector: typeof import('./src/components/VowelSelector.vue')['default']
+    SettingsPanel: typeof import('./components/SettingsPanel.vue')['default']
+    Visualizer: typeof import('./components/Visualizer.vue')['default']
+    VowelSelector: typeof import('./components/VowelSelector.vue')['default']
   }
 }

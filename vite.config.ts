@@ -22,7 +22,7 @@ export default defineConfig(() => {
         vueTemplate: true,
       }),
       Components({
-        dts: true,
+        dts: './src/components.d.ts',
       }),
       Pages({
         dirs: [
