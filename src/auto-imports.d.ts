@@ -6,6 +6,7 @@ export {}
 declare global {
   const BLACK_KEYS: typeof import('./utils')['BLACK_KEYS']
   const BOTTOM_NOTE: typeof import('./utils')['BOTTOM_NOTE']
+  const CANONICAL_NOTES: typeof import('./utils')['CANONICAL_NOTES']
   const EffectScope: typeof import('vue')['EffectScope']
   const FREQUENCIES: typeof import('./utils')['FREQUENCIES']
   const KEY_SLOTS_PER_OCTAVE: typeof import('./utils')['KEY_SLOTS_PER_OCTAVE']
@@ -14,6 +15,7 @@ declare global {
   const MidiStatus: typeof import('./stores/useMidi')['MidiStatus']
   const NOTES: typeof import('./utils')['NOTES']
   const NOTE_LETTERS: typeof import('./utils')['NOTE_LETTERS']
+  const NOTE_RE: typeof import('./utils')['NOTE_RE']
   const NUM_KEY_SLOTS: typeof import('./utils')['NUM_KEY_SLOTS']
   const TOP_NOTE: typeof import('./utils')['TOP_NOTE']
   const VIS_TYPES: typeof import('./stores/useVisType')['VIS_TYPES']
@@ -26,6 +28,7 @@ declare global {
   const asyncComputed: typeof import('@vueuse/core')['asyncComputed']
   const autoResetRef: typeof import('@vueuse/core')['autoResetRef']
   const clamp: typeof import('./utils')['clamp']
+  const clampFreq: typeof import('./utils')['clampFreq']
   const computed: typeof import('vue')['computed']
   const computedAsync: typeof import('@vueuse/core')['computedAsync']
   const computedEager: typeof import('@vueuse/core')['computedEager']
@@ -87,6 +90,7 @@ declare global {
   const markRaw: typeof import('vue')['markRaw']
   const midi2note: typeof import('./utils')['midi2note']
   const nextTick: typeof import('vue')['nextTick']
+  const note2canon: typeof import('./utils')['note2canon']
   const note2freq: typeof import('./utils')['note2freq']
   const note2semitones: typeof import('./utils')['note2semitones']
   const noteOrFreq2freq: typeof import('./utils')['noteOrFreq2freq']
@@ -133,6 +137,7 @@ declare global {
   const shallowReactive: typeof import('vue')['shallowReactive']
   const shallowReadonly: typeof import('vue')['shallowReadonly']
   const shallowRef: typeof import('vue')['shallowRef']
+  const stepNoteOrFreq: typeof import('./utils')['stepNoteOrFreq']
   const storeToRefs: typeof import('pinia')['storeToRefs']
   const str2hexColor: typeof import('./utils')['str2hexColor']
   const syncRef: typeof import('@vueuse/core')['syncRef']
@@ -340,6 +345,7 @@ declare module 'vue' {
   interface ComponentCustomProperties {
     readonly BLACK_KEYS: UnwrapRef<typeof import('./utils')['BLACK_KEYS']>
     readonly BOTTOM_NOTE: UnwrapRef<typeof import('./utils')['BOTTOM_NOTE']>
+    readonly CANONICAL_NOTES: UnwrapRef<typeof import('./utils')['CANONICAL_NOTES']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
     readonly FREQUENCIES: UnwrapRef<typeof import('./utils')['FREQUENCIES']>
     readonly KEY_SLOTS_PER_OCTAVE: UnwrapRef<typeof import('./utils')['KEY_SLOTS_PER_OCTAVE']>
@@ -348,6 +354,7 @@ declare module 'vue' {
     readonly MidiStatus: UnwrapRef<typeof import('./stores/useMidi')['MidiStatus']>
     readonly NOTES: UnwrapRef<typeof import('./utils')['NOTES']>
     readonly NOTE_LETTERS: UnwrapRef<typeof import('./utils')['NOTE_LETTERS']>
+    readonly NOTE_RE: UnwrapRef<typeof import('./utils')['NOTE_RE']>
     readonly NUM_KEY_SLOTS: UnwrapRef<typeof import('./utils')['NUM_KEY_SLOTS']>
     readonly TOP_NOTE: UnwrapRef<typeof import('./utils')['TOP_NOTE']>
     readonly VIS_TYPES: UnwrapRef<typeof import('./stores/useVisType')['VIS_TYPES']>
@@ -360,6 +367,7 @@ declare module 'vue' {
     readonly asyncComputed: UnwrapRef<typeof import('@vueuse/core')['asyncComputed']>
     readonly autoResetRef: UnwrapRef<typeof import('@vueuse/core')['autoResetRef']>
     readonly clamp: UnwrapRef<typeof import('./utils')['clamp']>
+    readonly clampFreq: UnwrapRef<typeof import('./utils')['clampFreq']>
     readonly computed: UnwrapRef<typeof import('vue')['computed']>
     readonly computedAsync: UnwrapRef<typeof import('@vueuse/core')['computedAsync']>
     readonly computedEager: UnwrapRef<typeof import('@vueuse/core')['computedEager']>
@@ -421,6 +429,7 @@ declare module 'vue' {
     readonly markRaw: UnwrapRef<typeof import('vue')['markRaw']>
     readonly midi2note: UnwrapRef<typeof import('./utils')['midi2note']>
     readonly nextTick: UnwrapRef<typeof import('vue')['nextTick']>
+    readonly note2canon: UnwrapRef<typeof import('./utils')['note2canon']>
     readonly note2freq: UnwrapRef<typeof import('./utils')['note2freq']>
     readonly note2semitones: UnwrapRef<typeof import('./utils')['note2semitones']>
     readonly noteOrFreq2freq: UnwrapRef<typeof import('./utils')['noteOrFreq2freq']>
@@ -467,6 +476,7 @@ declare module 'vue' {
     readonly shallowReactive: UnwrapRef<typeof import('vue')['shallowReactive']>
     readonly shallowReadonly: UnwrapRef<typeof import('vue')['shallowReadonly']>
     readonly shallowRef: UnwrapRef<typeof import('vue')['shallowRef']>
+    readonly stepNoteOrFreq: UnwrapRef<typeof import('./utils')['stepNoteOrFreq']>
     readonly storeToRefs: UnwrapRef<typeof import('pinia')['storeToRefs']>
     readonly str2hexColor: UnwrapRef<typeof import('./utils')['str2hexColor']>
     readonly syncRef: UnwrapRef<typeof import('@vueuse/core')['syncRef']>

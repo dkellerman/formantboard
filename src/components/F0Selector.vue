@@ -11,7 +11,14 @@ function toggleF0() {
     return;
   }
 
-  const freq = noteOrFreq2freq(f0.value);
+  let freq;
+  try {
+    freq = noteOrFreq2freq(f0.value);
+  } catch (e) {
+    alert('Invalid note or frequency: ' + f0.value);
+    return;
+  }
+
   if (freq) {
     playingF0.value = freq;
     player?.play(playingF0.value);
@@ -41,6 +48,8 @@ defineExpose({
     @click:append-inner="toggleF0"
     @change="restartF0"
     @keyup.enter="restartF0"
+    @keyup.up="() => { f0 = String(stepNoteOrFreq(f0, 1, 5)); restartF0(); }"
+    @keyup.down="() => { f0 = String(stepNoteOrFreq(f0, -1, -5)); restartF0(); }"
   />
 </template>
 

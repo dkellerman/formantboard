@@ -31,9 +31,6 @@ export function createHarmonics(
     if (freq > Math.min(maxFrequency, 22050)) break;
     const hOsc = new OscillatorNode(ctx, { type: sourceType, frequency: freq });
     const gainVal = customGains[i] ?? (10 ** (tilt / 20)) ** i;
-    // const prevGain = harmonics[i - 1]?.[1].gain.value ?? 1.0;
-    // const gainVal = prevGain * (10 ** (tilt / 20));
-    // const gainVal = Math.min(9, customGains[i] ?? (10 ** (tilt / 20)) ** (i + 1));
     const hGain = new GainNode(ctx, { gain: gainVal });
     hOsc.connect(hGain);
     harmonics.push([hOsc, hGain]);
@@ -74,7 +71,6 @@ export function createPreEmphasisFilter(ctx: AudioContext, { frequency, Q, gain 
 }
 
 export async function createMicSource(ctx: AudioContext): Promise<MediaStreamAudioSourceNode> {
-  // TODO: config: rm noise cancellation etc
   const mediaStream = await window.navigator.mediaDevices.getUserMedia({
     audio: {
       channelCount: 1,

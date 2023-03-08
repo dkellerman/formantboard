@@ -3,14 +3,24 @@ import * as PIXI from 'pixi.js';
 import type { Formant } from 'stores/useSettings';
 import tinycolor from 'tinycolor2';
 
-export const NOTE_LETTERS: string[] = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+export const CANONICAL_NOTES: Record<string, string> = {
+  'C': 'C', 'C#': 'C#', 'Db': 'C#', 'D': 'D', 'D#': 'D#', 'Eb': 'D#', 'E': 'E',
+  'F': 'F', 'F#': 'F#', 'Gb': 'F#', 'G': 'G', 'G#': 'G#', 'Ab': 'G#', 'A': 'A',
+  'A#': 'A#', 'Bb': 'A#', 'B': 'B',
+};
 
+export const NOTE_LETTERS: string[] = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 export const NOTES: string[] = ['A0', 'A#0', 'B0']
-  .concat([...Array(7)].flatMap((_, i) => NOTE_LETTERS.map(l => `${l}${i + 1}`)))
+  .concat([...Array(7)]
+  .flatMap((_, i) => NOTE_LETTERS
+  .map(l => `${l}${i + 1}`)))
   .concat(['C8']);
 
 export const FREQUENCIES: number[] = [...Array(NOTES.length)];
 NOTES.forEach((_, i) => FREQUENCIES[i] = i ? FREQUENCIES[i - 1] * Math.pow(2, 1 / 12) : 27.5);
+
+export type Note = typeof NOTES[number];
+export type NoteFreq = typeof FREQUENCIES[number];
 
 export const WHITE_KEYS = NOTES.filter(n => !n.includes('#'));
 export const BLACK_KEYS = NOTES.filter(n => n.includes('#'));
@@ -20,20 +30,28 @@ export const MIN_FREQ = FREQUENCIES[0];
 export const MAX_FREQ = FREQUENCIES[FREQUENCIES.length - 1];
 export const NUM_KEY_SLOTS = WHITE_KEYS.length * 2;
 export const KEY_SLOTS_PER_OCTAVE = 15;
+export const NOTE_RE = /^([a-gA-G])(#|b)?([0-8])?$/;
 
-export type Note = typeof NOTES[number];
-export type NoteFreq = typeof FREQUENCIES[number];
-
-export function note2semitones(note: string) {
-  return NOTES.indexOf(note.toUpperCase());
+export function note2canon(note: Note): string {
+  const m = note.match(NOTE_RE);
+  if (!m) throw new Error(`Invalid note: ${note}`);
+  const letter = m[1].toUpperCase(), inc = m[2] ?? '', octave = m[3] ?? '3';
+  if (!inc) return letter + octave;
+  return CANONICAL_NOTES[letter + inc] + octave;
 }
 
-export function freq2semitones(freq: number) {
-  return FREQUENCIES.indexOf(freq);
+export function note2semitones(note: Note) {
+  return NOTES.indexOf(note2canon(note));
 }
 
-export function note2freq(note: string): number {
-  return FREQUENCIES[NOTES.indexOf(note.toUpperCase())];
+export function freq2semitones(freq: number): number {
+  const idx = FREQUENCIES.indexOf(freq);
+  if (idx === -1) throw new Error(`Invalid freq: ${freq}`);
+  return idx;
+}
+
+export function note2freq(note: Note): number {
+  return FREQUENCIES[NOTES.indexOf(note2canon(note))];
 }
 
 export function freq2note(freq: number): Note {
@@ -56,8 +74,15 @@ export function noteOrFreq2freq(val: Note|number): number {
   return freq;
 }
 
-export function midi2note(midi: number): Note {
-  return NOTES[midi - 33];
+export function midi2note(midi: number): Note|null {
+  return NOTES[midi - 33] ?? null;
+}
+
+export function stepNoteOrFreq(val: Note|number, stepNote = 1, stepFreq = 5): Note|number {
+  const freq = parseFloat(String(val));
+  if (!Number.isNaN(freq)) return clampFreq(freq + stepFreq);
+  const idx = NOTES.indexOf(val as Note);
+  return NOTES[idx + stepNote] ?? val as Note;
 }
 
 export function freq2px(freq: number, width: number): number {
@@ -83,6 +108,10 @@ export function formantPxRange(f: Formant, width: number): [number, number] {
 
 export function clamp(n: number, min: number, max: number): number {
   return Math.max(min, Math.min(n, max));
+}
+
+export function clampFreq(n: number): number {
+  return clamp(n, MIN_FREQ, MAX_FREQ);
 }
 
 export function fillRect(
