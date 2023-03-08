@@ -1,3 +1,3 @@
-## Vocal Board
+## FormantBoard
 
-Vocal synthesizer
+Vocal synthesizer WIP
