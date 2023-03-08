@@ -4,8 +4,7 @@ import 'vuetify/styles';
 import '@mdi/font/css/materialdesignicons.css';
 import './styles.scss';
 import { createVuetify } from 'vuetify';
-import * as components from 'vuetify/components';
-import * as directives from 'vuetify/directives';
+import { VTextField } from 'vuetify/components/VTextField';
 import App from './App.vue';
 
 const store = createPinia();
@@ -16,10 +15,8 @@ const router = createRouter({
 });
 
 const vuetify = createVuetify({
-  components,
-  directives,
   aliases: {
-    VNum: components.VTextField,
+    VNum: VTextField,
   },
   defaults: {
     VNum: {

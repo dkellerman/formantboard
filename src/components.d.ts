@@ -10,14 +10,10 @@ export {}
 declare module '@vue/runtime-core' {
   export interface GlobalComponents {
     F0Selector: typeof import('./components/F0Selector.vue')['default']
-    FormantBar: typeof import('./src/components/FormantBar.vue')['default']
     Keyboard: typeof import('./components/Keyboard.vue')['default']
     MicButton: typeof import('./components/MicButton.vue')['default']
     MidiButton: typeof import('./components/MidiButton.vue')['default']
-    MidiInput: typeof import('./src/components/MidiInput.vue')['default']
     PianoBar: typeof import('./components/PianoBar.vue')['default']
-    PIXIAnalyzer: typeof import('./src/components/PIXIAnalyzer.vue')['default']
-    Player: typeof import('./src/components/Player.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SettingsPanel: typeof import('./components/SettingsPanel.vue')['default']
