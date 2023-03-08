@@ -15,7 +15,7 @@ function toggleF0() {
   try {
     freq = noteOrFreq2freq(f0.value);
   } catch (e) {
-    alert('Invalid note or frequency: ' + f0.value);
+    alert('Invalid note or frequency: "' + f0.value + '". Examples: 440, 27.5, A4, Bb3, or D#5');
     return;
   }
 
