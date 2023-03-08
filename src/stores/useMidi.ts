@@ -44,6 +44,7 @@ export const useMidi = defineStore('midi', () => {
   function addNoteOnListener(cb: (note: Note, velocity: number) => void) {
     midiIn.value?.addListener('noteon', (e: NoteMessageEvent) => {
       const name = midi2note(e.note.number);
+      if (!name) return;
       cb(name, e.note.attack);
     }, { channels: midiInChannel.value ?? undefined });
   }
@@ -51,6 +52,7 @@ export const useMidi = defineStore('midi', () => {
   function addNoteOffListener(cb: (note: Note) => void) {
     midiIn.value?.addListener('noteoff', (e: NoteMessageEvent) => {
       const name = midi2note(e.note.number);
+      if (!name) return;
       cb(name);
     }, { channels: midiInChannel.value ?? undefined });
   }
