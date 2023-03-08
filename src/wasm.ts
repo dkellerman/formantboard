@@ -10,7 +10,7 @@ export class WASMNode extends AudioWorkletNode {
     this.callback = callback;
     this.sampleSize = sampleSize;
     this.port.onmessage = (event) => this.onmessage(event.data);
-    this.port.postMessage({type: "send-wasm-module", wasmBytes });
+    this.port.postMessage({ type: "send-wasm-module", wasmBytes });
   }
 
   onmessage(event: MessageEvent) {
@@ -36,9 +36,12 @@ export async function createWASMAudioWorkletNode(
 ) {
   const response = await window.fetch(wasmUrl);
   const wasmBytes = await response.arrayBuffer();
+
   processorUrl ??= `/processors/${id}.js`;
   await ctx.audioWorklet.addModule(processorUrl);
+
   const node = new WASMNode(ctx, id);
   node.init(wasmBytes, callback, sampleSize);
+
   return node;
 }

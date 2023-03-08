@@ -69,7 +69,6 @@ onMounted(() => {
     <fieldset>
       <label>
         <v-switch label="F0" v-model="f0.on" @change="r" />
-        <v-switch label="All effects" v-model="allEffects" @change="toggleEffects" />
       </label>
       <div>
         <F0Selector ref="f0selector" />
@@ -83,6 +82,7 @@ onMounted(() => {
         <v-num label="RMS Vol" v-model="metrics.rms" readonly suffix="dB" />
       </div>
     </fieldset>
+    <fieldset style="padding: 0; border: 0;"><v-switch label="All effects" v-model="allEffects" @change="toggleEffects" /></fieldset>
     <fieldset>
       <label><v-switch label="Harmonics" v-model="harmonics.on" @change="r" /></label>
       <div>
@@ -128,7 +128,7 @@ onMounted(() => {
     <fieldset>
       <label><v-switch label="Formants" v-model="formants.on" @change="r" /></label>
       <div>
-        <VowelSelector />
+        <VowelSelector @change="r" />
       </div>
     </fieldset>
     <div v-for="formant, idx in vowelSpec">
@@ -164,6 +164,7 @@ section.sandbox {
   }
   .keyboard {
     margin-top: -20px;
+    margin-bottom: 20px;
   }
   fieldset.actions {
     border: 0;

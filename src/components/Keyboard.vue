@@ -31,8 +31,6 @@ function activateKey(id: string, cls?: string) {
   if (k) {
     k.classList.add('active');
     if (cls) k.classList.add(cls);
-    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-    // (k as any).scrollIntoViewIfNeeded?.(false);
   }
 }
 
@@ -43,10 +41,6 @@ function deactivateKey(id: string, cls?: string) {
     if (cls) k.classList.remove(cls);
   }
 }
-
-// function scrollToKey(id: string, behavior: 'auto' | 'smooth' = 'auto') {
-//   getKeyById(id)?.scrollIntoView({ behavior, inline: 'center' });
-// }
 
 function getKeyClass(id: string) {
   return `key ${id.substring(0, id.length - 1).toUpperCase()} ${id.length === 3 ? 'black' : 'white'}`;
@@ -61,11 +55,6 @@ function stop(id: string) {
   emit('keyOff', id.replace('s', '#'));
   deactivateKey(id);
 }
-
-onMounted(async () => {
-  // TODO: kb keys
-  // scrollToKey('C4');
-});
 
 defineExpose({
   play,
