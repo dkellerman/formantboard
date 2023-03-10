@@ -91,7 +91,7 @@ onMounted(() => init());
     border: 0;
     gap: 10px;
     .v-text-field {
-      width: 100px;
+      width: 85px;
     }
   }
 </style>
