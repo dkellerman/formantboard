@@ -1,5 +1,9 @@
 <script setup lang="ts">
 const drawer = ref(false);
+const route = useRoute();
+watch(route, () => {
+  drawer.value = false;
+});
 </script>
 
 <template>
