@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import * as PIXI from "pixi.js";
+
 const ctx = new AudioContext();
 const frequency = 220.0;
 const delay = .05;
@@ -6,6 +8,7 @@ const onset = .2;
 const offset = .1;
 const keyGain = 0.25;
 
+const canvas = ref();
 const sawGain = ref(0);
 const sqGain = ref(0);
 const sinGain = ref(0);
@@ -27,6 +30,8 @@ const tilt: BiquadFilterNode = new BiquadFilterNode(ctx, { type: "lowpass", freq
 const mix: GainNode = new GainNode(ctx, { gain: 0 });
 const analyzer = new AnalyserNode(ctx, { fftSize: 4096 });
 let af: number = 0;
+let g: PIXI.Graphics = new PIXI.Graphics();
+let gw = 440, gh = 120;
 
 sawg.connect(mix);
 sqg.connect(mix);
@@ -37,28 +42,46 @@ mix.connect(analyzer);
 mix.connect(ctx.destination);
 
 function adjustTone(val: number) {
-  sawGain.value = round(.4 + (val * .2), 2);
-  sqGain.value = sqg.gain.value = round(val * .7, 2);
-  sinGain.value = sing.gain.value = round((1 - val) * .7, 2);
-  noiseGain.value = noiseg.gain.value = round(val * .03, 2);
-  tiltVal.value = tilt.Q.value = round(val * 10.0, 2);
+  sawGain.value = sawg.gain.value = round(.7 + (val * .2), 2);
+  sqGain.value = sqg.gain.value = round(val * .15, 2);
+  sinGain.value = sing.gain.value = round((1 - val) * .2, 2);
+  noiseGain.value = noiseg.gain.value = round(val * .005, 2);
+  tiltVal.value = tilt.Q.value = round((val * 9.9) + .1, 2);
 }
 
 function analyze() {
   const data = new Float32Array(analyzer.frequencyBinCount);
   analyzer.getFloatTimeDomainData(data);
+
   const dataArr = [...data];
-  // debug(Math.min(...d), Math.max(...d));;
   power.value = rms(dataArr);
+
+  g.clear();
+  g.lineStyle(1, 0xffffff, 1);
+  for (let i = 0; i < dataArr.length; i++) {
+    const x = (i / dataArr.length) * gw;
+    const y = (dataArr[i] + 1) * (gh / 2);
+    if (i === 0) g.moveTo(x, y); else g.lineTo(x, y);
+  }
+
   af = requestAnimationFrame(analyze);
 }
 
-watch(toneVal, adjustTone);
-adjustTone(toneVal.value);
-af = requestAnimationFrame(analyze);
+onMounted(() => {
+  const app = new PIXI.Application({
+    view: canvas.value,
+    width: gw,
+    height: gh,
+    backgroundColor: 0x000000,
+    antialias: true,
+  });
+  app.stage.addChild(g);
+
+  watch(toneVal, adjustTone);
+  adjustTone(toneVal.value);
+});
 
 onUnmounted(() => {
-  cancelAnimationFrame(af);
   ctx.close();
 });
 
@@ -82,9 +105,11 @@ function toggle() {
     noise.start(t);
     mix.gain.value = 0;
     mix.gain.exponentialRampToValueAtTime(keyGain, t + onset);
+    af = requestAnimationFrame(analyze);
     started.value = true;
   }
   else {
+    cancelAnimationFrame(af);
     const st = ctx.currentTime + 1;
     saw.stop(st);
     sin.stop(st);
@@ -101,6 +126,9 @@ function toggle() {
     <h2>Tone</h2>
     <fieldset>
       <Knob label="" v-model="toneVal" />
+    </fieldset>
+    <fieldset>
+      <canvas ref="canvas" />
     </fieldset>
     <fieldset>
       <Knob label="Saw" v-model="sawGain" @change="sawg.gain.value = $event" />
