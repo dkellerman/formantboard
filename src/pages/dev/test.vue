@@ -1,9 +1,20 @@
 <script setup lang="ts">
-const freqs = [439,440,441,410];
+interface Props {
+}
+
+const emits = defineEmits<{
+  (e: 'click'): void;
+}>();
+
+const props = withDefaults(defineProps<Props>(), {});
 </script>
 
 <template>
-  <div v-for="f of freqs" :key="f">
-    {{ f }} : {{ freq2noteCents(f) }}
-  </div>
+  <section class="foo">
+  </section>
 </template>
+
+<style lang="scss" scoped>
+section {
+}
+</style>

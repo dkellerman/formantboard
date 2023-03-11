@@ -76,15 +76,16 @@ function toggle() {
 
 <template>
   <section>
+    <h2>Tone</h2>
+    <fieldset>
+      <Knob label="" v-model="toneVal" />
+    </fieldset>
     <fieldset>
       <Knob label="Saw" v-model="sawGain" @change="sawg.gain.value = $event" />
       <Knob label="Sine" v-model="sinGain" @change="sing.gain.value = $event" />
       <Knob label="Square" v-model="sqGain" @change="sqg.gain.value = $event" />
       <Knob label="Noise" v-model="noiseGain" @change="noiseg.gain.value = $event" :step=".01" />
       <Knob label="Tilt" v-model="tiltVal" @change="tilt.Q.value = $event" :min="0" :max="10" :step="1" />
-    </fieldset>
-    <fieldset>
-      <Knob label="Tone" v-model="toneVal" />
     </fieldset>
     <v-btn @click="toggle">
       {{ started ? 'Stop' : 'Start' }}
@@ -94,13 +95,18 @@ function toggle() {
 
 <style lang="scss" scoped>
   section {
-    padding: 40px;
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    gap: 20px;
   }
   fieldset {
     border: 0;
-    padding: 0 0 20px 0;
+    padding: 0 0 0 0;
     display: flex;
     flex-direction: row;
-    gap: 15px;
+    gap: 20px;
   }
 </style>
