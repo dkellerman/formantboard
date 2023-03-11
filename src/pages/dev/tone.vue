@@ -5,12 +5,12 @@ const delay = .05;
 const onset = .2;
 const offset = .1;
 
-const sawGain = ref(.5);
-const sqGain = ref(.25);
-const sinGain = ref(.25);
-const noiseGain = ref(.01);
-const tiltVal = ref(1);
-const toneVal = ref(0);
+const sawGain = ref(0);
+const sqGain = ref(0);
+const sinGain = ref(0);
+const noiseGain = ref(0);
+const tiltVal = ref(0);
+const toneVal = ref(.5);
 const started = ref(false);
 
 let saw: OscillatorNode;
@@ -31,14 +31,16 @@ noiseg.connect(mix);
 tilt.connect(mix);
 mix.connect(ctx.destination);
 
-watch(toneVal, () => {
-  // @tone=0 :: saw: .5, sq: 0, sin: .5, noise: 0, tilt: 0
-  // @tone=1 :: saw: .5, sq: .5, sin: 0, noise: .02, tilt: 1
-  sqGain.value = sqg.gain.value = toneVal.value * .7;
-  sinGain.value = sing.gain.value = (1 - toneVal.value) * .7;
-  noiseGain.value = noiseg.gain.value = toneVal.value * .1;
-  tiltVal.value = tilt.Q.value = toneVal.value * 10.0;
-});
+function adjustTone(val: number) {
+  sawGain.value = round(.4 + (val * .2), 2);
+  sqGain.value = sqg.gain.value = round(val * .7, 2);
+  sinGain.value = sing.gain.value = round((1 - val) * .7, 2);
+  noiseGain.value = noiseg.gain.value = round(val * .03, 2);
+  tiltVal.value = tilt.Q.value = round(val * 10.0, 2);
+}
+
+watch(toneVal, adjustTone);
+adjustTone(toneVal.value);
 
 function toggle() {
   if (!started.value) {
