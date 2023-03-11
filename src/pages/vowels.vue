@@ -7,18 +7,19 @@ const delay = 0.01;
 const onset = .1;
 const offset = .05;
 const keyGain = 0.05;
+const defq = .5;
+const defg = 20.0;
 
 const f0 = ref();
 const canvas = ref();
 const sawGain = ref(1.0);
-const sqGain = ref(0);
-const sinGain = ref(0);
-const noiseGain = ref(0);
-const tiltVal = ref(0);
-const toneVal = ref(0);
+const sqGain = ref(0.1);
+const sinGain = ref(0.1);
+const noiseGain = ref(0.01);
+const blendVal = ref(0);
 const power = ref(0);
 const vowel = ref("ah");
-const defq = .5, defg = 20.0;
+
 const formantVals: Record<string, Array<Ref<number>[]>> = {
   ah: [
     [ref(800.0), ref(defq), ref(defg)],
@@ -82,9 +83,6 @@ let noise: AudioBufferSourceNode;
 const noiseg: GainNode = new GainNode(ctx, { gain: noiseGain.value });
 noiseg.connect(sourceMix);
 
-const tilt: BiquadFilterNode = new BiquadFilterNode(ctx, { type: "lowpass", frequency: 0, Q: tiltVal.value });
-tilt.connect(sourceMix);
-
 let formants: BiquadFilterNode[] = [];
 let formantsg: GainNode[] = [];
 for (const [frequency, Q, gain] of formantVals[vowel.value]) {
@@ -120,7 +118,6 @@ function play(frequency: number) {
   sin.connect(sing);
   noise = createWhiteNoise(ctx);
   noise.connect(noiseg);
-  tilt.frequency.value = frequency;
 
   // start
   const t = ctx.currentTime + delay;
@@ -152,12 +149,11 @@ function toggle() {
   f0.value.toggleF0();
 }
 
-function adjustTone(val: number) {
+function adjustBlend(val: number) {
   sawGain.value = sawg.gain.value = .7; // round(1 - (val * .1), 2);
   sqGain.value = sqg.gain.value = round(val * .5, 2);
   sinGain.value = sing.gain.value = round((1 - val) * .5, 2);
   noiseGain.value = noiseg.gain.value = round(val * .02, 2);
-  tiltVal.value = tilt.Q.value = 10.0 * val;
 }
 
 function updateFormantsOn() {
@@ -207,8 +203,8 @@ onMounted(() => {
   });
   app.stage.addChild(g);
 
-  watch(toneVal, adjustTone);
-  // adjustTone(toneVal.value);
+  watch(blendVal, adjustBlend);
+  // adjustBlend(blendVal.value);
   window.addEventListener('keydown', (e) => {
     if (e.key === ' ') {
       e.preventDefault();
@@ -227,28 +223,23 @@ onUnmounted(() => {
     <fieldset>
       <canvas ref="canvas" />
     </fieldset>
-    <fieldset style="margin: 0;">
-      <label style="font-size: 13px; width: 100%;">
-        Power:
-        {{ power.toFixed(2) }}
-        / {{ gain2db(power).toFixed(2) }}dB
-      </label>
+    <fieldset>
+      <label>Power: {{ power.toFixed(2) }} / {{ gain2db(power).toFixed(2) }}dB</label>
     </fieldset>
     <fieldset>
       <h3>Source</h3>
     </fieldset>
     <fieldset>
-      <F0Selector ref="f0" :play="play" :stop="stop" style="width: 100px;"/>
+      <F0Selector ref="f0" :play="play" :stop="stop" />
     </fieldset>
     <fieldset>
       <Knob label="Saw" v-model="sawGain" @change="sawg.gain.value = $event" />
       <Knob label="Sine" v-model="sinGain" @change="sing.gain.value = $event" />
       <Knob label="Square" v-model="sqGain" @change="sqg.gain.value = $event" />
       <Knob label="Noise" v-model="noiseGain" @change="noiseg.gain.value = $event" :step=".01" />
-      <Knob label="Tilt" v-model="tiltVal" @change="tilt.Q.value = $event" :min="0" :max="10" :step="1" />
-      <Knob label="Tone" v-model="toneVal" />
+      <Knob label="Special Blend" v-model="blendVal" />
     </fieldset>
-    <fieldset style="margin-top: 20px">
+    <fieldset divider>
       <input type="checkbox" v-model="formantsOn" @change="updateFormantsOn" />
       <h3>Formants</h3>
     </fieldset>
@@ -258,7 +249,7 @@ onUnmounted(() => {
       >{{ v }}</v-btn>
     </fieldset>
     <fieldset v-for="fval, idx in formantVals[vowel]">
-      <label style="font-size: 13px; align-self: center">F{{ idx+1 }}</label>
+      <label>F{{ idx+1 }}</label>
       <Knob label="Freq" v-model="fval[0].value" @change="formants[idx].frequency.value = $event" :min="0" :max="22050" :step="100" />
       <Knob label="Q" v-model="fval[1].value" @change="formants[idx].Q.value = $event" :min="0" :max="10" :step=".5" />
       <Knob label="Gain" v-model="fval[2].value" @change="formants[idx].gain.value = $event" :min="0" :max="20" :step=".1" />
@@ -282,5 +273,18 @@ onUnmounted(() => {
     display: flex;
     flex-direction: row;
     gap: 20px;
+    &[divider] {
+      margin-top: 20px;
+    }
+    &[compact] {
+      margin: 0;
+    }
+  }
+  label {
+    font-size: 13px;
+    align-self: center;
+  }
+  .f0 {
+    width: 100px;
   }
 </style>
