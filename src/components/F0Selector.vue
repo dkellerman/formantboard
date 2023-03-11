@@ -4,9 +4,18 @@ const { settings } = storeToRefs(useSettings());
 const f0 = ref(settings.value.defaultNote);
 const playingF0 = ref<number>();
 
+interface Props {
+  play?: (freq: number) => void;
+  stop?: (freq: number, stopAnalysis?: boolean) => void;
+};
+
+const props = defineProps<Props>();
+const play = computed(() => props.play ?? player.play);
+const stop = computed(() => props.stop ?? player.stop);
+
 function toggleF0() {
   if (playingF0.value) {
-    player.stop(playingF0.value, true);
+    stop.value(playingF0.value, true);
     playingF0.value = undefined;
     return;
   }
@@ -21,7 +30,7 @@ function toggleF0() {
 
   if (freq) {
     playingF0.value = freq;
-    player?.play(playingF0.value);
+    play.value(playingF0.value);
   }
 }
 
