@@ -4,6 +4,7 @@ const frequency = 220.0;
 const delay = .05;
 const onset = .2;
 const offset = .1;
+const keyGain = 0.25;
 
 const sawGain = ref(0);
 const sqGain = ref(0);
@@ -11,6 +12,7 @@ const sinGain = ref(0);
 const noiseGain = ref(0);
 const tiltVal = ref(0);
 const toneVal = ref(.5);
+const power = ref(0.0);
 const started = ref(false);
 
 let saw: OscillatorNode;
@@ -23,13 +25,23 @@ let noise: AudioBufferSourceNode;
 const noiseg: GainNode = new GainNode(ctx, { gain: noiseGain.value });
 const tilt: BiquadFilterNode = new BiquadFilterNode(ctx, { type: "lowpass", frequency, Q: tiltVal.value });
 const mix: GainNode = new GainNode(ctx, { gain: 0 });
+const analyzer = new AnalyserNode(ctx, { fftSize: 4096 });
+let af: number = 0;
 
 sawg.connect(mix);
 sqg.connect(mix);
 sing.connect(mix);
 noiseg.connect(mix);
 tilt.connect(mix);
+mix.connect(analyzer);
 mix.connect(ctx.destination);
+
+function analyze() {
+  const freqData = new Uint8Array(analyzer.frequencyBinCount);
+  analyzer.getByteFrequencyData(freqData);
+  power.value = rms([...freqData], 256.0);
+  af = requestAnimationFrame(analyze);
+}
 
 function adjustTone(val: number) {
   sawGain.value = round(.4 + (val * .2), 2);
@@ -41,9 +53,16 @@ function adjustTone(val: number) {
 
 watch(toneVal, adjustTone);
 adjustTone(toneVal.value);
+af = requestAnimationFrame(analyze);
+
+onUnmounted(() => {
+  cancelAnimationFrame(af);
+  ctx.close();
+});
 
 function toggle() {
   if (!started.value) {
+    // construct
     saw = new OscillatorNode(ctx, { type: "sawtooth", frequency });
     saw.connect(sawg);
     sq = new OscillatorNode(ctx, { type: "square", frequency });
@@ -53,13 +72,14 @@ function toggle() {
     noise = createWhiteNoise(ctx);
     noise.connect(noiseg);
 
+    // start
     const t = ctx.currentTime + delay;
     saw.start(t);
     sq.start(t);
     sin.start(t);
     noise.start(t);
     mix.gain.value = 0;
-    mix.gain.exponentialRampToValueAtTime(1.0, t + onset);
+    mix.gain.exponentialRampToValueAtTime(keyGain, t + onset);
     started.value = true;
   }
   else {
@@ -86,6 +106,11 @@ function toggle() {
       <Knob label="Square" v-model="sqGain" @change="sqg.gain.value = $event" />
       <Knob label="Noise" v-model="noiseGain" @change="noiseg.gain.value = $event" :step=".01" />
       <Knob label="Tilt" v-model="tiltVal" @change="tilt.Q.value = $event" :min="0" :max="10" :step="1" />
+    </fieldset>
+    <fieldset>
+      Power:
+      {{ power.toFixed(2) }} /
+      {{ gain2db(power).toFixed(2) }}dB
     </fieldset>
     <v-btn @click="toggle">
       {{ started ? 'Stop' : 'Start' }}
