@@ -1,20 +1,15 @@
 <script setup lang="ts">
-interface Props {
-}
-
-const emits = defineEmits<{
-  (e: 'click'): void;
-}>();
-
-const props = withDefaults(defineProps<Props>(), {});
+const test = ref("Test");
 </script>
 
 <template>
   <section class="foo">
+    <h1>{{ test }}</h1>
   </section>
 </template>
 
 <style lang="scss" scoped>
 section {
+  padding: 20px;
 }
 </style>

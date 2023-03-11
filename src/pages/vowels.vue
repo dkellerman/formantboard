@@ -13,10 +13,9 @@ const defg = 20.0;
 const f0 = ref();
 const canvas = ref();
 const sawGain = ref(1.0);
-const sqGain = ref(0.1);
+const sqGain = ref(0.2);
 const sinGain = ref(0.1);
 const noiseGain = ref(0.01);
-const blendVal = ref(0);
 const power = ref(0);
 const vowel = ref("ah");
 
@@ -149,13 +148,6 @@ function toggle() {
   f0.value.toggleF0();
 }
 
-function adjustBlend(val: number) {
-  sawGain.value = sawg.gain.value = .7; // round(1 - (val * .1), 2);
-  sqGain.value = sqg.gain.value = round(val * .5, 2);
-  sinGain.value = sing.gain.value = round((1 - val) * .5, 2);
-  noiseGain.value = noiseg.gain.value = round(val * .02, 2);
-}
-
 function updateFormantsOn() {
   for (const fg of formantsg) {
     fg.gain.value = formantsOn.value ? 1.0 : 0.0;
@@ -203,8 +195,6 @@ onMounted(() => {
   });
   app.stage.addChild(g);
 
-  watch(blendVal, adjustBlend);
-  // adjustBlend(blendVal.value);
   window.addEventListener('keydown', (e) => {
     if (e.key === ' ') {
       e.preventDefault();
@@ -237,7 +227,6 @@ onUnmounted(() => {
       <Knob label="Sine" v-model="sinGain" @change="sing.gain.value = $event" />
       <Knob label="Square" v-model="sqGain" @change="sqg.gain.value = $event" />
       <Knob label="Noise" v-model="noiseGain" @change="noiseg.gain.value = $event" :step=".01" />
-      <Knob label="Special Blend" v-model="blendVal" />
     </fieldset>
     <fieldset divider>
       <input type="checkbox" v-model="formantsOn" @change="updateFormantsOn" />
