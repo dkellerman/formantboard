@@ -158,3 +158,16 @@ export function debugt(...args: any[]) {
 export function rms(arr: number[], normFactor = 1.0) {
   return Math.sqrt(arr.reduce((prev, curr) => (prev + (curr/normFactor) * (curr/normFactor)), 0.0) / arr.length);
 }
+
+export function gain2db(gain: number) {
+  return 20 * Math.log10(gain);
+}
+
+export function db2gain(db: number) {
+  return Math.pow(10, db / 20);
+}
+
+export function round(n: number, decimals = 0) {
+  const m = Math.pow(10, decimals);
+  return Math.round(n * m) / m;
+}

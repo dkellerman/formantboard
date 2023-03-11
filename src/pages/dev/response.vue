@@ -47,7 +47,7 @@ function draw() {
   const { width, height } = canvas.value;
   for (let x = 0; x < width; x++) {
     const i = Math.floor(x / width * freqs.length);
-    const [f, m] = [freqs[i], mag[i]];
+    const [, m] = [freqs[i], mag[i]];
     const db = 20 * Math.log10(m);
     const pct = db / 20.0; // (maxDecibels - minDecibels);
     const y = height - (pct * height);
@@ -61,11 +61,11 @@ onMounted(() => init());
 <template>
   <section>
     <h2>Frequency Response</h2>
-    <canvas ref="canvas"></canvas>
-    <fieldset v-for="f, idx in filterVals">
+    <canvas ref="canvas" />
+    <fieldset v-for="_, idx in filterVals" :key="idx">
       <label>
-        <input type="checkbox" v-model="filtersOn[idx]" @change="draw" />
-        F{{idx+1}}
+        <input type="checkbox" v-model="filtersOn[idx]" @change="draw">
+        F{{ idx+1 }}
       </label>
       <v-num @change="draw" label="Frequency" v-model="filterVals[idx].frequency" min="20" max="20000" step="10" />
       <v-num @change="draw" label="Q" v-model="filterVals[idx].Q" min="0.0001" max="1000" step="0.0001" />

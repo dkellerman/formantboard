@@ -11,6 +11,7 @@ declare module '@vue/runtime-core' {
   export interface GlobalComponents {
     F0Selector: typeof import('./components/F0Selector.vue')['default']
     Keyboard: typeof import('./components/Keyboard.vue')['default']
+    Knob: typeof import('./components/Knob.vue')['default']
     MicButton: typeof import('./components/MicButton.vue')['default']
     MidiButton: typeof import('./components/MidiButton.vue')['default']
     PianoBar: typeof import('./components/PianoBar.vue')['default']

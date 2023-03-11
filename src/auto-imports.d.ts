@@ -53,6 +53,7 @@ declare global {
   const createWASMAudioWorkletNode: typeof import('./wasm')['createWASMAudioWorkletNode']
   const createWhiteNoise: typeof import('./nodes')['createWhiteNoise']
   const customRef: typeof import('vue')['customRef']
+  const db2gain: typeof import('./utils')['db2gain']
   const debouncedRef: typeof import('@vueuse/core')['debouncedRef']
   const debouncedWatch: typeof import('@vueuse/core')['debouncedWatch']
   const debug: typeof import('./utils')['debug']
@@ -69,6 +70,7 @@ declare global {
   const freq2noteCents: typeof import('./utils')['freq2noteCents']
   const freq2px: typeof import('./utils')['freq2px']
   const freq2semitones: typeof import('./utils')['freq2semitones']
+  const gain2db: typeof import('./utils')['gain2db']
   const getActivePinia: typeof import('pinia')['getActivePinia']
   const getCurrentInstance: typeof import('vue')['getCurrentInstance']
   const getCurrentScope: typeof import('vue')['getCurrentScope']
@@ -132,6 +134,7 @@ declare global {
   const resolveRef: typeof import('@vueuse/core')['resolveRef']
   const resolveUnref: typeof import('@vueuse/core')['resolveUnref']
   const rms: typeof import('./utils')['rms']
+  const round: typeof import('./utils')['round']
   const setActivePinia: typeof import('pinia')['setActivePinia']
   const setMapStoreSuffix: typeof import('pinia')['setMapStoreSuffix']
   const shallowReactive: typeof import('vue')['shallowReactive']
@@ -392,6 +395,7 @@ declare module 'vue' {
     readonly createWASMAudioWorkletNode: UnwrapRef<typeof import('./wasm')['createWASMAudioWorkletNode']>
     readonly createWhiteNoise: UnwrapRef<typeof import('./nodes')['createWhiteNoise']>
     readonly customRef: UnwrapRef<typeof import('vue')['customRef']>
+    readonly db2gain: UnwrapRef<typeof import('./utils')['db2gain']>
     readonly debouncedRef: UnwrapRef<typeof import('@vueuse/core')['debouncedRef']>
     readonly debouncedWatch: UnwrapRef<typeof import('@vueuse/core')['debouncedWatch']>
     readonly debug: UnwrapRef<typeof import('./utils')['debug']>
@@ -408,6 +412,7 @@ declare module 'vue' {
     readonly freq2noteCents: UnwrapRef<typeof import('./utils')['freq2noteCents']>
     readonly freq2px: UnwrapRef<typeof import('./utils')['freq2px']>
     readonly freq2semitones: UnwrapRef<typeof import('./utils')['freq2semitones']>
+    readonly gain2db: UnwrapRef<typeof import('./utils')['gain2db']>
     readonly getActivePinia: UnwrapRef<typeof import('pinia')['getActivePinia']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
@@ -471,6 +476,7 @@ declare module 'vue' {
     readonly resolveRef: UnwrapRef<typeof import('@vueuse/core')['resolveRef']>
     readonly resolveUnref: UnwrapRef<typeof import('@vueuse/core')['resolveUnref']>
     readonly rms: UnwrapRef<typeof import('./utils')['rms']>
+    readonly round: UnwrapRef<typeof import('./utils')['round']>
     readonly setActivePinia: UnwrapRef<typeof import('pinia')['setActivePinia']>
     readonly setMapStoreSuffix: UnwrapRef<typeof import('pinia')['setMapStoreSuffix']>
     readonly shallowReactive: UnwrapRef<typeof import('vue')['shallowReactive']>

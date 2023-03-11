@@ -16,9 +16,11 @@
     "lodash-es": "^4.17.21",
     "pinia": "^2.0.30",
     "pixi.js": "^7.1.2",
+    "primevue": "^3.24.0",
     "sass": "^1.58.2",
     "tinycolor2": "^1.6.0",
     "vue": "^3.2.45",
+    "vue-knob-control": "^1.7.0",
     "vue-router": "^4.1.6",
     "vuetify": "^3.1.6",
     "webmidi": "^3.1.4"
