@@ -36,19 +36,21 @@ tilt.connect(mix);
 mix.connect(analyzer);
 mix.connect(ctx.destination);
 
-function analyze() {
-  const freqData = new Uint8Array(analyzer.frequencyBinCount);
-  analyzer.getByteFrequencyData(freqData);
-  power.value = rms([...freqData], 256.0);
-  af = requestAnimationFrame(analyze);
-}
-
 function adjustTone(val: number) {
   sawGain.value = round(.4 + (val * .2), 2);
   sqGain.value = sqg.gain.value = round(val * .7, 2);
   sinGain.value = sing.gain.value = round((1 - val) * .7, 2);
   noiseGain.value = noiseg.gain.value = round(val * .03, 2);
   tiltVal.value = tilt.Q.value = round(val * 10.0, 2);
+}
+
+function analyze() {
+  const data = new Float32Array(analyzer.frequencyBinCount);
+  analyzer.getFloatTimeDomainData(data);
+  const dataArr = [...data];
+  // debug(Math.min(...d), Math.max(...d));;
+  power.value = rms(dataArr);
+  af = requestAnimationFrame(analyze);
 }
 
 watch(toneVal, adjustTone);
@@ -108,9 +110,11 @@ function toggle() {
       <Knob label="Tilt" v-model="tiltVal" @change="tilt.Q.value = $event" :min="0" :max="10" :step="1" />
     </fieldset>
     <fieldset>
-      Power:
-      {{ power.toFixed(2) }} /
-      {{ gain2db(power).toFixed(2) }}dB
+      <label>
+        Power:
+        {{ power.toFixed(2) }}
+        / {{ gain2db(power).toFixed(2) }}dB
+      </label>
     </fieldset>
     <v-btn @click="toggle">
       {{ started ? 'Stop' : 'Start' }}
