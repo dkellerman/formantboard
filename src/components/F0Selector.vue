@@ -7,7 +7,7 @@ const playingF0 = ref<number>();
 interface Props {
   play?: (freq: number) => void;
   stop?: (freq: number, stopAnalysis?: boolean) => void;
-};
+}
 
 const props = defineProps<Props>();
 const play = computed(() => props.play ?? player.play);

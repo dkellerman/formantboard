@@ -117,35 +117,11 @@ function renderOverlay() {
   if (!overlay.value || !canvas.value) return;
   overlay.value.clear();
 
-  const bins = makeFreqBins(settings.value.analyzer.fftSize / 2);
-  for (let i = 0; i < bins.length; i++) {
-    const bin = bins[i];
-    if (bin.freq2 < FREQUENCIES[0] || bin.freq1 > FREQUENCIES[FREQUENCIES.length - 1])
-      continue;
-
-    // bin lines
-    overlay.value.lineStyle(1, 0x444444);
-    if (bin.freq1 < 650) {
-      overlay.value.moveTo(bin.x1, 0);
-      overlay.value.lineTo(bin.x1, canvas.value.clientHeight);
-    }
-
-    // labels:
-    // if (i < 15 || i % 50 === 0) {
-    //   const w = bin.x2 - bin.x1;
-    //   const label = `${bin.freq1.toFixed(0)}${w > 40 ? ' hz' : ''}`
-    //   const text = new PIXI.Text(label, { fill: str2hexColor(viz.color), fontSize: 10 });
-    //   text.x = bin.x1 + 3;
-    //   text.y = 5;
-    //   overlay.value.addChild(text);
-  }
-
   // formants
-  overlay.value.lineStyle(2, 0x000000);
   for (const formant of vowelSpec.value) {
     const [fx1, fx2] = formantPxRange(formant, width.value);
-    const clr = formant.on ? 'forestgreen' : '#664444';
-    fillRect(overlay.value, fx1, 0, fx2 - fx1, height.value, clr, 0.4, 'black', 1);
+    const clr = formant.on ? viz.formantColorOn : viz.formantColorOff;
+    fillRect(overlay.value, fx1, 0, fx2 - fx1, height.value, clr, 0.4, viz.background, 1);
   }
 }
 
@@ -166,7 +142,17 @@ function renderPower(data: Metrics, analyzer: AnalyserNode) {
       : db / 256.0;
     const h = (canvas.value.clientHeight - 1) * pct;
     const y = canvas.value.clientHeight - h + 5;
-    fillRect(gPower.value, bin.x1, y, bin.x2 - bin.x1, h, hsl(viz.hue, 100, (pct * 100) / 2));
+    const c = hsl(viz.hue, 100, (pct * 100) / 2);
+    fillRect(gPower.value, bin.x1, y, bin.x2 - bin.x1, h, c);
+  }
+
+  // harmonics
+  gPower.value.lineStyle(2, str2hexColor(viz.harmonicColor));
+  for (const [hfreq, hgain] of metrics.harmonics) {
+    const hx = freq2px(hfreq, width.value);
+    const hy = height.value - (height.value * hgain);
+    gPower.value.moveTo(hx, height.value);
+    gPower.value.lineTo(hx, hy);
   }
 }
 

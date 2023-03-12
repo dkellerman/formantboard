@@ -102,11 +102,14 @@ export function freq2px(freq: number, width: number): number {
   return px;
 }
 
+export function formantRange(f: Formant) {
+  const rad = f.frequency / (f.Q);
+  return [f.frequency - rad, f.frequency + rad];
+}
+
 export function formantPxRange(f: Formant, width: number): [number, number] {
-  const bandwidth = f.frequency * f.Q;
-  const x1 = freq2px(f.frequency - (bandwidth / 2), width);
-  const x2 = freq2px(f.frequency + (bandwidth / 2), width);
-  return [x1, x2];
+  const [f1, f2] = formantRange(f);
+  return [freq2px(f1, width), freq2px(f2, width)];
 }
 
 export function clamp(n: number, min: number, max: number): number {

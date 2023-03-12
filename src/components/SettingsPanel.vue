@@ -36,7 +36,7 @@ watch([vowelSpec.value], setFormants);
         <v-tooltip activator="parent" location="top">
           <div>Formant F{{ idx + 1 }} [{{ f.on ? 'ON' : 'OFF' }}]</div>
           <div>
-            {{ f.frequency - (f.frequency * f.Q) }}-{{ f.frequency + (f.frequency * f.Q) }}hz
+            {{ formantRange(f).join('-') }}hz
           </div>
         </v-tooltip>
       </v-btn>
@@ -52,7 +52,7 @@ watch([vowelSpec.value], setFormants);
       type="number"
       suffix="dB/oct"
       :min="-20.0"
-      :max="1.0"
+      :max="0.0"
     />
 
     <v-select

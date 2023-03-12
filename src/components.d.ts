@@ -14,7 +14,6 @@ declare module '@vue/runtime-core' {
     Knob: typeof import('./components/Knob.vue')['default']
     MicButton: typeof import('./components/MicButton.vue')['default']
     MidiButton: typeof import('./components/MidiButton.vue')['default']
-    PianoBar: typeof import('./components/PianoBar.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SettingsPanel: typeof import('./components/SettingsPanel.vue')['default']

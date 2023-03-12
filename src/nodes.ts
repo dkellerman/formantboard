@@ -46,7 +46,9 @@ export function createFormants(ctx: AudioContext, vowelSpec: VowelSpec): BiquadF
     if (!formantConfig.on) continue;
     const formant = new BiquadFilterNode(ctx, {
       type: 'peaking',
-      ...formantConfig,
+      frequency: formantConfig.frequency,
+      Q: formantConfig.Q / 10.0,
+      gain: formantConfig.gain,
     });
     formants.push(formant);
   }
@@ -87,4 +89,3 @@ export async function createMicSource(ctx: AudioContext): Promise<MediaStreamAud
 export async function createPitchDetectionNode(ctx: AudioContext, callback: WASMCallback) {
   return createWASMAudioWorkletNode(ctx, 'PitchProcessor', callback, 4096);
 }
-

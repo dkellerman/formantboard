@@ -21,6 +21,9 @@ export type Settings = {
     color: string;
     lineWidth: number;
     hue: number;
+    formantColorOn: string;
+    formantColorOff: string;
+    harmonicColor: string;
   };
   harmonics: {
     on: boolean;
@@ -80,7 +83,7 @@ export type Vibrato = Settings['vibrato'];
 
 export const useSettings = defineStore('settings', () => {
   const compressorDefaults = new DynamicsCompressorNode(new AudioContext());
-  const formantDefaults = { on: true, Q: .1, gain: .5 };
+  const formantDefaults = { on: true, Q: 10, gain: 20 };
 
   const settings = ref<Settings>({
     defaultNote: 'E3',
@@ -97,6 +100,9 @@ export const useSettings = defineStore('settings', () => {
       color: '#fff',
       lineWidth: 2,
       hue: 300,
+      formantColorOn: 'forestgreen',
+      formantColorOff: '#664444',
+      harmonicColor: 'steelblue',
     },
     f0: {
       on: true,
@@ -153,29 +159,26 @@ export const useSettings = defineStore('settings', () => {
           { ...formantDefaults, frequency: 800 },
           { ...formantDefaults, frequency: 1200 },
           { ...formantDefaults, frequency: 2500 },
-          { ...formantDefaults, frequency: 2700 },
-          { ...formantDefaults, frequency: 2900 },
-          { ...formantDefaults, frequency: 3500 },
         ],
         [Vowels.i]: [
-          { ...formantDefaults, frequency: 300 },
-          { ...formantDefaults, frequency: 2200 },
-          { ...formantDefaults, frequency: 2800 },
+          { ...formantDefaults, frequency: 270 },
+          { ...formantDefaults, frequency: 2300 },
+          { ...formantDefaults, frequency: 3000 },
         ],
         [Vowels.ɪ]: [
           { ...formantDefaults, frequency: 400 },
-          { ...formantDefaults, frequency: 1700 },
-          { ...formantDefaults, frequency: 2400 },
+          { ...formantDefaults, frequency: 2000 },
+          { ...formantDefaults, frequency: 2550 },
         ],
         [Vowels.ɛ]: [
-          { ...formantDefaults, frequency: 600 },
-          { ...formantDefaults, frequency: 1700 },
-          { ...formantDefaults, frequency: 2400 },
+          { ...formantDefaults, frequency: 530 },
+          { ...formantDefaults, frequency: 1850 },
+          { ...formantDefaults, frequency: 2500 },
         ],
         [Vowels.æ]: [
-          { ...formantDefaults, frequency: 730 },
-          { ...formantDefaults, frequency: 1090 },
-          { ...formantDefaults, frequency: 2560 },
+          { ...formantDefaults, frequency: 660 },
+          { ...formantDefaults, frequency: 1700 },
+          { ...formantDefaults, frequency: 2400 },
         ],
         [Vowels.ɔ]: [
           { ...formantDefaults, frequency: 500 },
@@ -183,14 +186,14 @@ export const useSettings = defineStore('settings', () => {
           { ...formantDefaults, frequency: 2830 },
         ],
         [Vowels.ʊ]: [
-          { ...formantDefaults, frequency: 325 },
-          { ...formantDefaults, frequency: 700 },
-          { ...formantDefaults, frequency: 2530 },
+          { ...formantDefaults, frequency: 640 },
+          { ...formantDefaults, frequency: 1200 },
+          { ...formantDefaults, frequency: 2400 },
         ],
         [Vowels.u]: [
-          { ...formantDefaults, frequency: 325 },
-          { ...formantDefaults, frequency: 700 },
-          { ...formantDefaults, frequency: 2530 },
+          { ...formantDefaults, frequency: 300 },
+          { ...formantDefaults, frequency: 870 },
+          { ...formantDefaults, frequency: 2250 },
         ],
         [Vowels.ə]: [
           { ...formantDefaults, frequency: 600 },

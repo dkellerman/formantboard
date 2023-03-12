@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import * as PIXI from "pixi.js";
-import { TilingSprite } from "pixi.js";
 
 const ctx = new AudioContext();
 const delay = 0.01;
-const onset = .1;
-const offset = .05;
+const onset = 0.1;
+const offset = 0.05;
 const keyGain = 0.05;
-const defq = .5;
+const defq = 0.5;
 const defg = 20.0;
 
 const f0 = ref();
@@ -54,7 +53,7 @@ const formantVals: Record<string, Array<Ref<number>[]>> = {
     [ref(660.0), ref(defq), ref(defg)],
     [ref(1700.0), ref(defq), ref(defg)],
     [ref(2400.0), ref(defq), ref(defg)],
-  ]
+  ],
 };
 
 const formantsOn = ref(true);
@@ -82,14 +81,14 @@ let noise: AudioBufferSourceNode;
 const noiseg: GainNode = new GainNode(ctx, { gain: noiseGain.value });
 noiseg.connect(sourceMix);
 
-let formants: BiquadFilterNode[] = [];
-let formantsg: GainNode[] = [];
+const formants: BiquadFilterNode[] = [];
+const formantsg: GainNode[] = [];
 for (const [frequency, Q, gain] of formantVals[vowel.value]) {
   const f = new BiquadFilterNode(ctx, {
     type: "peaking",
     frequency: frequency.value,
     Q: Q.value,
-    gain: gain.value
+    gain: gain.value,
   });
   const fg = new GainNode(ctx, { gain: formantsOn.value ? 1.0 : 0.0 });
   sourceMix.connect(f);
@@ -99,13 +98,16 @@ for (const [frequency, Q, gain] of formantVals[vowel.value]) {
   formantsg.push(fg);
 }
 
-let formantsThru: GainNode = new GainNode(ctx, { gain: formantsOn.value ? 0.0 : 1.0 });
+const formantsThru: GainNode = new GainNode(ctx, {
+  gain: formantsOn.value ? 0.0 : 1.0,
+});
 sourceMix.connect(formantsThru);
 formantsThru.connect(mix);
 
-let af: number = 0;
-let g: PIXI.Graphics = new PIXI.Graphics();
-let gw = 800, gh = 80;
+let af = 0;
+const g: PIXI.Graphics = new PIXI.Graphics();
+const gw = 800,
+  gh = 80;
 
 function play(frequency: number) {
   // construct
@@ -177,7 +179,8 @@ function analyze() {
   for (let i = 0; i < dataArr.length; i++) {
     const x = (i / dataArr.length) * gw;
     const y = (dataArr[i] + 1) * (gh / 2);
-    if (i === 0) g.moveTo(x, y); else g.lineTo(x, y);
+    if (i === 0) g.moveTo(x, y);
+    else g.lineTo(x, y);
   }
 
   af = requestAnimationFrame(analyze);
@@ -195,12 +198,12 @@ onMounted(() => {
   });
   app.stage.addChild(g);
 
-  window.addEventListener('keydown', (e) => {
-    if (e.key === ' ') {
+  window.addEventListener("keydown", (e) => {
+    if (e.key === " ") {
       e.preventDefault();
       toggle();
     }
-  })
+  });
 });
 
 onUnmounted(() => {
@@ -214,7 +217,8 @@ onUnmounted(() => {
       <canvas ref="canvas" />
     </fieldset>
     <fieldset>
-      <label>Power: {{ power.toFixed(2) }} / {{ gain2db(power).toFixed(2) }}dB</label>
+      <label>Power: {{ power.toFixed(2) }} /
+        {{ gain2db(power).toFixed(2) }}dB</label>
     </fieldset>
     <fieldset>
       <h3>Source</h3>
@@ -226,54 +230,85 @@ onUnmounted(() => {
       <Knob label="Saw" v-model="sawGain" @change="sawg.gain.value = $event" />
       <Knob label="Sine" v-model="sinGain" @change="sing.gain.value = $event" />
       <Knob label="Square" v-model="sqGain" @change="sqg.gain.value = $event" />
-      <Knob label="Noise" v-model="noiseGain" @change="noiseg.gain.value = $event" :step=".01" />
+      <Knob
+        label="Noise"
+        v-model="noiseGain"
+        @change="noiseg.gain.value = $event"
+        :step="0.01"
+      />
     </fieldset>
     <fieldset divider>
-      <input type="checkbox" v-model="formantsOn" @change="updateFormantsOn" />
+      <input type="checkbox" v-model="formantsOn" @change="updateFormantsOn">
       <h3>Formants</h3>
     </fieldset>
     <fieldset>
-      <v-btn v-for="v in Object.keys(formantVals)" @click="vowel = v"
+      <v-btn
+        v-for="v in Object.keys(formantVals)"
+        @click="vowel = v"
+        :key="v"
         :color="vowel === v ? '#ddd' : ''"
-      >{{ v }}</v-btn>
+      >
+        {{ v }}
+      </v-btn>
     </fieldset>
-    <fieldset v-for="fval, idx in formantVals[vowel]">
-      <label>F{{ idx+1 }}</label>
-      <Knob label="Freq" v-model="fval[0].value" @change="formants[idx].frequency.value = $event" :min="0" :max="22050" :step="100" />
-      <Knob label="Q" v-model="fval[1].value" @change="formants[idx].Q.value = $event" :min="0" :max="10" :step=".5" />
-      <Knob label="Gain" v-model="fval[2].value" @change="formants[idx].gain.value = $event" :min="0" :max="20" :step=".1" />
+    <fieldset v-for="(fval, idx) in formantVals[vowel]" :key="idx">
+      <label>F{{ idx + 1 }}</label>
+      <Knob
+        label="Freq"
+        v-model="fval[0].value"
+        @change="formants[idx].frequency.value = $event"
+        :min="0"
+        :max="22050"
+        :step="100"
+      />
+      <Knob
+        label="Q"
+        v-model="fval[1].value"
+        @change="formants[idx].Q.value = $event"
+        :min="0"
+        :max="10"
+        :step="0.5"
+      />
+      <Knob
+        label="Gain"
+        v-model="fval[2].value"
+        @change="formants[idx].gain.value = $event"
+        :min="0"
+        :max="20"
+        :step="0.1"
+      />
     </fieldset>
   </section>
 </template>
 
 <style lang="scss" scoped>
-  section {
-    display: flex;
-    flex-flow: column nowrap;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    gap: 20px;
-    padding-bottom: 100px;
+section {
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  gap: 20px;
+  padding-bottom: 100px;
+}
+fieldset {
+  border: 0;
+  padding: 0 0 0 0;
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  &[divider] {
+    margin-top: 20px;
   }
-  fieldset {
-    border: 0;
-    padding: 0 0 0 0;
-    display: flex;
-    flex-direction: row;
-    gap: 20px;
-    &[divider] {
-      margin-top: 20px;
-    }
-    &[compact] {
-      margin: 0;
-    }
+  &[compact] {
+    margin: 0;
   }
-  label {
-    font-size: 13px;
-    align-self: center;
-  }
-  .f0 {
-    width: 100px;
-  }
+}
+label {
+  font-size: 13px;
+  align-self: center;
+}
+.f0 {
+  width: 100px;
+}
 </style>

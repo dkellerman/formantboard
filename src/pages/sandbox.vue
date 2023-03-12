@@ -5,7 +5,6 @@ import F0Selector from '../components/F0Selector.vue';
 import Visualizer from '../components/Visualizer.vue';
 import MidiButton from '../components/MidiButton.vue';
 import Keyboard from '../components/Keyboard.vue';
-import PianoBar from '../components/PianoBar.vue';
 import MicButton from '../components/MicButton.vue';
 
 const sources = [
@@ -63,7 +62,6 @@ onMounted(() => {
     </fieldset>
 
     <Visualizer :vtype="VisType.POWER" :height="80" combined />
-    <PianoBar :height="80" :harmonics="metrics.harmonics" :vowel-spec="vowelSpec" />
     <Keyboard ref="keyboard" @key-on="player?.play" @key-off="player?.stop" :height="80" />
 
     <fieldset>

@@ -66,6 +66,7 @@ declare global {
   const extendRef: typeof import('@vueuse/core')['extendRef']
   const fillRect: typeof import('./utils')['fillRect']
   const formantPxRange: typeof import('./utils')['formantPxRange']
+  const formantRange: typeof import('./utils')['formantRange']
   const freq2note: typeof import('./utils')['freq2note']
   const freq2noteCents: typeof import('./utils')['freq2noteCents']
   const freq2px: typeof import('./utils')['freq2px']
@@ -408,6 +409,7 @@ declare module 'vue' {
     readonly extendRef: UnwrapRef<typeof import('@vueuse/core')['extendRef']>
     readonly fillRect: UnwrapRef<typeof import('./utils')['fillRect']>
     readonly formantPxRange: UnwrapRef<typeof import('./utils')['formantPxRange']>
+    readonly formantRange: UnwrapRef<typeof import('./utils')['formantRange']>
     readonly freq2note: UnwrapRef<typeof import('./utils')['freq2note']>
     readonly freq2noteCents: UnwrapRef<typeof import('./utils')['freq2noteCents']>
     readonly freq2px: UnwrapRef<typeof import('./utils')['freq2px']>
