@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Vowel } from '../stores/useVowel';
+import { VOWEL_WORDS } from '../stores/useVowel';
 
 const emit = defineEmits(['change']);
 const { vowel } = storeToRefs(useVowel());
