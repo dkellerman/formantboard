@@ -241,7 +241,7 @@ onUnmounted(() => {
       <input type="checkbox" v-model="formantsOn" @change="updateFormantsOn">
       <h3>Formants</h3>
     </fieldset>
-    <fieldset>
+    <fieldset class="formants">
       <v-btn
         v-for="v in Object.keys(formantVals)"
         @click="vowel = v"
@@ -251,7 +251,7 @@ onUnmounted(() => {
         {{ v }}
       </v-btn>
     </fieldset>
-    <fieldset v-for="(fval, idx) in formantVals[vowel]" :key="idx">
+    <fieldset v-for="(fval, idx) in formantVals[vowel]" :key="idx" class="formant">
       <label>F{{ idx + 1 }}</label>
       <Knob
         label="Freq"
@@ -290,12 +290,14 @@ section {
   width: 100%;
   gap: 20px;
   padding-bottom: 100px;
+  margin-top: -10px;
 }
 fieldset {
   border: 0;
-  padding: 0 0 0 0;
+  padding: 0 0 0 10px;
   display: flex;
-  flex-direction: row;
+  flex-flow: row wrap;
+  justify-content: center;
   gap: 20px;
   &[divider] {
     margin-top: 20px;
@@ -310,5 +312,8 @@ label {
 }
 .f0 {
   width: 100px;
+}
+.formants {
+  margin-bottom: 10px;
 }
 </style>
