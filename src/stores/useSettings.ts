@@ -138,10 +138,10 @@ export const useSettings = defineStore('settings', () => {
     compression: {
       on: false,
       threshold: 0.0, // compressorDefaults.threshold.value,
-      knee: compressorDefaults.knee.value,
-      ratio: compressorDefaults.ratio.value,
-      attack: compressorDefaults.attack.value,
-      release: compressorDefaults.release.value,
+      knee: 0.0, // compressorDefaults.knee.value,
+      ratio: 20.0, // compressorDefaults.ratio.value,
+      attack: .005, // compressorDefaults.attack.value,
+      release: .050, // compressorDefaults.release.value,
     },
     tube: {
       on: false,

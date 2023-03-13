@@ -154,8 +154,8 @@ function renderPower(data: Metrics, analyzer: AnalyserNode) {
 
     // src gain:
     gPower.value.lineStyle(1, 0xffffff);
-    gPower.value.moveTo(hx - 1, height.value);
-    gPower.value.lineTo(hx - 1, height.value - (height.value * hsrcgain));
+    gPower.value.moveTo(hx - 2, height.value);
+    gPower.value.lineTo(hx - 2, height.value - (height.value * hsrcgain));
   }
 }
 
