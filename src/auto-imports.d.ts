@@ -25,6 +25,7 @@ declare global {
   const WASMNode: typeof import('./wasm')['WASMNode']
   const WHITE_KEYS: typeof import('./utils')['WHITE_KEYS']
   const acceptHMRUpdate: typeof import('pinia')['acceptHMRUpdate']
+  const arr2rms: typeof import('./utils')['arr2rms']
   const asyncComputed: typeof import('@vueuse/core')['asyncComputed']
   const autoResetRef: typeof import('@vueuse/core')['autoResetRef']
   const clamp: typeof import('./utils')['clamp']
@@ -75,6 +76,7 @@ declare global {
   const getActivePinia: typeof import('pinia')['getActivePinia']
   const getCurrentInstance: typeof import('vue')['getCurrentInstance']
   const getCurrentScope: typeof import('vue')['getCurrentScope']
+  const getHarmonics: typeof import('./utils')['getHarmonics']
   const h: typeof import('vue')['h']
   const hsl: typeof import('./utils')['hsl']
   const ignorableWatch: typeof import('@vueuse/core')['ignorableWatch']
@@ -134,7 +136,6 @@ declare global {
   const resolveComponent: typeof import('vue')['resolveComponent']
   const resolveRef: typeof import('@vueuse/core')['resolveRef']
   const resolveUnref: typeof import('@vueuse/core')['resolveUnref']
-  const rms: typeof import('./utils')['rms']
   const round: typeof import('./utils')['round']
   const setActivePinia: typeof import('pinia')['setActivePinia']
   const setMapStoreSuffix: typeof import('pinia')['setMapStoreSuffix']
@@ -368,6 +369,7 @@ declare module 'vue' {
     readonly WASMNode: UnwrapRef<typeof import('./wasm')['WASMNode']>
     readonly WHITE_KEYS: UnwrapRef<typeof import('./utils')['WHITE_KEYS']>
     readonly acceptHMRUpdate: UnwrapRef<typeof import('pinia')['acceptHMRUpdate']>
+    readonly arr2rms: UnwrapRef<typeof import('./utils')['arr2rms']>
     readonly asyncComputed: UnwrapRef<typeof import('@vueuse/core')['asyncComputed']>
     readonly autoResetRef: UnwrapRef<typeof import('@vueuse/core')['autoResetRef']>
     readonly clamp: UnwrapRef<typeof import('./utils')['clamp']>
@@ -418,6 +420,7 @@ declare module 'vue' {
     readonly getActivePinia: UnwrapRef<typeof import('pinia')['getActivePinia']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
+    readonly getHarmonics: UnwrapRef<typeof import('./utils')['getHarmonics']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
     readonly hsl: UnwrapRef<typeof import('./utils')['hsl']>
     readonly ignorableWatch: UnwrapRef<typeof import('@vueuse/core')['ignorableWatch']>
@@ -477,7 +480,6 @@ declare module 'vue' {
     readonly resolveComponent: UnwrapRef<typeof import('vue')['resolveComponent']>
     readonly resolveRef: UnwrapRef<typeof import('@vueuse/core')['resolveRef']>
     readonly resolveUnref: UnwrapRef<typeof import('@vueuse/core')['resolveUnref']>
-    readonly rms: UnwrapRef<typeof import('./utils')['rms']>
     readonly round: UnwrapRef<typeof import('./utils')['round']>
     readonly setActivePinia: UnwrapRef<typeof import('pinia')['setActivePinia']>
     readonly setMapStoreSuffix: UnwrapRef<typeof import('pinia')['setMapStoreSuffix']>

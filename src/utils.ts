@@ -120,6 +120,23 @@ export function clampFreq(n: number): number {
   return clamp(n, MIN_FREQ, MAX_FREQ);
 }
 
+export function getHarmonics(
+  baseFrequency: number,
+  tilt = 0,
+  maxHarmonics = Number.POSITIVE_INFINITY,
+  maxFrequency = 5000,
+  customGains: Record<number, number> = {}
+) {
+  const vals: [number, number][] = [];
+  for (let i = 0; i < maxHarmonics; i++) {
+    const freq = baseFrequency * (i + 1);
+    if (freq > maxFrequency) break;
+    const gain = customGains[i] ?? db2gain(tilt) ** (freq/baseFrequency);
+    vals.push([freq, gain]);
+  }
+  return vals;
+}
+
 export function fillRect(
   g: PIXI.Graphics,
   x: number,
@@ -158,7 +175,7 @@ export function debugt(...args: any[]) {
   w.__debug_ts = performance.now();
 }
 
-export function rms(arr: number[], normFactor = 1.0) {
+export function arr2rms(arr: number[], normFactor = 1.0) {
   return Math.sqrt(arr.reduce((prev, curr) => (prev + (curr/normFactor) * (curr/normFactor)), 0.0) / arr.length);
 }
 

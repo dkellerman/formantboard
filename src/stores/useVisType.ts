@@ -4,7 +4,7 @@ export enum VisType {
 }
 
 export const VIS_TYPES = [
-  { title: 'Power', value: VisType.POWER },
+  { title: 'Spectrum', value: VisType.POWER },
   { title: 'Wave', value: VisType.WAVE },
 ];
 

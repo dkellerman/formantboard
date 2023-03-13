@@ -97,8 +97,6 @@ onUnmounted(() => {
 });
 
 function makeFreqBins(binCount: number) {
-  if (!canvas.value) return [];
-
   const bins: FFTBin[] = [];
   const fwidth = (metrics.sampleRate / 2) / binCount;
 
@@ -147,12 +145,17 @@ function renderPower(data: Metrics, analyzer: AnalyserNode) {
   }
 
   // harmonics
-  gPower.value.lineStyle(2, str2hexColor(viz.harmonicColor));
-  for (const [hfreq, hgain] of metrics.harmonics) {
+  for (const [hfreq, hsrcgain, hgain] of metrics.harmonics) {
     const hx = freq2px(hfreq, width.value);
     const hy = height.value - (height.value * hgain);
+    gPower.value.lineStyle(3, str2hexColor(viz.harmonicColor));
     gPower.value.moveTo(hx, height.value);
     gPower.value.lineTo(hx, hy);
+
+    // src gain:
+    gPower.value.lineStyle(1, 0xffffff);
+    gPower.value.moveTo(hx - 1, height.value);
+    gPower.value.lineTo(hx - 1, height.value - (height.value * hsrcgain));
   }
 }
 

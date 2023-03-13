@@ -172,7 +172,7 @@ function analyze() {
   analyzer.getFloatTimeDomainData(data);
 
   const dataArr = [...data];
-  power.value = rms(dataArr);
+  power.value = arr2rms(dataArr);
 
   g.clear();
   g.lineStyle(1, 0xffffff, 1);

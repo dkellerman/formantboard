@@ -17,6 +17,7 @@
     "pinia": "^2.0.30",
     "pixi.js": "^7.1.2",
     "primevue": "^3.24.0",
+    "regression": "^2.0.1",
     "sass": "^1.58.2",
     "tinycolor2": "^1.6.0",
     "vue": "^3.2.45",
@@ -26,6 +27,7 @@
     "webmidi": "^3.1.4"
   },
   "devDependencies": {
+    "@types/regression": "^2.0.2",
     "@types/tinycolor2": "^1.4.3",
     "@typescript-eslint/eslint-plugin": "^5.52.0",
     "@typescript-eslint/parser": "^5.52.0",

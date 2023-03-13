@@ -14,6 +14,7 @@ const props = withDefaults(defineProps<Props>(), {
 const player = usePlayer();
 const mic = ref<MediaStreamAudioSourceNode>();
 const metrics = useMetrics();
+const { settings } = storeToRefs(useSettings());
 const listening = ref(false);
 const micRafId = ref<number>();
 
@@ -29,12 +30,12 @@ async function enableMic() {
 
   const pitchDetection = await createPitchDetectionNode(ctx, (freq: number) => {
     const [note, cents] = freq2noteCents(freq);
-    metrics.pitch = {
-      freq,
-      note,
-      cents,
-    };
+    metrics.source = 'mic';
+    metrics.pitch = { freq, note, cents };
+    const hcfg = settings.value.harmonics;
+    metrics.harmonics = getHarmonics(freq, hcfg.tilt, hcfg.max, hcfg.maxFreq).map(([f, g]) => [f, g, 0.0]);
   });
+
   mic.value.connect(pitchDetection);
   listening.value = true;
 }

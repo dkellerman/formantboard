@@ -1,4 +1,5 @@
 import type { Note } from "../utils";
+import { logarithmic } from 'regression';
 
 interface Pitch {
   freq: number;
@@ -8,8 +9,10 @@ interface Pitch {
 
 export const useMetrics = defineStore('metrics', () => {
   const { settings } = useSettings();
+  const source = ref<string>();
   const rms = ref(0.0);
-  const harmonics = ref<[number, number][]>([]);
+  const tilt = ref<ReturnType<typeof logarithmic>>();
+  const harmonics = ref<[number, number, number][]>([]);
   const compression = ref(0.0);
   const latency = ref(0.0);
   const sampleRate = ref<number>(settings.audioContextConfig.sampleRate);
@@ -20,7 +23,9 @@ export const useMetrics = defineStore('metrics', () => {
   const timeData = computed<Float32Array|Uint8Array>(() => new DataArrayType.value(frequencyBinCount.value));
 
   return {
+    source,
     rms,
+    tilt,
     harmonics,
     compression,
     latency,

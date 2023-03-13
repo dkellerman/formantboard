@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Note } from '../utils';
+import { arr2rms, Note } from '../utils';
 import type { Metrics } from './useMetrics';
+import regression from 'regression';
 
 interface AnalyzerListener {
   onFrame: (data: Metrics, analyzer: AnalyserNode) => void;
@@ -34,12 +35,14 @@ export const usePlayer = defineStore('player', () => {
 
     const ctx = audioContext.value;
     const startTime = ctx.currentTime;
+    const keyGain = velocity * settings.f0.keyGain;
 
     // create basic source nodes
     const sourceType = settings.f0.sourceType as OscillatorType;
     const osc = new OscillatorNode(ctx, { frequency, type: sourceType });
     const oscGain = new GainNode(ctx, { gain: 0 });
     const noiseGain = new GainNode(ctx, { gain: 0 });
+    metrics.source = sourceType;
 
     // set the audio source
     let source: AudioScheduledSourceNode;
@@ -56,15 +59,17 @@ export const usePlayer = defineStore('player', () => {
     // create harmonics (osc source only) -> oscillators feed into source node
     // and harmonics feed into harmonicsOutput
     let harmonics: [OscillatorNode, GainNode][];
-    const harmonicsOutput = new GainNode(ctx, { gain: 1.0 });
+    const harmonicsOutput = new GainNode(ctx, { gain: keyGain });
     const h = settings.harmonics;
     if (h.on && isTonalSource) {
       harmonics = createHarmonics(ctx, frequency, h.max, h.maxFreq, h.tilt, sourceType);
       harmonics.forEach(([, hGain]) => hGain.connect(harmonicsOutput));
-      metrics.harmonics = harmonics.map(([osc, gain]) => [osc.frequency.value, gain.gain.value]);
+      metrics.harmonics = harmonics.map(([osc, gain]) => [osc.frequency.value, gain.gain.value, 0.0]);
     } else {
-      harmonics = metrics.harmonics = [];
+      harmonics = [];
+      metrics.harmonics = [[frequency, 1.0, 0.0]];
     }
+    metrics.pitch = { freq: frequency, note: freq2note(frequency), cents: 0 };
 
     // pre-emphasis
     if (settings.preemphasis.on) {
@@ -142,9 +147,9 @@ export const usePlayer = defineStore('player', () => {
     // start/ramp source nodes
     const t = ctx.currentTime + .002;
     if (mustControlSource) source.start(t);
-    for (const [osc] of harmonics) osc.start(t);
+    for (const [osc] of harmonics.slice(1)) osc.start(t);
 
-    sourceGain.gain.linearRampToValueAtTime(velocity * settings.f0.keyGain, t + settings.f0.onsetTime);
+    sourceGain.gain.linearRampToValueAtTime(keyGain, t + settings.f0.onsetTime);
     if (vibratoOsc && vibratoGain) {
       vibratoOsc.start(t);
       vibratoGain.gain.linearRampToValueAtTime(settings.vibrato.extent, t + settings.vibrato.onsetTime);
@@ -155,7 +160,7 @@ export const usePlayer = defineStore('player', () => {
       const t = ctx.currentTime + .05;
       sourceGain.gain.setTargetAtTime(0, t, settings.f0.decayTime);
       if (mustControlSource) source.stop(t + settings.f0.decayTime + 1);
-      harmonics.forEach(([osc]) => { osc.stop(t); osc = undefined as any; });
+      harmonics.slice(1).forEach(([osc]) => { osc.stop(t); osc = undefined as any; });
       vibratoOsc?.stop(t);
       if (stopAnalysis && rafId.value) {
         cancelAnimationFrame(rafId.value);
@@ -185,15 +190,31 @@ export const usePlayer = defineStore('player', () => {
     metrics.compression = compressor.value.reduction;
     metrics.sampleRate = analyzer.value.context.sampleRate;
     metrics.frequencyBinCount = analyzer.value.frequencyBinCount;
+
     if (settings.analyzer.useFloatData) {
       analyzer.value.getFloatTimeDomainData(metrics.timeData as Float32Array);
       analyzer.value.getFloatFrequencyData(metrics.freqData as Float32Array);
-      metrics.rms = 20.0 * Math.log10(rms([...metrics.freqData], 1.0)); // ??
+      metrics.rms = gain2db(arr2rms([...metrics.freqData], 1.0)); // ??
     } else {
       analyzer.value.getByteTimeDomainData(metrics.timeData as Uint8Array);
       analyzer.value.getByteFrequencyData(metrics.freqData as Uint8Array);
-      metrics.rms = 20.0 * Math.log10(rms([...metrics.freqData], 256.0));
+      metrics.rms = gain2db(arr2rms([...metrics.freqData], 256.0));
     }
+
+    metrics.harmonics.forEach(h => {
+      const [f] = h;
+      const sliceWidth = (metrics.sampleRate / 2) / metrics.frequencyBinCount;
+      metrics.freqData.forEach((v, i) => {
+        const f1 = i * sliceWidth;
+        const f2 = f1 + sliceWidth;
+        if (f >= f1 && f < f2) {
+          h[2] = settings.analyzer.useFloatData ? db2gain(v) : v / 256.0;
+        }
+      });
+    });
+
+    metrics.tilt = regression.logarithmic(metrics.harmonics.map(h => [h[0], h[2]]));
+
     for (const l of Object.values(analyzerListeners.value)) {
       l.onFrame(metrics, analyzer.value);
     }

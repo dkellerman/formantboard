@@ -106,7 +106,7 @@ export const useSettings = defineStore('settings', () => {
     },
     f0: {
       on: true,
-      keyGain: 0.01,
+      keyGain: .1,
       onsetTime: 0.02,
       decayTime: 0.05,
       source: 'osc',
@@ -115,17 +115,17 @@ export const useSettings = defineStore('settings', () => {
     harmonics: {
       on: true,
       max: 40,
-      maxFreq: 22050,
+      maxFreq: 12000,
       tilt: -1.0,
     },
     preemphasis: {
-      on: true,
+      on: false,
       frequency: 18000,
       Q: 0.1,
       gain: 12.0,
     },
     flutter: {
-      on: true,
+      on: false,
       amount: 1.0,
     },
     vibrato: {
@@ -149,8 +149,8 @@ export const useSettings = defineStore('settings', () => {
     analyzer: {
       on: true,
       useFloatData: false,
-      fftSize: 4096,
-      smoothingTimeConstant: 0,
+      fftSize: 2**12,
+      smoothingTimeConstant: .5,
     },
     formants: {
       on: true,

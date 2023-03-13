@@ -1,5 +1,6 @@
 import { WASMCallback } from 'wasm';
 import type { VowelSpec } from './stores/useSettings';
+import { getHarmonics } from './utils';
 
 export function createWhiteNoise(ctx: AudioContext) {
   const buffer = ctx.createBuffer(1, ctx.sampleRate * 3, ctx.sampleRate);
@@ -19,23 +20,18 @@ export function createHarmonics(
   ctx: AudioContext,
   baseFrequency: number,
   maxHarmonics: number = Number.POSITIVE_INFINITY,
-  maxFrequency = 22050,
+  maxFrequency = 10000,
   tilt = 0.0,
   sourceType: OscillatorType = 'sine',
   customGains: Record<number, number> = {},
 ): [OscillatorNode, GainNode][] {
-  const harmonics: [OscillatorNode, GainNode][] = [];
-
-  for (let i = 0; i < maxHarmonics; i++) {
-    const freq = baseFrequency * (i + 1);
-    if (freq > Math.min(maxFrequency, 22050)) break;
-    const hOsc = new OscillatorNode(ctx, { type: sourceType, frequency: freq });
-    const gainVal = customGains[i] ?? (10 ** (tilt / 20)) ** i;
-    const hGain = new GainNode(ctx, { gain: gainVal });
-    hOsc.connect(hGain);
-    harmonics.push([hOsc, hGain]);
-  }
-
+  const hvals = getHarmonics(baseFrequency, tilt, maxHarmonics, maxFrequency, customGains);
+  const harmonics: [OscillatorNode, GainNode][] = hvals.map(([freq, gain]) => {
+    const osc = new OscillatorNode(ctx, { type: sourceType, frequency: freq });
+    const g = new GainNode(ctx, { gain });
+    osc.connect(g);
+    return [osc, g];
+  });
   return harmonics;
 }
 
