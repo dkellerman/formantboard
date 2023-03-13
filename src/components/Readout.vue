@@ -11,10 +11,10 @@ const metrics = useMetrics();
         {{ metrics.pitch.cents > 0 ? '+' : '' }}{{ metrics.pitch.cents.toFixed(0) }}c
       </span>
     </fieldset>
-    <fieldset v-if="metrics.tilt?.equation[1]">
+    <!-- <fieldset v-if="metrics.tilt?.equation[1]">
       Tilt:
       {{ metrics.tilt.equation[1] > 0 ? '+' : '' }}{{ metrics.tilt.equation[1]?.toFixed(1) }}
-    </fieldset>
+    </fieldset> -->
   </section>
 </template>
 

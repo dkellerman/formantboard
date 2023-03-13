@@ -149,8 +149,8 @@ export const useSettings = defineStore('settings', () => {
     analyzer: {
       on: true,
       useFloatData: false,
-      fftSize: 2**12,
-      smoothingTimeConstant: .5,
+      fftSize: 2**11,
+      smoothingTimeConstant: .7,
     },
     formants: {
       on: true,
