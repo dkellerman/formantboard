@@ -26,13 +26,12 @@ const showHGains = ref(false);
 const keyboard = ref<InstanceType<typeof Keyboard>>();
 const { vowelSpec } = storeToRefs(useVowel());
 const { settings } = storeToRefs(useSettings());
-const { flutter, harmonics, compression, formants, tube, vibrato, f0, preemphasis } = settings.value;
+const { flutter, harmonics, compression, formants, vibrato, f0 } = settings.value;
 
 const r = () => f0selector.value?.restartF0();
 
 function toggleEffects() {
-  compression.on = harmonics.on = flutter.on = vibrato.on = tube.on = formants.on =
-    preemphasis.on = allEffects.value;
+  compression.on = harmonics.on = flutter.on = vibrato.on = formants.on = allEffects.value;
   f0selector.value?.restartF0();
 }
 
@@ -98,14 +97,6 @@ onMounted(() => {
       </div>
     </fieldset>
     <fieldset>
-      <label><v-switch label="Pre-emphasis" v-model="preemphasis.on" @change="r" /></label>
-      <div>
-        <v-num label="Frequency" v-model="preemphasis.frequency" @change="r" step="100" />
-        <v-num label="Q" v-model="preemphasis.Q" @change="r" step=".1" />
-        <v-num label="Gain" v-model="preemphasis.gain" @change="r" />
-      </div>
-    </fieldset>
-    <fieldset>
       <label><v-switch label="Flutter" v-model="flutter.on" @change="r" /></label>
       <div>
         <v-num label="Amount" v-model="flutter.amount" @change="r" step=".5" />
@@ -119,9 +110,6 @@ onMounted(() => {
         <v-num label="Jitter" v-model="vibrato.jitter" @change="r" step=".5" />
         <v-num label="Onset time" v-model="vibrato.onsetTime" @change="r" suffix="s" step=".1" />
       </div>
-    </fieldset>
-    <fieldset>
-      <label><v-switch label="Tube" v-model="tube.on" @change="r" /></label>
     </fieldset>
     <fieldset>
       <label><v-switch label="Formants" v-model="formants.on" @change="r" /></label>
