@@ -49,13 +49,13 @@ const defaultSettings = {
     tilt: -3.0,
   },
   flutter: {
-    on: false,
+    on: true,
     amount: 1.0,
   },
   vibrato: {
     on: true,
-    rate: 6.5,
-    extent: 3.0,
+    rate: 5,
+    extent: 2.0,
     jitter: 0.0,
     onsetTime: 0.5,
   },
