@@ -27,7 +27,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const player = usePlayer();
 const metrics = useMetrics();
-const { layout } = storeToRefs(useKeyboardLayout());
+const { layout, keyboardWidth } = storeToRefs(useKeyboardLayout());
 const { vowelSpec } = storeToRefs(useVowel());
 const { settings } = storeToRefs(useSettings());
 const id = computed(() => `viz-${props.vtype}`);
@@ -36,8 +36,7 @@ const gWave = ref<PIXI.Graphics>();
 const gPower = ref<PIXI.Graphics>();
 const overlay = ref<PIXI.Graphics>();
 const canvas = ref<HTMLCanvasElement>();
-const winSize = useWindowSize();
-const width = computed(() => props.width ?? winSize.width.value * .95);
+const width = computed(() => props.width ?? keyboardWidth.value);
 const height = computed(() => props.height ?? 140);
 const viz = settings.value.viz;
 
@@ -102,8 +101,8 @@ function makeFreqBins(binCount: number) {
   const fwidth = (metrics.sampleRate / 2) / binCount;
 
   for (let i = 0; i < binCount; i++) {
-    const freq1 = Math.max(fwidth * i, FREQUENCIES[0]);
-    const freq2 = Math.min(freq1 + fwidth, FREQUENCIES[FREQUENCIES.length - 1]);
+    const freq1 = Math.max(fwidth * i, layout.value.bottomFreq);
+    const freq2 = Math.min(freq1 + fwidth, layout.value.topFreq);
     const x1 = layout.value.freq2px(freq1, width.value);
     const x2 = layout.value.freq2px(freq2, width.value)
     bins.push({ freq1, freq2, x1, x2, bufferIndex: i });

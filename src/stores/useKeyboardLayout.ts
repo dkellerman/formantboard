@@ -6,7 +6,7 @@ export const useKeyboardLayout = defineStore('keyboardLayout', () => {
     let bot = 0, top = NOTES.length - 1;
     while (true) {
       const l = new KeyboardLayout(NOTES[bot], NOTES[top]);
-      if (top - bot <= 36 || getKeyWidth(l) > 30) return l;
+      if (top - bot <= 36 || getKeyWidth(l) > 20) return l;
       bot += 1;
       top -= 1;
     }

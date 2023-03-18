@@ -7,6 +7,8 @@ let gain: GainNode, gain2: GainNode, a: AnalyserNode;
 let raf: number|undefined;
 let rafct = 0;
 
+const { layout, keyboardWidth } = storeToRefs(useKeyboardLayout());
+
 function toggle() {
   if (started.value) {
     osc?.stop();
@@ -54,6 +56,10 @@ function draw() {
     <v-btn @click="toggle">
       {{ started ? 'Stop' : 'Start' }}
     </v-btn>
+
+    <div v-for="note in layout.notes" :key="note">
+      {{ note }} :: {{ countSlots('A0', note) }} :: {{ layout.freq2px(note2freq(note), keyboardWidth) }}
+    </div>
   </section>
 </template>
 
