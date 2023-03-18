@@ -58,7 +58,7 @@ export const usePlayer = defineStore('player', () => {
     // create harmonics
     const h = settings.harmonics;
     if (h.on && isTonalSource) {
-      const [harmonics, periodicWave] = createHarmonics(ctx, frequency, h.max, h.maxFreq, h.tilt, sourceType);
+      const [harmonics, periodicWave] = createHarmonics(ctx, frequency, h.max, h.maxFreq, h.tilt);
       (source as OscillatorNode).setPeriodicWave(periodicWave);
       metrics.harmonics = harmonics.map(([freq, gain]) => [freq, gain, 0.0]);
     } else {
@@ -91,7 +91,7 @@ export const usePlayer = defineStore('player', () => {
 
     // formants
     let formants: BiquadFilterNode[];
-    let formantsGain: GainNode = new GainNode(ctx, { gain: 1 });
+    const formantsGain: GainNode = new GainNode(ctx, { gain: 1 });
     if (settings.formants.on) {
       formants = createFormants(ctx, vowelSpec.value);
       for (const formant of formants) {

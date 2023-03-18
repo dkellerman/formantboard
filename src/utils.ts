@@ -240,11 +240,10 @@ export function createHarmonics(
   maxHarmonics: number = Number.POSITIVE_INFINITY,
   maxFrequency = 10000,
   tilt = 0.0,
-  sourceType: OscillatorType = 'sine',
   customGains: Record<number, number> = {},
 ): [ReturnType<typeof getHarmonics>, PeriodicWave] {
   const hvals = getHarmonics(baseFrequency, tilt, maxHarmonics, maxFrequency, customGains);
-  const hmReal = new Float32Array(hvals.map(([_, gain]) => gain));
+  const hmReal = new Float32Array(hvals.map(([, gain]) => gain));
   const hmImag = new Float32Array(hvals.length);
   return [hvals, ctx.createPeriodicWave(hmReal, hmImag)];
 }
