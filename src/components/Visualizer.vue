@@ -27,6 +27,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const player = usePlayer();
 const metrics = useMetrics();
+const { layout } = storeToRefs(useKeyboardLayout());
 const { vowelSpec } = storeToRefs(useVowel());
 const { settings } = storeToRefs(useSettings());
 const id = computed(() => `viz-${props.vtype}`);
@@ -103,8 +104,8 @@ function makeFreqBins(binCount: number) {
   for (let i = 0; i < binCount; i++) {
     const freq1 = Math.max(fwidth * i, FREQUENCIES[0]);
     const freq2 = Math.min(freq1 + fwidth, FREQUENCIES[FREQUENCIES.length - 1]);
-    const x1 = freq2px(freq1, width.value);
-    const x2 = freq2px(freq2, width.value)
+    const x1 = layout.value.freq2px(freq1, width.value);
+    const x2 = layout.value.freq2px(freq2, width.value)
     bins.push({ freq1, freq2, x1, x2, bufferIndex: i });
   }
 
@@ -117,7 +118,7 @@ function renderOverlay() {
 
   // formants
   for (const formant of vowelSpec.value) {
-    const [fx1, fx2] = formantPxRange(formant, width.value);
+    const [fx1, fx2] = layout.value.formantPxRange(formant, width.value);
     const clr = formant.on ? viz.formantColorOn : viz.formantColorOff;
     fillRect(overlay.value, fx1, 0, fx2 - fx1, height.value, clr, 0.4, viz.background, 1);
   }
@@ -146,7 +147,7 @@ function renderPower(data: Metrics, analyzer: AnalyserNode) {
 
   // harmonics
   for (const [hfreq, hsrcgain, hgain] of metrics.harmonics) {
-    const hx = freq2px(hfreq, width.value);
+    const hx = layout.value.freq2px(hfreq, width.value);
     const hy = height.value - (height.value * hgain);
     gPower.value.lineStyle(3, str2hexColor(viz.harmonicColor));
     gPower.value.moveTo(hx, height.value);

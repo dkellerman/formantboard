@@ -5,12 +5,12 @@ interface Props {
   height?: number;
 }
 const props = defineProps<Props>();
+
+const { layout, keyboardWidth, fullKeyWidth } = storeToRefs(useKeyboardLayout());
 const metrics = useMetrics();
-const noteIds = computed(() => NOTES.map((n) => n.replace('#', 's')));
+const noteIds = computed(() => layout.value.notes.map((n) => n.replace('#', 's')));
 const dragging = ref(false);
-const { width: winWidth } = useWindowSize();
-const width = computed(() => winWidth.value * .95);
-const height = computed(() => props.height ?? width.value / 10.0);
+const height = computed(() => props.height ?? keyboardWidth.value / 10.0);
 
 const emit = defineEmits<{
   (e: 'keyOn', note: Note, velocity: number): void;
@@ -59,7 +59,6 @@ function stop(id: string) {
 defineExpose({
   play,
   stop,
-  width,
 });
 </script>
 
@@ -86,13 +85,13 @@ defineExpose({
 </template>
 
 <style scoped lang="scss">
-$whiteKeyWidth: calc((v-bind(width) / 52) * 1px);
+$whiteKeyWidth: calc(v-bind(fullKeyWidth) * 1px);
 $kbdHeight: calc(1px * v-bind(height));
-$blackKeyWidth: calc((v-bind(width) / 52) * .65px);
+$blackKeyWidth: calc(v-bind(fullKeyWidth) * .65px);
 $blackKeyHeight: 57%;
 
 .keyboard {
-  width: calc(1px * v-bind(width));
+  width: calc(1px * v-bind(keyboardWidth));
   overflow: hidden;
 }
 
