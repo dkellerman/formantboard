@@ -92,6 +92,7 @@ export const IPA_WORDS: Record<IPA, string> = {
   [IPA.ʒ]: "pleasure",
 };
 
+export const ALL_IPA = Object.keys(IPA) as IPA[];
 export const COMMON_IPA = [ IPA.ɑ, IPA.ɛ, IPA.ə, IPA.æ, IPA.ɔ, IPA.u, IPA.ʊ, IPA.ɪ, IPA.i ];
 export const VOWELS = [ IPA.ɑ, IPA.ɛ, IPA.ə, IPA.æ, IPA.ɔ, IPA.u, IPA.ʊ, IPA.ɪ, IPA.i ];
 export const CONSONANTS = [ IPA.m, IPA.r, IPA.g, IPA.j, IPA.l, IPA.d, IPA.z, IPA.v, IPA.h, IPA.p,

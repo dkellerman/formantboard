@@ -114,7 +114,11 @@ onMounted(() => {
     <fieldset>
       <label><v-switch label="Formants" v-model="formants.on" @change="r" /></label>
       <div>
-        <IPASelector @change="r" />
+        <IPASelector @change="r" :ipa-set="ALL_IPA" />
+        <IPASelector @change="r" :ipa-set="COMMON_IPA" title="Common" />
+        <IPASelector @change="r" :ipa-set="VOWELS" title="Vowels" />
+        <IPASelector @change="r" :ipa-set="CONSONANTS" title="Consonants" />
+        <IPASelector @change="r" :ipa-set="FRICATIVES" title="Fricatives" />
       </div>
     </fieldset>
     <div v-for="formant, idx in ipaSpec">
