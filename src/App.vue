@@ -42,7 +42,7 @@ watch(route, () => {
           </a>
         </v-list-item>
         <v-list-item>
-          <a href="https://rhymium.com">
+          <a href="https://rhymes.vercel.app">
             Song Rhymes
           </a>
         </v-list-item>
