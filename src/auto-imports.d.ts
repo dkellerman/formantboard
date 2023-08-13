@@ -6,19 +6,24 @@ export {}
 declare global {
   const CANONICAL_NOTES: typeof import('./utils')['CANONICAL_NOTES']
   const CAP_FREQ: typeof import('./utils')['CAP_FREQ']
+  const COMMON_IPA: typeof import('./stores/useIPA')['COMMON_IPA']
+  const CONSONANTS: typeof import('./stores/useIPA')['CONSONANTS']
   const EffectScope: typeof import('vue')['EffectScope']
   const FREQUENCIES: typeof import('./utils')['FREQUENCIES']
+  const FRICATIVES: typeof import('./stores/useIPA')['FRICATIVES']
   const FullKeyboard: typeof import('./utils')['FullKeyboard']
+  const IPA: typeof import('./stores/useIPA')['IPA']
+  const IPA_WORDS: typeof import('./stores/useIPA')['IPA_WORDS']
   const KEY_SLOTS_PER_OCTAVE: typeof import('./utils')['KEY_SLOTS_PER_OCTAVE']
   const KeyboardLayout: typeof import('./utils')['KeyboardLayout']
   const MidiStatus: typeof import('./stores/useMidi')['MidiStatus']
   const NOTES: typeof import('./utils')['NOTES']
   const NOTE_LETTERS: typeof import('./utils')['NOTE_LETTERS']
   const NOTE_RE: typeof import('./utils')['NOTE_RE']
+  const PLOSIVES: typeof import('./stores/useIPA')['PLOSIVES']
   const VIS_TYPES: typeof import('./stores/useVisType')['VIS_TYPES']
-  const VOWEL_WORDS: typeof import('./stores/useVowel')['VOWEL_WORDS']
+  const VOWELS: typeof import('./stores/useIPA')['VOWELS']
   const VisType: typeof import('./stores/useVisType')['VisType']
-  const Vowels: typeof import('./stores/useVowel')['Vowels']
   const WASMNode: typeof import('./wasm')['WASMNode']
   const acceptHMRUpdate: typeof import('pinia')['acceptHMRUpdate']
   const arr2rms: typeof import('./utils')['arr2rms']
@@ -218,6 +223,7 @@ declare global {
   const useFullscreen: typeof import('@vueuse/core')['useFullscreen']
   const useGamepad: typeof import('@vueuse/core')['useGamepad']
   const useGeolocation: typeof import('@vueuse/core')['useGeolocation']
+  const useIPA: typeof import('./stores/useIPA')['useIPA']
   const useIdle: typeof import('@vueuse/core')['useIdle']
   const useImage: typeof import('@vueuse/core')['useImage']
   const useInfiniteScroll: typeof import('@vueuse/core')['useInfiniteScroll']
@@ -308,7 +314,6 @@ declare global {
   const useVibrate: typeof import('@vueuse/core')['useVibrate']
   const useVirtualList: typeof import('@vueuse/core')['useVirtualList']
   const useVisType: typeof import('./stores/useVisType')['useVisType']
-  const useVowel: typeof import('./stores/useVowel')['useVowel']
   const useWakeLock: typeof import('@vueuse/core')['useWakeLock']
   const useWebNotification: typeof import('@vueuse/core')['useWebNotification']
   const useWebSocket: typeof import('@vueuse/core')['useWebSocket']
@@ -343,19 +348,24 @@ declare module 'vue' {
   interface ComponentCustomProperties {
     readonly CANONICAL_NOTES: UnwrapRef<typeof import('./utils')['CANONICAL_NOTES']>
     readonly CAP_FREQ: UnwrapRef<typeof import('./utils')['CAP_FREQ']>
+    readonly COMMON_IPA: UnwrapRef<typeof import('./stores/useIPA')['COMMON_IPA']>
+    readonly CONSONANTS: UnwrapRef<typeof import('./stores/useIPA')['CONSONANTS']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
     readonly FREQUENCIES: UnwrapRef<typeof import('./utils')['FREQUENCIES']>
+    readonly FRICATIVES: UnwrapRef<typeof import('./stores/useIPA')['FRICATIVES']>
     readonly FullKeyboard: UnwrapRef<typeof import('./utils')['FullKeyboard']>
+    readonly IPA: UnwrapRef<typeof import('./stores/useIPA')['IPA']>
+    readonly IPA_WORDS: UnwrapRef<typeof import('./stores/useIPA')['IPA_WORDS']>
     readonly KEY_SLOTS_PER_OCTAVE: UnwrapRef<typeof import('./utils')['KEY_SLOTS_PER_OCTAVE']>
     readonly KeyboardLayout: UnwrapRef<typeof import('./utils')['KeyboardLayout']>
     readonly MidiStatus: UnwrapRef<typeof import('./stores/useMidi')['MidiStatus']>
     readonly NOTES: UnwrapRef<typeof import('./utils')['NOTES']>
     readonly NOTE_LETTERS: UnwrapRef<typeof import('./utils')['NOTE_LETTERS']>
     readonly NOTE_RE: UnwrapRef<typeof import('./utils')['NOTE_RE']>
+    readonly PLOSIVES: UnwrapRef<typeof import('./stores/useIPA')['PLOSIVES']>
     readonly VIS_TYPES: UnwrapRef<typeof import('./stores/useVisType')['VIS_TYPES']>
-    readonly VOWEL_WORDS: UnwrapRef<typeof import('./stores/useVowel')['VOWEL_WORDS']>
+    readonly VOWELS: UnwrapRef<typeof import('./stores/useIPA')['VOWELS']>
     readonly VisType: UnwrapRef<typeof import('./stores/useVisType')['VisType']>
-    readonly Vowels: UnwrapRef<typeof import('./stores/useVowel')['Vowels']>
     readonly WASMNode: UnwrapRef<typeof import('./wasm')['WASMNode']>
     readonly acceptHMRUpdate: UnwrapRef<typeof import('pinia')['acceptHMRUpdate']>
     readonly arr2rms: UnwrapRef<typeof import('./utils')['arr2rms']>
@@ -555,6 +565,7 @@ declare module 'vue' {
     readonly useFullscreen: UnwrapRef<typeof import('@vueuse/core')['useFullscreen']>
     readonly useGamepad: UnwrapRef<typeof import('@vueuse/core')['useGamepad']>
     readonly useGeolocation: UnwrapRef<typeof import('@vueuse/core')['useGeolocation']>
+    readonly useIPA: UnwrapRef<typeof import('./stores/useIPA')['useIPA']>
     readonly useIdle: UnwrapRef<typeof import('@vueuse/core')['useIdle']>
     readonly useImage: UnwrapRef<typeof import('@vueuse/core')['useImage']>
     readonly useInfiniteScroll: UnwrapRef<typeof import('@vueuse/core')['useInfiniteScroll']>
@@ -645,7 +656,6 @@ declare module 'vue' {
     readonly useVibrate: UnwrapRef<typeof import('@vueuse/core')['useVibrate']>
     readonly useVirtualList: UnwrapRef<typeof import('@vueuse/core')['useVirtualList']>
     readonly useVisType: UnwrapRef<typeof import('./stores/useVisType')['useVisType']>
-    readonly useVowel: UnwrapRef<typeof import('./stores/useVowel')['useVowel']>
     readonly useWakeLock: UnwrapRef<typeof import('@vueuse/core')['useWakeLock']>
     readonly useWebNotification: UnwrapRef<typeof import('@vueuse/core')['useWebNotification']>
     readonly useWebSocket: UnwrapRef<typeof import('@vueuse/core')['useWebSocket']>

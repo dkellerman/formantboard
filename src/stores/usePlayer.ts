@@ -9,7 +9,7 @@ interface AnalyzerListener {
 
 export const usePlayer = defineStore('player', () => {
   const { settings } = useSettings();
-  const { vowelSpec } = storeToRefs(useVowel());
+  const { ipaSpec } = storeToRefs(useIPA());
   const metrics = useMetrics();
   const playing: Record<number, (stopAnalysis: boolean) => void> = {};
   const volume = ref(100.0);
@@ -93,7 +93,7 @@ export const usePlayer = defineStore('player', () => {
     let formants: BiquadFilterNode[];
     const formantsGain: GainNode = new GainNode(ctx, { gain: 1 });
     if (settings.formants.on) {
-      formants = createFormants(ctx, vowelSpec.value);
+      formants = createFormants(ctx, ipaSpec.value);
       for (const formant of formants) {
         sourceGain.connect(formant);
         formant.connect(formantsGain);

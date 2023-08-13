@@ -2,28 +2,28 @@
 import F0Selector from './F0Selector.vue';
 
 const f0selector = ref<InstanceType<typeof F0Selector>>();
-const { vowelSpec } = storeToRefs(useVowel());
+const { ipaSpec } = storeToRefs(useIPA());
 const { settings } = storeToRefs(useSettings());
 const { visType } = storeToRefs(useVisType());
 const formantButtons = ref();
 
 function setFormants() {
   const btns: number[] = [];
-  vowelSpec.value.forEach((f, idx) => {
+  ipaSpec.value.forEach((f, idx) => {
     if (f.on) btns.push(idx);
   });
   formantButtons.value = btns;
 }
 
 function updateFormants(btns: number[]) {
-  vowelSpec.value.forEach((f, idx) => {
+  ipaSpec.value.forEach((f, idx) => {
     f.on = btns.includes(idx);
   });
   f0selector.value?.restartF0();
 }
 
 onMounted(setFormants);
-watch([vowelSpec.value], setFormants);
+watch([ipaSpec.value], setFormants);
 </script>
 
 <template>
@@ -31,7 +31,7 @@ watch([vowelSpec.value], setFormants);
     <F0Selector ref="f0selector" />
 
     <v-btn-toggle multiple v-model="formantButtons" @update:model-value="updateFormants($event)">
-      <v-btn v-for="f, idx in vowelSpec" :key="idx">
+      <v-btn v-for="f, idx in ipaSpec" :key="idx">
         F{{ idx + 1 }}
         <v-tooltip activator="parent" location="top">
           <div>Formant F{{ idx + 1 }} [{{ f.on ? 'ON' : 'OFF' }}]</div>
@@ -42,7 +42,7 @@ watch([vowelSpec.value], setFormants);
       </v-btn>
     </v-btn-toggle>
 
-    <VowelSelector @change="f0selector?.restartF0" />
+    <IPASelector @change="f0selector?.restartF0" />
 
     <v-text-field
       class="tilt"

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /* eslint-disable */
-import VowelSelector from '../components/VowelSelector.vue';
+import IPASelector from '../components/IPASelector.vue';
 import F0Selector from '../components/F0Selector.vue';
 import Visualizer from '../components/Visualizer.vue';
 import MidiButton from '../components/MidiButton.vue';
@@ -24,7 +24,7 @@ const metrics = useMetrics();
 const player = usePlayer();
 const showHGains = ref(false);
 const keyboard = ref<InstanceType<typeof Keyboard>>();
-const { vowelSpec } = storeToRefs(useVowel());
+const { ipaSpec } = storeToRefs(useIPA());
 const { settings } = storeToRefs(useSettings());
 const { flutter, harmonics, compression, formants, vibrato, f0 } = settings.value;
 
@@ -114,10 +114,10 @@ onMounted(() => {
     <fieldset>
       <label><v-switch label="Formants" v-model="formants.on" @change="r" /></label>
       <div>
-        <VowelSelector @change="r" />
+        <IPASelector @change="r" />
       </div>
     </fieldset>
-    <div v-for="formant, idx in vowelSpec">
+    <div v-for="formant, idx in ipaSpec">
       <fieldset>
         <label><v-switch :label="`F${idx+1}`" v-model="formant.on" @change="r" /></label>
         <div>
@@ -177,11 +177,11 @@ section.sandbox {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
-      .v-text-field, .v-switch, .vowel-selector, .v-checkbox {
+      .v-text-field, .v-switch, .ipa-selector, .v-checkbox {
         width: 150px;
         flex: unset;
       }
-      .vowel-selector {
+      .ipa-selector {
         width: 200px;
       }
       .hgains {

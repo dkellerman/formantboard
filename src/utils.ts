@@ -3,7 +3,7 @@ import * as PIXI from 'pixi.js';
 import type { Formant } from 'stores/useSettings';
 import tinycolor from 'tinycolor2';
 import { WASMCallback } from 'wasm';
-import type { VowelSpec } from './stores/useSettings';
+import type { IPASpec } from './stores/useSettings';
 
 export const NOTE_RE = /^([a-gA-G])(#|b)?([0-8])?$/;
 export const CANONICAL_NOTES: Record<string, string> = {
@@ -248,10 +248,10 @@ export function createHarmonics(
   return [hvals, ctx.createPeriodicWave(hmReal, hmImag)];
 }
 
-export function createFormants(ctx: AudioContext, vowelSpec: VowelSpec): BiquadFilterNode[] {
+export function createFormants(ctx: AudioContext, ipaSpec: IPASpec): BiquadFilterNode[] {
   const formants: BiquadFilterNode[] = [];
 
-  for (const formantConfig of vowelSpec) {
+  for (const formantConfig of ipaSpec) {
     if (!formantConfig.on) continue;
     const formant = new BiquadFilterNode(ctx, {
       type: 'peaking',
