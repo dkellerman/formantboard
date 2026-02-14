@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import F0Selector from './F0Selector.vue';
+import type { Formant } from '../stores/useSettings';
 
 const f0selector = ref<InstanceType<typeof F0Selector>>();
 const { ipaSpec } = toRefs(useIPA());
@@ -9,7 +10,7 @@ const formantButtons = ref();
 
 function setFormants() {
   const btns: number[] = [];
-  ipaSpec.value.forEach((f, idx) => {
+  ipaSpec.value.forEach((f: Formant, idx: number) => {
     if (f.on) btns.push(idx);
   });
   formantButtons.value = btns;
@@ -17,7 +18,7 @@ function setFormants() {
 
 function updateFormants(btns: unknown) {
   const selected = Array.isArray(btns) ? btns.map((value) => Number(value)) : [];
-  ipaSpec.value.forEach((f, idx) => {
+  ipaSpec.value.forEach((f: Formant, idx: number) => {
     f.on = selected.includes(idx);
   });
   f0selector.value?.restartF0();

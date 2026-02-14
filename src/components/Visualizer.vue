@@ -80,7 +80,7 @@ watch(() => JSON.stringify(ipaSpec.value), renderOverlay);
 onMounted(() => {
   init();
   player.addAnalyzerListener(id.value, {
-    onFrame: (data, analyzer) => {
+    onFrame: (data: Metrics, analyzer: AnalyserNode) => {
       if (!app.value) init();
       if (props.vtype === VisType.POWER) {
         renderPower(data, analyzer);
@@ -127,7 +127,7 @@ function renderPower(data: Metrics, analyzer: AnalyserNode) {
   if (!canvas.value || !gPower.value) return;
 
   const dataArray = data.freqData;
-  if (dataArray.every(v => v === -Infinity)) return;
+  if (dataArray.every((v: number) => v === -Infinity)) return;
 
   const bins = makeFreqBins(data.freqData.length);
   const { maxDecibels, minDecibels } = analyzer;
@@ -163,7 +163,7 @@ function renderWave(data: Metrics) {
   if (!canvas.value || !gWave.value) return;
 
   const dataArray = data.timeData;
-  if (dataArray.every(v => v === 128)) return;
+  if (dataArray.every((v: number) => v === 128)) return;
 
   gWave.value.clear();
   gWave.value.lineStyle(viz.lineWidth, str2hexColor(viz.color));

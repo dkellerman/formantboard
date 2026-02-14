@@ -8,7 +8,7 @@ const props = defineProps<Props>();
 
 const { layout, keyboardWidth } = toRefs(useKeyboardLayout());
 const metrics = useMetrics();
-const noteIds = computed(() => layout.value.notes.map((n) => n.replace('#', 's')));
+const noteIds = computed(() => layout.value.notes.map((n: string) => n.replace('#', 's')));
 const dragging = ref(false);
 const activeNotes = ref<Set<string>>(new Set());
 const detectedNotes = ref<Set<string>>(new Set());
