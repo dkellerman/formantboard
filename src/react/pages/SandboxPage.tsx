@@ -146,6 +146,13 @@ export function SandboxPage() {
 
   return (
     <section className="space-y-6 pb-10">
+      <div className="rounded border border-zinc-300 bg-white p-5 shadow-sm">
+        <h2 className="text-2xl font-semibold text-zinc-900">Sandbox (React + Zustand)</h2>
+        <p className="mt-2 text-zinc-700">
+          React-native audio controls, keyboard input, visualizer, and MIDI/mic integration.
+        </p>
+      </div>
+
       <div className="grid gap-4 rounded border border-zinc-300 bg-white p-5 shadow-sm md:grid-cols-2">
         <div className="md:col-span-2">
           <F0Control
