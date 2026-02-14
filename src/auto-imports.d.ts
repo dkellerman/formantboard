@@ -5,6 +5,7 @@
 export {}
 declare global {
   const ALL_IPA: typeof import('./stores/useIPA')['ALL_IPA']
+  const AppShell: typeof import('./react/layout/AppShell')['AppShell']
   const CANONICAL_NOTES: typeof import('./utils')['CANONICAL_NOTES']
   const CAP_FREQ: typeof import('./utils')['CAP_FREQ']
   const COMMON_IPA: typeof import('./stores/useIPA')['COMMON_IPA']
@@ -13,6 +14,7 @@ declare global {
   const FREQUENCIES: typeof import('./utils')['FREQUENCIES']
   const FRICATIVES: typeof import('./stores/useIPA')['FRICATIVES']
   const FullKeyboard: typeof import('./utils')['FullKeyboard']
+  const HomePage: typeof import('./react/pages/HomePage')['HomePage']
   const IPA: typeof import('./stores/ipaEnum')['IPA']
   const IPA_WORDS: typeof import('./stores/useIPA')['IPA_WORDS']
   const KEY_SLOTS_PER_OCTAVE: typeof import('./utils')['KEY_SLOTS_PER_OCTAVE']
@@ -21,7 +23,9 @@ declare global {
   const NOTES: typeof import('./utils')['NOTES']
   const NOTE_LETTERS: typeof import('./utils')['NOTE_LETTERS']
   const NOTE_RE: typeof import('./utils')['NOTE_RE']
+  const NotFoundPage: typeof import('./react/pages/NotFoundPage')['NotFoundPage']
   const PLOSIVES: typeof import('./stores/useIPA')['PLOSIVES']
+  const SandboxPage: typeof import('./react/pages/SandboxPage')['SandboxPage']
   const ToggleContextKey: typeof import('./components/vui-toggle')['ToggleContextKey']
   const VIS_TYPES: typeof import('./stores/visTypes')['VIS_TYPES']
   const VOWELS: typeof import('./stores/useIPA')['VOWELS']
@@ -283,6 +287,7 @@ declare global {
   const useStyleTag: typeof import('@vueuse/core')['useStyleTag']
   const useSupported: typeof import('@vueuse/core')['useSupported']
   const useSwipe: typeof import('@vueuse/core')['useSwipe']
+  const useSynthStore: typeof import('./react/store/useSynthStore')['useSynthStore']
   const useTemplateRefsList: typeof import('@vueuse/core')['useTemplateRefsList']
   const useTextDirection: typeof import('@vueuse/core')['useTextDirection']
   const useTextSelection: typeof import('@vueuse/core')['useTextSelection']
@@ -340,6 +345,7 @@ import { UnwrapRef } from 'vue'
 declare module 'vue' {
   interface ComponentCustomProperties {
     readonly ALL_IPA: UnwrapRef<typeof import('./stores/useIPA')['ALL_IPA']>
+    readonly AppShell: UnwrapRef<typeof import('./react/layout/AppShell')['AppShell']>
     readonly CANONICAL_NOTES: UnwrapRef<typeof import('./utils')['CANONICAL_NOTES']>
     readonly CAP_FREQ: UnwrapRef<typeof import('./utils')['CAP_FREQ']>
     readonly COMMON_IPA: UnwrapRef<typeof import('./stores/useIPA')['COMMON_IPA']>
@@ -348,6 +354,7 @@ declare module 'vue' {
     readonly FREQUENCIES: UnwrapRef<typeof import('./utils')['FREQUENCIES']>
     readonly FRICATIVES: UnwrapRef<typeof import('./stores/useIPA')['FRICATIVES']>
     readonly FullKeyboard: UnwrapRef<typeof import('./utils')['FullKeyboard']>
+    readonly HomePage: UnwrapRef<typeof import('./react/pages/HomePage')['HomePage']>
     readonly IPA: UnwrapRef<typeof import('./stores/ipaEnum')['IPA']>
     readonly IPA_WORDS: UnwrapRef<typeof import('./stores/useIPA')['IPA_WORDS']>
     readonly KEY_SLOTS_PER_OCTAVE: UnwrapRef<typeof import('./utils')['KEY_SLOTS_PER_OCTAVE']>
@@ -356,7 +363,9 @@ declare module 'vue' {
     readonly NOTES: UnwrapRef<typeof import('./utils')['NOTES']>
     readonly NOTE_LETTERS: UnwrapRef<typeof import('./utils')['NOTE_LETTERS']>
     readonly NOTE_RE: UnwrapRef<typeof import('./utils')['NOTE_RE']>
+    readonly NotFoundPage: UnwrapRef<typeof import('./react/pages/NotFoundPage')['NotFoundPage']>
     readonly PLOSIVES: UnwrapRef<typeof import('./stores/useIPA')['PLOSIVES']>
+    readonly SandboxPage: UnwrapRef<typeof import('./react/pages/SandboxPage')['SandboxPage']>
     readonly ToggleContextKey: UnwrapRef<typeof import('./components/vui-toggle')['ToggleContextKey']>
     readonly VIS_TYPES: UnwrapRef<typeof import('./stores/visTypes')['VIS_TYPES']>
     readonly VOWELS: UnwrapRef<typeof import('./stores/useIPA')['VOWELS']>
@@ -618,6 +627,7 @@ declare module 'vue' {
     readonly useStyleTag: UnwrapRef<typeof import('@vueuse/core')['useStyleTag']>
     readonly useSupported: UnwrapRef<typeof import('@vueuse/core')['useSupported']>
     readonly useSwipe: UnwrapRef<typeof import('@vueuse/core')['useSwipe']>
+    readonly useSynthStore: UnwrapRef<typeof import('./react/store/useSynthStore')['useSynthStore']>
     readonly useTemplateRefsList: UnwrapRef<typeof import('@vueuse/core')['useTemplateRefsList']>
     readonly useTextDirection: UnwrapRef<typeof import('@vueuse/core')['useTextDirection']>
     readonly useTextSelection: UnwrapRef<typeof import('@vueuse/core')['useTextSelection']>
