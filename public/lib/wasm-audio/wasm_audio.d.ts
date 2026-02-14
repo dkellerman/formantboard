@@ -1,19 +1,19 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
-*/
+ */
 export class WasmPitchDetector {
   free(): void;
-/**
-* @param {number} sample_rate
-* @param {number} fft_size
-* @returns {WasmPitchDetector}
-*/
+  /**
+   * @param {number} sample_rate
+   * @param {number} fft_size
+   * @returns {WasmPitchDetector}
+   */
   static new(sample_rate: number, fft_size: number): WasmPitchDetector;
-/**
-* @param {Float32Array} audio_samples
-* @returns {number}
-*/
+  /**
+   * @param {Float32Array} audio_samples
+   * @returns {number}
+   */
   detect_pitch(audio_samples: Float32Array): number;
 }
 
@@ -31,21 +31,21 @@ export interface InitOutput {
 
 export type SyncInitInput = BufferSource | WebAssembly.Module;
 /**
-* Instantiates the given `module`, which can either be bytes or
-* a precompiled `WebAssembly.Module`.
-*
-* @param {SyncInitInput} module
-*
-* @returns {InitOutput}
-*/
+ * Instantiates the given `module`, which can either be bytes or
+ * a precompiled `WebAssembly.Module`.
+ *
+ * @param {SyncInitInput} module
+ *
+ * @returns {InitOutput}
+ */
 export function initSync(module: SyncInitInput): InitOutput;
 
 /**
-* If `module_or_path` is {RequestInfo} or {URL}, makes a request and
-* for everything else, calls `WebAssembly.instantiate` directly.
-*
-* @param {InitInput | Promise<InitInput>} module_or_path
-*
-* @returns {Promise<InitOutput>}
-*/
-export default function init (module_or_path?: InitInput | Promise<InitInput>): Promise<InitOutput>;
+ * If `module_or_path` is {RequestInfo} or {URL}, makes a request and
+ * for everything else, calls `WebAssembly.instantiate` directly.
+ *
+ * @param {InitInput | Promise<InitInput>} module_or_path
+ *
+ * @returns {Promise<InitOutput>}
+ */
+export default function init(module_or_path?: InitInput | Promise<InitInput>): Promise<InitOutput>;

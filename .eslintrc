@@ -1,25 +1,21 @@
 {
   "root": true,
-  "parser": "vue-eslint-parser",
+  "env": {
+    "browser": true,
+    "es2022": true
+  },
+  "parser": "@typescript-eslint/parser",
   "parserOptions": {
-    "parser": "@typescript-eslint/parser",
+    "ecmaVersion": "latest",
+    "sourceType": "module"
   },
   "extends": [
-    "plugin:vue/strongly-recommended",
     "eslint:recommended",
-    "@vue/typescript/recommended"
+    "plugin:@typescript-eslint/recommended",
+    "plugin:react-hooks/recommended"
   ],
-  "plugins": ["@typescript-eslint"],
+  "plugins": ["@typescript-eslint", "react-hooks"],
   "rules": {
-    "no-undef": "off",
-    "vue/multi-word-component-names": "off",
-    "vue/no-multiple-template-root": "off",
-    "max-len": ["error", 120, 2, {
-      "ignoreComments": false,
-      "ignoreRegExpLiterals": true,
-      "ignoreStrings": false,
-      "ignoreTemplateLiterals": false
-    }],
-    "vue/max-attributes-per-line": "off"
+    "no-undef": "off"
   }
 }

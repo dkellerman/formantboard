@@ -1,39 +1,72 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import * as PIXI from 'pixi.js';
-import type { Formant } from 'stores/useSettings';
-import tinycolor from 'tinycolor2';
-import type { WASMCallback } from 'wasm';
-import type { IPASpec } from './stores/useSettings';
+import * as PIXI from "pixi.js";
+import type { Formant } from "hooks/useSettings";
+import tinycolor from "tinycolor2";
+import type { WASMCallback } from "wasm";
+import type { IPASpec } from "./hooks/useSettings";
+import { createWASMAudioWorkletNode } from "./wasm";
 
 export const NOTE_RE = /^([a-gA-G])(#|b)?([0-8])?$/;
 export const CANONICAL_NOTES: Record<string, string> = {
-  'C': 'C', 'C#': 'C#', 'Db': 'C#', 'D': 'D', 'D#': 'D#', 'Eb': 'D#', 'E': 'E',
-  'F': 'F', 'F#': 'F#', 'Gb': 'F#', 'G': 'G', 'G#': 'G#', 'Ab': 'G#', 'A': 'A',
-  'A#': 'A#', 'Bb': 'A#', 'B': 'B', 'B#': 'C', 'E#': 'F', 'Fb': 'E', 'Cb': 'B',
+  C: "C",
+  "C#": "C#",
+  Db: "C#",
+  D: "D",
+  "D#": "D#",
+  Eb: "D#",
+  E: "E",
+  F: "F",
+  "F#": "F#",
+  Gb: "F#",
+  G: "G",
+  "G#": "G#",
+  Ab: "G#",
+  A: "A",
+  "A#": "A#",
+  Bb: "A#",
+  B: "B",
+  "B#": "C",
+  "E#": "F",
+  Fb: "E",
+  Cb: "B",
 };
-export const NOTE_LETTERS: string[] = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-export const NOTES: string[] = ['A0', 'A#0', 'B0']
-  .concat([...Array(7)]
-  .flatMap((_, i) => NOTE_LETTERS
-  .map(l => `${l}${i + 1}`)))
-  .concat(['C8']);
+export const NOTE_LETTERS: string[] = [
+  "C",
+  "C#",
+  "D",
+  "D#",
+  "E",
+  "F",
+  "F#",
+  "G",
+  "G#",
+  "A",
+  "A#",
+  "B",
+];
+export const NOTES: string[] = ["A0", "A#0", "B0"]
+  .concat([...Array(7)].flatMap((_, i) => NOTE_LETTERS.map((l) => `${l}${i + 1}`)))
+  .concat(["C8"]);
 
 export const FREQUENCIES: number[] = [...Array(NOTES.length)];
-NOTES.forEach((_, i) => FREQUENCIES[i] = i ? FREQUENCIES[i - 1] * Math.pow(2, 1 / 12) : 27.5);
+NOTES.forEach((_, i) => (FREQUENCIES[i] = i ? FREQUENCIES[i - 1] * Math.pow(2, 1 / 12) : 27.5));
 
-export type Note = typeof NOTES[number];
-export type NoteFreq = typeof FREQUENCIES[number];
+export type Note = (typeof NOTES)[number];
+export type NoteFreq = (typeof FREQUENCIES)[number];
 
 export const KEY_SLOTS_PER_OCTAVE = 15;
 export const CAP_FREQ = 22050;
 
 export function note2canon(note: Note): string {
-  const n = note?.replaceAll(' ', '')
-    .replace(/flat|-/i, 'b')
-    .replace(/(s(harp)?)|\+/i, '#');
+  const n = note
+    ?.replaceAll(" ", "")
+    .replace(/flat|-/i, "b")
+    .replace(/(s(harp)?)|\+/i, "#");
   const m = n.match(NOTE_RE);
   if (!m) throw new Error(`Invalid note: ${note}`);
-  const letter = m[1].toUpperCase(), inc = m[2] ?? '', octave = m[3] ?? '3';
+  const letter = m[1].toUpperCase(),
+    inc = m[2] ?? "",
+    octave = m[3] ?? "3";
   if (!inc) return letter + octave;
   return CANONICAL_NOTES[letter + inc] + octave;
 }
@@ -54,7 +87,7 @@ export function note2freq(note: Note): number {
 
 export function freq2note(freq: number): Note {
   const f = FREQUENCIES.reduce((prev, curr) => {
-    return (Math.abs(curr) - freq) < Math.abs(prev - freq) ? curr : prev;
+    return Math.abs(curr) - freq < Math.abs(prev - freq) ? curr : prev;
   });
   return NOTES[FREQUENCIES.indexOf(f)];
 }
@@ -66,35 +99,35 @@ export function freq2noteCents(freq: number): [Note, number] {
   return [note, cents];
 }
 
-export function noteOrFreq2freq(val: Note|number): number {
+export function noteOrFreq2freq(val: Note | number): number {
   const freq = parseFloat(String(val));
   if (Number.isNaN(freq)) return note2freq(val as Note);
   return freq;
 }
 
-export function midi2note(midi: number): Note|null {
+export function midi2note(midi: number): Note | null {
   return NOTES[midi - 33] ?? null;
 }
 
-export function stepNoteOrFreq(val: Note|number, stepNote = 1, stepFreq = 5): Note|number {
+export function stepNoteOrFreq(val: Note | number, stepNote = 1, stepFreq = 5): Note | number {
   const freq = parseFloat(String(val));
   if (!Number.isNaN(freq)) return clamp(freq + stepFreq, 0, CAP_FREQ);
   const idx = NOTES.indexOf(val as Note);
-  return NOTES[idx + stepNote] ?? val as Note;
+  return NOTES[idx + stepNote] ?? (val as Note);
 }
 
 export function countSlots(note1: Note, note2: Note): number {
   let slots = 0;
   for (let i = NOTES.indexOf(note1) + 1; i <= NOTES.indexOf(note2); i++) {
     const noteName = NOTES[i].substring(0, NOTES[i].length - 1);
-    if (['C', 'F'].includes(noteName)) slots += 2;
+    if (["C", "F"].includes(noteName)) slots += 2;
     else slots += 1;
   }
   return slots;
 }
 
 export function formantRange(f: Formant) {
-  const rad = f.frequency / (f.Q);
+  const rad = f.frequency / f.Q;
   return [f.frequency - rad, f.frequency + rad];
 }
 
@@ -111,14 +144,17 @@ export class KeyboardLayout {
   whiteKeys: Note[];
   blackKeys: Note[];
 
-  constructor(public bottomNote: Note, public topNote: Note) {
+  constructor(
+    public bottomNote: Note,
+    public topNote: Note,
+  ) {
     this.notes = NOTES.slice(NOTES.indexOf(bottomNote), NOTES.indexOf(topNote) + 1);
     this.frequencies = FREQUENCIES.slice(NOTES.indexOf(bottomNote), NOTES.indexOf(topNote) + 1);
     this.topFreq = this.frequencies[this.frequencies.length - 1];
     this.bottomFreq = this.frequencies[0];
     this.numKeySlots = countSlots(this.bottomNote, this.topNote);
-    this.whiteKeys = this.notes.filter(n => !n.includes('#'));
-    this.blackKeys = this.notes.filter(n => n.includes('#'));
+    this.whiteKeys = this.notes.filter((n) => !n.includes("#"));
+    this.blackKeys = this.notes.filter((n) => n.includes("#"));
   }
 
   freq2px(freq: number, width: number): number {
@@ -131,7 +167,7 @@ export class KeyboardLayout {
     let slotsIntoOctave = semitones % 12;
     if (slotsIntoOctave >= 8) slotsIntoOctave += 2;
     else if (slotsIntoOctave >= 3) slotsIntoOctave += 1;
-    const px = (octaves * (KEY_SLOTS_PER_OCTAVE - 1) * slotPx) + ((slotsIntoOctave + 1) * slotPx);
+    const px = octaves * (KEY_SLOTS_PER_OCTAVE - 1) * slotPx + (slotsIntoOctave + 1) * slotPx;
     return px;
   }
 
@@ -145,14 +181,14 @@ export class KeyboardLayout {
   }
 }
 
-export const FullKeyboard = new KeyboardLayout('A0', 'C8');
+export const FullKeyboard = new KeyboardLayout("A0", "C8");
 
 export function getHarmonics(
   baseFrequency: number,
   tilt = 0,
   maxHarmonics = Number.POSITIVE_INFINITY,
   maxFrequency = 5000,
-  customGains: Record<number, number> = {}
+  customGains: Record<number, number> = {},
 ) {
   const vals: [number, number][] = [];
   for (let i = 0; i < maxHarmonics; i++) {
@@ -193,18 +229,20 @@ export function hsl(h: number, s: number, l: number) {
 }
 
 export function debug(...args: any[]) {
-  console.log('->', ...args);
+  console.log("->", ...args);
 }
 
 export function debugt(...args: any[]) {
   const w = window as any;
   const dt = w.__debug_ts ? performance.now() - w.__debug_ts : 0;
-  console.log(dt, '->', ...args);
+  console.log(dt, "->", ...args);
   w.__debug_ts = performance.now();
 }
 
 export function arr2rms(arr: number[], normFactor = 1.0) {
-  return Math.sqrt(arr.reduce((prev, curr) => (prev + (curr/normFactor) * (curr/normFactor)), 0.0) / arr.length);
+  return Math.sqrt(
+    arr.reduce((prev, curr) => prev + (curr / normFactor) * (curr / normFactor), 0.0) / arr.length,
+  );
 }
 
 export function gain2db(gain: number) {
@@ -254,7 +292,7 @@ export function createFormants(ctx: AudioContext, ipaSpec: IPASpec): BiquadFilte
   for (const formantConfig of ipaSpec) {
     if (!formantConfig.on) continue;
     const formant = new BiquadFilterNode(ctx, {
-      type: 'peaking',
+      type: "peaking",
       frequency: formantConfig.frequency,
       Q: formantConfig.Q / 10.0,
       gain: formantConfig.gain,
@@ -279,5 +317,5 @@ export async function createMicSource(ctx: AudioContext): Promise<MediaStreamAud
 }
 
 export async function createPitchDetectionNode(ctx: AudioContext, callback: WASMCallback) {
-  return createWASMAudioWorkletNode(ctx, 'PitchProcessor', callback, 4096);
+  return createWASMAudioWorkletNode(ctx, "PitchProcessor", callback, 4096);
 }

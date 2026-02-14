@@ -1,4 +1,4 @@
-import '../lib/TextEncoder.js';
+import "../lib/TextEncoder.js";
 
 export default class WasmAudioProcessor extends AudioWorkletProcessor {
   wasmClass;
@@ -16,9 +16,9 @@ export default class WasmAudioProcessor extends AudioWorkletProcessor {
   onmessage(event) {
     if (event.type === "send-wasm-module") {
       this.wasmInit(WebAssembly.compile(event.wasmBytes)).then(() => {
-        this.port.postMessage({ type: 'wasm-module-loaded' });
+        this.port.postMessage({ type: "wasm-module-loaded" });
       });
-    } else if (event.type === 'init') {
+    } else if (event.type === "init") {
       const { sampleRate, sampleSize } = event;
       this.sampleSize = sampleSize;
       this.processor = this.wasmClass.new(sampleRate, sampleSize);
