@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import * as PIXI from 'pixi.js';
-import { VisType } from '../stores/useVisType';
+import { VisType } from '../stores/visTypes';
 import type { Metrics } from '../stores/useMetrics';
 
 interface Props {
@@ -27,9 +27,9 @@ const props = withDefaults(defineProps<Props>(), {
 
 const player = usePlayer();
 const metrics = useMetrics();
-const { layout, keyboardWidth } = storeToRefs(useKeyboardLayout());
-const { ipaSpec } = storeToRefs(useIPA());
-const { settings } = storeToRefs(useSettings());
+const { layout, keyboardWidth } = toRefs(useKeyboardLayout());
+const { ipaSpec } = toRefs(useIPA());
+const { settings } = toRefs(useSettings());
 const id = computed(() => `viz-${props.vtype}`);
 const app = ref<PIXI.Application>();
 const gWave = ref<PIXI.Graphics>();

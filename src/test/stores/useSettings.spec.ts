@@ -1,12 +1,12 @@
-import { createPinia, setActivePinia } from 'pinia';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { resetAllStores } from '../../stores/zustand';
 import { IPA as IPAEnum } from '../../stores/ipaEnum';
 import { useSettings } from '../../stores/useSettings';
-import { VisType } from '../../stores/useVisType';
+import { VisType } from '../../stores/visTypes';
 
 describe('useSettings store', () => {
   beforeEach(() => {
-    setActivePinia(createPinia());
+    resetAllStores();
   });
 
   it('exposes expected default settings', () => {

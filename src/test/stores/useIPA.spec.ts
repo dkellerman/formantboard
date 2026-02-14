@@ -1,12 +1,12 @@
-import { createPinia, setActivePinia } from 'pinia';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { resetAllStores } from '../../stores/zustand';
 import { IPA } from '../../stores/ipaEnum';
 import { useIPA } from '../../stores/useIPA';
 import { useSettings } from '../../stores/useSettings';
 
 describe('useIPA store', () => {
   beforeEach(() => {
-    setActivePinia(createPinia());
+    resetAllStores();
   });
 
   it('initializes from app defaults', () => {

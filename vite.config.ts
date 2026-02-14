@@ -15,7 +15,6 @@ export default defineConfig(() => {
         imports: [
           'vue',
           'vue-router',
-          'pinia',
           '@vueuse/core',
         ],
         dirs: ['./src/**'],

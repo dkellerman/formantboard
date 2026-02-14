@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const player = usePlayer();
-const { settings } = storeToRefs(useSettings());
+const { settings } = toRefs(useSettings());
 const f0 = ref(settings.value.defaultNote);
 const playingF0 = ref<number>();
 

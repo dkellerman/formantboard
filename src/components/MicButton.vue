@@ -14,7 +14,7 @@ const props = withDefaults(defineProps<Props>(), {
 const player = usePlayer();
 const mic = ref<MediaStreamAudioSourceNode>();
 const metrics = useMetrics();
-const { settings } = storeToRefs(useSettings());
+const { settings } = toRefs(useSettings());
 const listening = ref(false);
 const micRafId = ref<number>();
 

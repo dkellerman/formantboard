@@ -1,5 +1,5 @@
-import { createPinia, setActivePinia } from 'pinia';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { resetAllStores } from '../../stores/zustand';
 import { useKeyboardLayout } from '../../stores/useKeyboardLayout';
 
 function setWindowWidth(width: number) {
@@ -13,7 +13,7 @@ function setWindowWidth(width: number) {
 
 describe('useKeyboardLayout store', () => {
   beforeEach(() => {
-    setActivePinia(createPinia());
+    resetAllStores();
   });
 
   it('tracks keyboard width from window size', () => {

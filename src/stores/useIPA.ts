@@ -1,4 +1,6 @@
 import { IPA, type IPAType } from './ipaEnum';
+import { useAppStore } from './appStore';
+
 export type { IPAType } from './ipaEnum';
 
 export const IPA_WORDS: Record<IPAType, string> = {
@@ -56,9 +58,4 @@ export const CONSONANTS = [ IPA.m, IPA.r, IPA.g, IPA.j, IPA.l, IPA.d, IPA.z, IPA
 export const FRICATIVES = [ IPA.ʃ, IPA.ʒ, IPA.f, IPA.v, IPA.s, IPA.z, IPA.h ];
 export const PLOSIVES = [ IPA.p, IPA.b, IPA.t, IPA.d, IPA.k, IPA.g ];
 
-export const useIPA = defineStore('ipa', () => {
-  const { settings } = storeToRefs(useSettings());
-  const ipa = ref<IPAType>(settings.value.defaultIPA);
-  const ipaSpec = computed(() => settings.value.formants.ipa[ipa.value]);
-  return { ipa, ipaSpec };
-});
+export const useIPA = () => useAppStore().ipa;

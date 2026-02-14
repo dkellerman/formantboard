@@ -10,7 +10,7 @@ const props = defineProps<Props>();
 const { ipaSet, title } = toRefs(props);
 
 const emit = defineEmits(['change']);
-const { ipa } = storeToRefs(useIPA());
+const { ipa } = toRefs(useIPA());
 
 const items = computed(() => Object.values(ipaSet?.value ?? COMMON_IPA).map(v => ({
   value: v,

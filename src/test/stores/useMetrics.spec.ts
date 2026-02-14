@@ -1,11 +1,11 @@
-import { createPinia, setActivePinia } from 'pinia';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { resetAllStores } from '../../stores/zustand';
 import { useMetrics } from '../../stores/useMetrics';
 import { useSettings } from '../../stores/useSettings';
 
 describe('useMetrics store', () => {
   beforeEach(() => {
-    setActivePinia(createPinia());
+    resetAllStores();
   });
 
   it('starts with expected sampling defaults', () => {
