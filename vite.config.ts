@@ -1,36 +1,12 @@
 /// <reference types="vitest/config" />
 import { defineConfig } from 'vite';
 import React from '@vitejs/plugin-react';
-import Vue from '@vitejs/plugin-vue';
-import AutoImport from 'unplugin-auto-import/vite';
-import Pages from 'vite-plugin-pages';
-import Components from 'unplugin-vue-components/vite';
 
 // https://vitejs.dev/config/
 export default defineConfig(() => {
   return {
     plugins: [
       React(),
-      Vue(),
-      AutoImport({
-        dts: './src/auto-imports.d.ts',
-        imports: [
-          'vue',
-          'vue-router',
-          '@vueuse/core',
-        ],
-        dirs: ['./src/**'],
-        cache: false,
-        vueTemplate: true,
-      }),
-      Components({
-        dts: './src/components.d.ts',
-      }),
-      Pages({
-        dirs: [
-          { dir: 'src/pages', baseRoute: '' },
-        ],
-      }),
     ],
     test: {
       globals: true,

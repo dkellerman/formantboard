@@ -5,26 +5,20 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc && vite build",
+    "build": "tsc -p tsconfig.json && vite build",
     "preview": "vite preview",
-    "lint": "eslint src --ext .ts,.tsx,.vue",
+    "lint": "eslint src/react src/main.tsx src/utils.ts src/wasm.ts src/test --ext .ts,.tsx",
     "test": "vitest run",
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@vueuse/components": "^9.13.0",
-    "@vueuse/core": "^9.12.0",
     "lodash-es": "^4.17.21",
     "pixi.js": "^7.1.2",
-    "primevue": "^3.24.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-router-dom": "^7.13.0",
     "regression": "^2.0.1",
     "tinycolor2": "^1.6.0",
-    "vue": "^3.2.45",
-    "vue-knob-control": "^1.7.0",
-    "vue-router": "^4.1.6",
     "webmidi": "^3.1.4",
     "zustand": "^5.0.11"
   },
@@ -36,23 +30,14 @@
     "@typescript-eslint/eslint-plugin": "^5.52.0",
     "@typescript-eslint/parser": "^5.52.0",
     "@vitejs/plugin-react": "^5.1.4",
-    "@vitejs/plugin-vue": "^4.0.0",
-    "@vue/compiler-sfc": "^3.5.28",
-    "@vue/eslint-config-typescript": "^11.0.2",
     "autoprefixer": "^10.4.20",
     "eslint": "^8.34.0",
-    "eslint-plugin-vue": "^9.9.0",
     "jsdom": "22.1.0",
     "postcss": "^8.5.3",
     "tailwindcss": "^3.4.17",
     "typescript": "^4.9.3",
-    "unplugin-auto-import": "^0.14.3",
-    "unplugin-vue-components": "^0.24.0",
     "vite": "^4.5.14",
-    "vite-plugin-pages": "^0.28.0",
-    "vitest": "1.6.0",
-    "vue-eslint-parser": "^9.1.0",
-    "vue-tsc": "^1.0.24"
+    "vitest": "1.6.0"
   },
   "packageManager": "pnpm@10.8.0+sha512.0e82714d1b5b43c74610193cb20734897c1d00de89d0e18420aebc5977fa13d780a9cb05734624e81ebd81cc876cd464794850641c48b9544326b5622ca29971"
 }

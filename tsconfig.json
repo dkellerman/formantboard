@@ -16,10 +16,17 @@
       "*": ["./src/*"]
     },
     "types": [
-      "vite/client",
-      "vite-plugin-pages/client"
+      "vite/client"
     ],
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.d.ts", "src/**/*.vue"],
+  "include": [
+    "src/main.tsx",
+    "src/react/**/*.ts",
+    "src/react/**/*.tsx",
+    "src/utils.ts",
+    "src/wasm.ts",
+    "src/vite-env.d.ts",
+    "src/test/**/*.ts"
+  ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
