@@ -52,7 +52,7 @@ function draw() {
 </script>
 
 <template>
-  <section class="foo">
+  <section class="p-5">
     <v-btn @click="toggle">
       {{ started ? 'Stop' : 'Start' }}
     </v-btn>
@@ -62,9 +62,3 @@ function draw() {
     </div>
   </section>
 </template>
-
-<style lang="scss" scoped>
-section {
-  padding: 20px;
-}
-</style>

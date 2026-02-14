@@ -187,22 +187,12 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <section :class="`visualizer vtype-${vtype}`">
-    <canvas ref="canvas" />
+  <section :class="`visualizer vtype-${vtype}`" class="m-0 p-0">
+    <canvas
+      ref="canvas"
+      class="m-0 block w-full border border-zinc-400 p-0"
+      :width="width"
+      :height="height"
+    />
   </section>
 </template>
-
-<style scoped lang="scss">
-.visualizer {
-  padding: 0;
-  margin: 0;
-  canvas {
-    width: calc(1px * v-bind(width));
-    height: calc(1px * v-bind(height));
-    margin: 0;
-    margin-bottom: 10px;
-    padding: 0;
-    border: 1px dotted #999;
-  }
-}
-</style>

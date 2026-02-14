@@ -19,7 +19,13 @@ declare module '@vue/runtime-core' {
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SettingsPanel: typeof import('./components/SettingsPanel.vue')['default']
+    VBtn: typeof import('./components/VBtn.vue')['default']
+    VBtnToggle: typeof import('./components/VBtnToggle.vue')['default']
+    VCheckbox: typeof import('./components/VCheckbox.vue')['default']
     Visualizer: typeof import('./components/Visualizer.vue')['default']
-    VowelSelector: typeof import('./components/VowelSelector.vue')['default']
+    VNum: typeof import('./components/VNum.vue')['default']
+    VSelect: typeof import('./components/VSelect.vue')['default']
+    VSwitch: typeof import('./components/VSwitch.vue')['default']
+    VTextField: typeof import('./components/VTextField.vue')['default']
   }
 }

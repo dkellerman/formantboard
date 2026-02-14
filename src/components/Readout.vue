@@ -3,8 +3,8 @@ const metrics = useMetrics();
 </script>
 
 <template>
-  <section>
-    <fieldset v-if="metrics.pitch">
+  <section class="mt-2">
+    <fieldset v-if="metrics.pitch" class="w-fit border-0 font-mono text-sm text-zinc-700">
       {{ metrics.pitch.freq.toFixed(1) }}hz
       [{{ metrics.pitch.note }}]
       <span v-if="metrics.pitch.cents">
@@ -17,11 +17,3 @@ const metrics = useMetrics();
     </fieldset> -->
   </section>
 </template>
-
-<style scoped lang="scss">
-fieldset {
-  font-family: monospace;
-  border: 0;
-  width: fit-content;
-}
-</style>

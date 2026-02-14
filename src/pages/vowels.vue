@@ -212,21 +212,21 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <section>
-    <fieldset>
+  <section class="mt-[-10px] flex w-full flex-col items-center justify-center gap-5 pb-24">
+    <fieldset class="flex flex-row flex-wrap justify-center gap-5 border-0 pl-2.5">
       <canvas ref="canvas" />
     </fieldset>
-    <fieldset>
-      <label>Power: {{ power.toFixed(2) }} /
+    <fieldset class="flex flex-row flex-wrap justify-center gap-5 border-0 pl-2.5">
+      <label class="self-center text-sm">Power: {{ power.toFixed(2) }} /
         {{ gain2db(power).toFixed(2) }}dB</label>
     </fieldset>
-    <fieldset>
+    <fieldset class="flex flex-row flex-wrap justify-center gap-5 border-0 pl-2.5">
       <h3>Source</h3>
     </fieldset>
-    <fieldset>
-      <F0Selector ref="f0" :play="play" :stop="stop" />
+    <fieldset class="flex flex-row flex-wrap justify-center gap-5 border-0 pl-2.5">
+      <F0Selector ref="f0" class="w-[100px]" :play="play" :stop="stop" />
     </fieldset>
-    <fieldset>
+    <fieldset class="flex flex-row flex-wrap justify-center gap-5 border-0 pl-2.5">
       <Knob label="Saw" v-model="sawGain" @change="sawg.gain.value = $event" />
       <Knob label="Sine" v-model="sinGain" @change="sing.gain.value = $event" />
       <Knob label="Square" v-model="sqGain" @change="sqg.gain.value = $event" />
@@ -237,11 +237,11 @@ onUnmounted(() => {
         :step="0.01"
       />
     </fieldset>
-    <fieldset divider>
+    <fieldset class="mt-5 flex flex-row flex-wrap justify-center gap-5 border-0 pl-2.5">
       <input type="checkbox" v-model="formantsOn" @change="updateFormantsOn">
       <h3>Formants</h3>
     </fieldset>
-    <fieldset class="formants">
+    <fieldset class="mb-2.5 flex flex-row flex-wrap justify-center gap-5 border-0 pl-2.5">
       <v-btn
         v-for="v in Object.keys(formantVals)"
         @click="vowel = v"
@@ -251,8 +251,12 @@ onUnmounted(() => {
         {{ v }}
       </v-btn>
     </fieldset>
-    <fieldset v-for="(fval, idx) in formantVals[vowel]" :key="idx" class="formant">
-      <label>F{{ idx + 1 }}</label>
+    <fieldset
+      v-for="(fval, idx) in formantVals[vowel]"
+      :key="idx"
+      class="flex flex-row flex-wrap justify-center gap-5 border-0 pl-2.5"
+    >
+      <label class="self-center text-sm">F{{ idx + 1 }}</label>
       <Knob
         label="Freq"
         v-model="fval[0].value"
@@ -280,40 +284,3 @@ onUnmounted(() => {
     </fieldset>
   </section>
 </template>
-
-<style lang="scss" scoped>
-section {
-  display: flex;
-  flex-flow: column nowrap;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  gap: 20px;
-  padding-bottom: 100px;
-  margin-top: -10px;
-}
-fieldset {
-  border: 0;
-  padding: 0 0 0 10px;
-  display: flex;
-  flex-flow: row wrap;
-  justify-content: center;
-  gap: 20px;
-  &[divider] {
-    margin-top: 20px;
-  }
-  &[compact] {
-    margin: 0;
-  }
-}
-label {
-  font-size: 13px;
-  align-self: center;
-}
-.f0 {
-  width: 100px;
-}
-.formants {
-  margin-bottom: 10px;
-}
-</style>

@@ -71,9 +71,3 @@ defineExpose({
     </v-btn>
   </section>
 </template>
-
-<style scoped lang="scss">
-:deep(.mdi-microphone), :deep(.mdi-stop) {
-  color: red;
-}
-</style>

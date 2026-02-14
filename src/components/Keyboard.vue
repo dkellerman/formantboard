@@ -6,11 +6,23 @@ interface Props {
 }
 const props = defineProps<Props>();
 
-const { layout, keyboardWidth, fullKeyWidth } = storeToRefs(useKeyboardLayout());
+const { layout, keyboardWidth } = storeToRefs(useKeyboardLayout());
 const metrics = useMetrics();
 const noteIds = computed(() => layout.value.notes.map((n) => n.replace('#', 's')));
 const dragging = ref(false);
-const height = computed(() => props.height ?? keyboardWidth.value / 10.0);
+const activeNotes = ref<Set<string>>(new Set());
+const detectedNotes = ref<Set<string>>(new Set());
+const keyboardHeight = computed(() => props.height ?? keyboardWidth.value / 10.0);
+const whiteKeyWidth = computed(() => keyboardWidth.value / layout.value.whiteKeys.length);
+const blackKeyWidth = computed(() => whiteKeyWidth.value * 0.65);
+const blackShadow =
+  'shadow-[inset_-1px_-1px_2px_rgba(255,255,255,0.2),inset_0_-5px_2px_3px_rgba(0,0,0,0.6),0_2px_4px_rgba(0,0,0,0.5)]';
+const blackShadowActive =
+  'shadow-[inset_-1px_-1px_2px_rgba(255,255,255,0.2),inset_0_-2px_2px_3px_rgba(0,0,0,0.6),0_1px_2px_rgba(0,0,0,0.5)]';
+const whiteShadow =
+  'shadow-[inset_-1px_0_0_rgba(255,255,255,0.8),inset_0_0_5px_#d4d4d8,0_0_3px_rgba(0,0,0,0.2)]';
+const whiteShadowActive =
+  'shadow-[inset_2px_0_3px_rgba(0,0,0,0.1),inset_-5px_5px_20px_rgba(0,0,0,0.2),0_0_3px_rgba(0,0,0,0.2)]';
 
 const emit = defineEmits<{
   (e: 'keyOn', note: Note, velocity: number): void;
@@ -18,42 +30,80 @@ const emit = defineEmits<{
 }>();
 
 watch(() => metrics.pitch?.note, (newval, oldval) => {
-  if (oldval) deactivateKey(oldval, 'detect');
-  if (newval) activateKey(newval, 'detect');
-})
+  if (oldval) detectedNotes.value.delete(oldval.replace('#', 's'));
+  if (newval) detectedNotes.value.add(newval.replace('#', 's'));
+});
 
-function getKeyById(id: string) {
-  return document.getElementById(id.replace('#', 's'));
+function isBlack(id: string) {
+  return id.length === 3;
 }
 
-function activateKey(id: string, cls?: string) {
-  const k = getKeyById(id);
-  if (k) {
-    k.classList.add('active');
-    if (cls) k.classList.add(cls);
-  }
+function isActive(id: string) {
+  return activeNotes.value.has(id);
 }
 
-function deactivateKey(id: string, cls?: string) {
-  const k = getKeyById(id);
-  if (k) {
-    k.classList.remove('active');
-    if (cls) k.classList.remove(cls);
-  }
+function isDetected(id: string) {
+  return detectedNotes.value.has(id);
+}
+
+function shouldShowLabel(id: string) {
+  return (!isBlack(id) && id[0].toUpperCase() === 'C') || isActive(id) || isDetected(id);
 }
 
 function getKeyClass(id: string) {
-  return `key ${id.substring(0, id.length - 1).toUpperCase()} ${id.length === 3 ? 'black' : 'white'}`;
+  const black = isBlack(id);
+  const active = isActive(id);
+  const detected = isDetected(id);
+  if (black) {
+    return [
+      'group relative z-20 list-none border border-black text-white',
+      'rounded-b-sm bg-gradient-to-r from-zinc-800 to-zinc-600',
+      blackShadow,
+      active
+        ? `bg-gradient-to-r from-zinc-600 to-zinc-800 ${blackShadowActive}`
+        : '',
+      detected ? 'border-sky-700' : '',
+    ];
+  }
+
+  return [
+    'group relative h-full list-none border border-l-zinc-300 border-b-zinc-300 text-black',
+    'rounded-b-md bg-gradient-to-b from-zinc-100 to-white',
+    whiteShadow,
+    active
+      ? `border-zinc-400 bg-gradient-to-b from-white to-zinc-200 ${whiteShadowActive}`
+      : '',
+    detected ? 'border-sky-700' : '',
+  ];
+}
+
+function getKeyStyle(id: string) {
+  if (isBlack(id)) {
+    return {
+      minWidth: `${blackKeyWidth.value}px`,
+      width: `${blackKeyWidth.value}px`,
+      height: '57%',
+      right: `-${blackKeyWidth.value / 2}px`,
+    };
+  }
+
+  const letter = id.substring(0, id.length - 1).toUpperCase();
+  const overlaps = new Set(['C', 'D', 'F', 'G', 'A']);
+  return {
+    minWidth: `${whiteKeyWidth.value}px`,
+    width: `${whiteKeyWidth.value}px`,
+    marginRight: overlaps.has(letter) ? `-${blackKeyWidth.value}px` : undefined,
+  };
 }
 
 function play(id: string, velocity = 1) {
   emit('keyOn', id.replace('s', '#'), velocity);
-  activateKey(id);
+  activeNotes.value.add(id);
 }
 
 function stop(id: string) {
   emit('keyOff', id.replace('s', '#'));
-  deactivateKey(id);
+  activeNotes.value.delete(id);
 }
 
 defineExpose({
@@ -63,11 +113,20 @@ defineExpose({
 </script>
 
 <template>
-  <div class="keyboard" @mouseleave="dragging = false">
-    <ul class="keys">
+  <div class="w-full overflow-hidden border border-zinc-300 border-t-0" @mouseleave="dragging = false">
+    <ul
+      class="m-0 flex flex-row items-start p-0"
+      :style="{ height: `${keyboardHeight}px`, width: `${keyboardWidth}px` }"
+    >
       <li
         v-for="id of noteIds" :id="id" :key="id"
-        :class="getKeyClass(id)"
+        :class="[
+          getKeyClass(id),
+          'outline-none ring-0 focus:outline-none focus-visible:outline-none',
+          'focus:ring-0 focus-visible:ring-0 [-webkit-tap-highlight-color:transparent]',
+        ]"
+        :style="getKeyStyle(id)"
+        tabindex="-1"
         @mousedown.prevent="() => { dragging = true; play(id); }"
         @mouseup="() => { dragging = false; stop(id); }"
         @mouseenter="() => { dragging && play(id) }"
@@ -75,7 +134,16 @@ defineExpose({
         @touchstart.prevent="() => { dragging = true; play(id); }"
         @touchend="() => { dragging = false; stop(id); }"
       >
-        <label>
+        <label
+          :class="[
+            'pointer-events-none absolute top-[calc(100%-30px)] bg-transparent',
+            'px-0.5 text-center text-[10px] text-zinc-400',
+            isBlack(id)
+              ? 'w-auto border border-zinc-400 bg-white px-1 py-0.5 text-zinc-500'
+              : 'w-full',
+            shouldShowLabel(id) ? 'block' : 'hidden group-hover:block',
+          ]"
+        >
           <div>{{ id.replace('s', '#') }}</div>
           <div>{{ note2freq(id.replace('s', '#')).toFixed(0) }}</div>
         </label>
@@ -83,115 +151,3 @@ defineExpose({
     </ul>
   </div>
 </template>
-
-<style scoped lang="scss">
-$whiteKeyWidth: calc(v-bind(fullKeyWidth) * 1px);
-$kbdHeight: calc(1px * v-bind(height));
-$blackKeyWidth: calc(v-bind(fullKeyWidth) * .65px);
-$blackKeyHeight: 57%;
-
-.keyboard {
-  width: calc(1px * v-bind(keyboardWidth));
-  overflow: hidden;
-}
-
-ul {
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  height: $kbdHeight;
-  padding: 0;
-  margin: 0;
-
-  li {
-    text-indent: 0;
-    list-style: none;
-    height: 100%;
-    border: 1px solid #000;
-    position: relative;
-
-    &.white {
-      min-width: $whiteKeyWidth;
-      height: 100%;
-      color: #000;
-      position: relative;
-      &.C, &.D, &.F, &.G, &.A {
-        margin-right: calc(-1 * $blackKeyWidth);
-      }
-
-      border-left: 1px solid #bbb;
-      border-bottom: 1px solid #bbb;
-      border-radius: 0 0 5px 5px;
-      box-shadow:
-        -1px 0 0 rgba(255, 255, 255, 0.8) inset,
-        0 0 5px #ccc inset,
-        0 0 3px rgba(0, 0, 0, 0.2);
-      background: linear-gradient(to bottom, #eee 0%, #fff 100%);
-
-      &.active {
-        border-top: 1px solid #777;
-        border-left: 1px solid #999;
-        border-bottom: 1px solid #999;
-        box-shadow:
-          2px 0 3px rgba(0, 0, 0, 0.1) inset,
-          -5px 5px 20px rgba(0, 0, 0, 0.2) inset,
-          0 0 3px rgba(0, 0, 0, 0.2);
-        background: linear-gradient(to bottom, #fff 0%, #e9e9e9 100%);
-        &.detect {
-          border-color: steelblue;
-        }
-      }
-    }
-
-    &.black {
-      min-width: $blackKeyWidth;
-      height: $blackKeyHeight;
-      color: #fff;
-      position: relative;
-      right: calc((-1 * $blackKeyWidth) / 2);
-      z-index: 2;
-
-      border: 1px solid #000;
-      border-radius: 0 0 3px 3px;
-      box-shadow:
-        -1px -1px 2px rgba(255, 255, 255, 0.2) inset,
-        0 -5px 2px 3px rgba(0, 0, 0, 0.6) inset,
-        0 2px 4px rgba(0, 0, 0, 0.5);
-      background: linear-gradient(45deg, #222 0%, #555 100%);
-      &.active {
-        box-shadow:
-          -1px -1px 2px rgba(255, 255, 255, 0.2)
-          inset, 0 -2px 2px 3px rgba(0, 0, 0, 0.6) inset,
-          0 1px 2px rgba(0, 0, 0, 0.5);
-        background: linear-gradient(to right, #555 0%, #222 100%);
-        &.detect {
-          border-color: steelblue;
-        }
-      }
-    }
-
-    label {
-      position: absolute;
-      color: #999;
-      background: transparent;
-      font-size: 10px;
-      margin-right: calc(-1 * $blackKeyWidth / 2);
-      top: calc(100% - 30px);
-      width: 100%;
-      text-align: center;
-      padding: 0 2px;
-      display: none;
-      pointer-events: none;
-    }
-    &.black label {
-      width: unset;
-      background: white;
-      padding: 3px;
-      border: 1px solid #aaa;
-    }
-    &.C label, &:hover label, &.active label {
-      display: initial;
-    }
-  }
-}
-</style>

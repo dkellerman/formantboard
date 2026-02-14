@@ -1,51 +1,7 @@
-export enum IPA {
-  ɑ = 'ɑ',
-  ɛ = 'ɛ',
-  ə = 'ə',
-  æ = 'æ',
-  ɔ = 'ɔ',
-  u = 'u',
-  ʊ = 'ʊ',
-  ɪ = 'ɪ',
-  i = 'i',
-  e = 'e',
-  ø = 'ø',
-  ɶ = 'ɶ',
-  ɒ = 'ɒ',
-  ʌ = 'ʌ',
-  ɤ = 'ɤ',
-  o = 'o',
-  ɯ = 'ɯ',
-  ŋ = 'ŋ',
-  ʧ = 'ʧ',
-  θ = 'θ',
-  ð = 'ð',
-  ʤ = 'ʤ',
-  ʃ = 'ʃ',
-  w = 'w',
-  n = 'n',
-  m = 'm',
-  r = 'r',
-  g = 'g',
-  j = 'j',
-  l = 'l',
-  d = 'd',
-  z = 'z',
-  v = 'v',
-  h = 'h',
-  p = 'p',
-  k = 'k',
-  t = 't',
-  s = 's',
-  f = 'f',
-  b = 'b',
-  y = 'y',
-  œ = 'œ',
-  a = 'a',
-  ʒ = 'ʒ',
-};
+import { IPA, type IPAType } from './ipaEnum';
+export type { IPAType } from './ipaEnum';
 
-export const IPA_WORDS: Record<IPA, string> = {
+export const IPA_WORDS: Record<IPAType, string> = {
   [IPA.i]: "fleece",
   [IPA.y]: "mule",
   [IPA.e]: "face",
@@ -92,7 +48,7 @@ export const IPA_WORDS: Record<IPA, string> = {
   [IPA.ʒ]: "pleasure",
 };
 
-export const ALL_IPA = Object.keys(IPA) as IPA[];
+export const ALL_IPA = Object.keys(IPA) as IPAType[];
 export const COMMON_IPA = [ IPA.ɑ, IPA.ɛ, IPA.ə, IPA.æ, IPA.ɔ, IPA.u, IPA.ʊ, IPA.ɪ, IPA.i ];
 export const VOWELS = [ IPA.ɑ, IPA.ɛ, IPA.ə, IPA.æ, IPA.ɔ, IPA.u, IPA.ʊ, IPA.ɪ, IPA.i ];
 export const CONSONANTS = [ IPA.m, IPA.r, IPA.g, IPA.j, IPA.l, IPA.d, IPA.z, IPA.v, IPA.h, IPA.p,
@@ -100,15 +56,9 @@ export const CONSONANTS = [ IPA.m, IPA.r, IPA.g, IPA.j, IPA.l, IPA.d, IPA.z, IPA
 export const FRICATIVES = [ IPA.ʃ, IPA.ʒ, IPA.f, IPA.v, IPA.s, IPA.z, IPA.h ];
 export const PLOSIVES = [ IPA.p, IPA.b, IPA.t, IPA.d, IPA.k, IPA.g ];
 
-export type IPAType = typeof IPA[keyof typeof IPA];
-
 export const useIPA = defineStore('ipa', () => {
   const { settings } = storeToRefs(useSettings());
   const ipa = ref<IPAType>(settings.value.defaultIPA);
   const ipaSpec = computed(() => settings.value.formants.ipa[ipa.value]);
   return { ipa, ipaSpec };
 });
-
-
-
-

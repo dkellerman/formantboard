@@ -13,7 +13,7 @@ declare global {
   const FREQUENCIES: typeof import('./utils')['FREQUENCIES']
   const FRICATIVES: typeof import('./stores/useIPA')['FRICATIVES']
   const FullKeyboard: typeof import('./utils')['FullKeyboard']
-  const IPA: typeof import('./stores/useIPA')['IPA']
+  const IPA: typeof import('./stores/ipaEnum')['IPA']
   const IPA_WORDS: typeof import('./stores/useIPA')['IPA_WORDS']
   const KEY_SLOTS_PER_OCTAVE: typeof import('./utils')['KEY_SLOTS_PER_OCTAVE']
   const KeyboardLayout: typeof import('./utils')['KeyboardLayout']
@@ -22,6 +22,7 @@ declare global {
   const NOTE_LETTERS: typeof import('./utils')['NOTE_LETTERS']
   const NOTE_RE: typeof import('./utils')['NOTE_RE']
   const PLOSIVES: typeof import('./stores/useIPA')['PLOSIVES']
+  const ToggleContextKey: typeof import('./components/vui-toggle')['ToggleContextKey']
   const VIS_TYPES: typeof import('./stores/useVisType')['VIS_TYPES']
   const VOWELS: typeof import('./stores/useIPA')['VOWELS']
   const VisType: typeof import('./stores/useVisType')['VisType']
@@ -356,7 +357,7 @@ declare module 'vue' {
     readonly FREQUENCIES: UnwrapRef<typeof import('./utils')['FREQUENCIES']>
     readonly FRICATIVES: UnwrapRef<typeof import('./stores/useIPA')['FRICATIVES']>
     readonly FullKeyboard: UnwrapRef<typeof import('./utils')['FullKeyboard']>
-    readonly IPA: UnwrapRef<typeof import('./stores/useIPA')['IPA']>
+    readonly IPA: UnwrapRef<typeof import('./stores/ipaEnum')['IPA']>
     readonly IPA_WORDS: UnwrapRef<typeof import('./stores/useIPA')['IPA_WORDS']>
     readonly KEY_SLOTS_PER_OCTAVE: UnwrapRef<typeof import('./utils')['KEY_SLOTS_PER_OCTAVE']>
     readonly KeyboardLayout: UnwrapRef<typeof import('./utils')['KeyboardLayout']>
@@ -365,6 +366,7 @@ declare module 'vue' {
     readonly NOTE_LETTERS: UnwrapRef<typeof import('./utils')['NOTE_LETTERS']>
     readonly NOTE_RE: UnwrapRef<typeof import('./utils')['NOTE_RE']>
     readonly PLOSIVES: UnwrapRef<typeof import('./stores/useIPA')['PLOSIVES']>
+    readonly ToggleContextKey: UnwrapRef<typeof import('./components/vui-toggle')['ToggleContextKey']>
     readonly VIS_TYPES: UnwrapRef<typeof import('./stores/useVisType')['VIS_TYPES']>
     readonly VOWELS: UnwrapRef<typeof import('./stores/useIPA')['VOWELS']>
     readonly VisType: UnwrapRef<typeof import('./stores/useVisType')['VisType']>

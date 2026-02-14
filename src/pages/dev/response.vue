@@ -59,39 +59,43 @@ onMounted(() => init());
 </script>
 
 <template>
-  <section>
-    <h2>Frequency Response</h2>
-    <canvas ref="canvas" />
-    <fieldset v-for="_, idx in filterVals" :key="idx">
+  <section class="flex h-[70vh] flex-col items-center justify-center">
+    <h2 class="text-2xl font-semibold">
+      Frequency Response
+    </h2>
+    <canvas ref="canvas" class="my-10" />
+    <fieldset v-for="_, idx in filterVals" :key="idx" class="flex flex-row gap-2 border-0">
       <label>
         <input type="checkbox" v-model="filtersOn[idx]" @change="draw">
         F{{ idx+1 }}
       </label>
-      <v-num @change="draw" label="Frequency" v-model="filterVals[idx].frequency" min="20" max="20000" step="10" />
-      <v-num @change="draw" label="Q" v-model="filterVals[idx].Q" min="0.0001" max="1000" step="0.0001" />
-      <v-num @change="draw" label="Gain" v-model="filterVals[idx].gain" min="-40" max="40" step="0.1" />
+      <v-num
+        class="w-[85px]"
+        @change="draw"
+        label="Frequency"
+        v-model="filterVals[idx].frequency"
+        min="20"
+        max="20000"
+        step="10"
+      />
+      <v-num
+        class="w-[85px]"
+        @change="draw"
+        label="Q"
+        v-model="filterVals[idx].Q"
+        min="0.0001"
+        max="1000"
+        step="0.0001"
+      />
+      <v-num
+        class="w-[85px]"
+        @change="draw"
+        label="Gain"
+        v-model="filterVals[idx].gain"
+        min="-40"
+        max="40"
+        step="0.1"
+      />
     </fieldset>
   </section>
 </template>
-
-<style scoped lang="scss">
-  section {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 70vh;
-    flex-direction: column;
-  }
-  canvas {
-    margin: 40px;
-  }
-  fieldset {
-    display: flex;
-    flex-direction: row;
-    border: 0;
-    gap: 10px;
-    .v-text-field {
-      width: 85px;
-    }
-  }
-</style>
