@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { IPA_WORDS, COMMON_IPA, IPA } from '../stores/useIPA';
+import { IPA_WORDS, COMMON_IPA, type IPAType } from '../stores/useIPA';
 
 interface Props {
-  ipaSet?: IPA[];
+  ipaSet?: IPAType[];
   title?: string;
 }
 
@@ -14,20 +14,18 @@ const { ipa } = storeToRefs(useIPA());
 
 const items = computed(() => Object.values(ipaSet?.value ?? COMMON_IPA).map(v => ({
   value: v,
-  title: `${v} (${IPA_WORDS[v as IPA]})`,
+  title: `${v} (${IPA_WORDS[v as IPAType]})`,
 })));
 </script>
 
 <template>
-  <section class="ipa-selector">
-    <v-select v-model="ipa" :items="items" :label="title ?? 'Sound'" @update:model-value="emit('change', $event)" />
+  <section class="flex flex-row items-center">
+    <v-select
+      class="w-full"
+      v-model="ipa"
+      :items="items"
+      :label="title ?? 'Sound'"
+      @update:model-value="emit('change', $event)"
+    />
   </section>
 </template>
-
-<style scoped>
-.ipa-selector {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-}
-</style>

@@ -10,33 +10,20 @@ const keyboard = ref<InstanceType<typeof Keyboard>>();
 </script>
 
 <template>
-  <section>
-    <template v-if="keyboard">
-      <SettingsPanel ref="settingsPanel" />
-      <Visualizer v-if="settings.viz.on" :vtype="visType" :height="150" />
-    </template>
-    <Keyboard
-      ref="keyboard"
-      @key-on="(note: string, v) => player.play(note, v)"
-      @key-off="(note: string) => player?.stop(note)"
-    />
-    <div>
+  <section class="flex flex-col items-center gap-0">
+    <div class="w-[95vw]">
+      <SettingsPanel v-if="keyboard" ref="settingsPanel" class="mb-3" />
+      <Visualizer v-if="keyboard && settings.viz.on" :vtype="visType" :height="150" />
+      <Keyboard
+        ref="keyboard"
+        @key-on="(note: string, v) => player.play(note, v)"
+        @key-off="(note: string) => player?.stop(note)"
+      />
+    </div>
+    <div class="my-10 inline-flex gap-5">
       <MidiButton :keyboard="keyboard" text="MIDI" />
       <MicButton start-text="Listen" stop-text="Stop" />
     </div>
     <Readout />
   </section>
 </template>
-
-<style scoped lang="scss">
-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  .midi, .mic {
-    margin: 40px 10px;
-    display: inline-block;
-    vertical-align: top;
-  }
-}
-</style>

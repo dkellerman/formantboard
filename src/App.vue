@@ -1,81 +1,66 @@
 <script setup lang="ts">
 const drawer = ref(false);
 const route = useRoute();
-watch(route, () => {
+watch(() => route.fullPath, () => {
   drawer.value = false;
 });
 </script>
 
 <template>
-  <v-layout>
-    <v-app-bar density="compact">
-      <template #prepend>
-        <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
-      </template>
-      <v-app-bar-title>
-        <router-link to="/">
+  <div class="min-h-screen">
+    <header
+      class="sticky top-0 z-50 flex h-14 items-center gap-3 border-b border-zinc-300 bg-sky-50 px-3 shadow-sm"
+    >
+      <button
+        :class="[
+          'relative z-[60] inline-flex h-9 w-9 items-center justify-center text-xl text-zinc-700',
+          'transition-colors hover:bg-zinc-200',
+        ]"
+        type="button"
+        @click="drawer = !drawer"
+      >
+        ☰
+      </button>
+      <h1 class="m-0 text-xl font-medium tracking-tight">
+        <router-link to="/" class="text-zinc-900 no-underline hover:underline">
           FormantBoard
         </router-link>
-      </v-app-bar-title>
-    </v-app-bar>
+      </h1>
+    </header>
 
-    <v-navigation-drawer v-model="drawer" location="left" temporary :width="375" color="#f0f8ff ">
-      <v-list>
-        <v-list-item>
-          <router-link to="/">
-            Home
-          </router-link>
-        </v-list-item>
-        <v-list-item>
-          <router-link to="/sandbox">
-            Sandbox
-          </router-link>
-        </v-list-item>
-        <v-list-item>
-          <a href="https://github.com/dkellerman/formantboard">
-            Github
-          </a>
-        </v-list-item>
-        <v-list-item>
-          <a href="https://bipium.com">
-            Metronome
-          </a>
-        </v-list-item>
-        <v-list-item>
-          <a href="https://rhymes.vercel.app">
-            Song Rhymes
-          </a>
-        </v-list-item>
-      </v-list>
-    </v-navigation-drawer>
+    <aside
+      v-if="drawer"
+      :class="[
+        'fixed left-0 top-0 z-40 h-screen w-[85vw] max-w-[375px] border-r border-zinc-300',
+        'bg-sky-50 p-5 shadow-lg',
+      ]"
+    >
+      <nav class="mt-14 flex flex-col gap-4 text-xl">
+        <router-link to="/" class="text-zinc-900 no-underline hover:underline">
+          Home
+        </router-link>
+        <router-link to="/sandbox" class="text-zinc-900 no-underline hover:underline">
+          Sandbox
+        </router-link>
+        <a href="https://github.com/dkellerman/formantboard" class="text-zinc-900 no-underline hover:underline">
+          Github
+        </a>
+        <a href="https://bipium.com" class="text-zinc-900 no-underline hover:underline">
+          Metronome
+        </a>
+      </nav>
+    </aside>
 
-    <v-main>
+    <button
+      v-if="drawer"
+      class="fixed inset-0 z-[35] h-screen w-screen border-0 bg-transparent"
+      type="button"
+      aria-label="Close menu"
+      @click="drawer = false"
+    />
+
+    <main class="pt-8">
       <router-view />
-    </v-main>
-  </v-layout>
+    </main>
+  </div>
 </template>
-
-<style scoped lang="scss">
-.v-toolbar {
-  background: aliceblue;
-  a {
-    color: black;
-    text-decoration: none;
-  }
-}
-
-.v-navigation-drawer {
-  a {
-    color: black;
-    text-decoration: none;
-    font-size: 20px;
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-}
-
-main {
-  margin-top: 30px;
-}
-</style>

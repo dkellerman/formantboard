@@ -1,4 +1,4 @@
-import { type IPAType, IPA } from "./useIPA";
+import { type IPAType, IPA as IPAEnum } from "./ipaEnum";
 import { VisType } from "./useVisType";
 
 export type Settings = typeof defaultSettings;
@@ -17,7 +17,7 @@ const formantDefaults = { on: true, Q: 10, gain: 20 };
 
 const defaultSettings = {
   defaultNote: 'E3',
-  defaultIPA: IPA.ɑ,
+  defaultIPA: IPAEnum.ɑ,
   defaultVisType: VisType.POWER,
   audioContextConfig: {
     sampleRate: 44100,
@@ -77,288 +77,288 @@ const defaultSettings = {
   formants: {
     on: true,
     ipa: {
-      [IPA.ɑ]: [
+      [IPAEnum.ɑ]: [
         { ...formantDefaults, frequency: 800 },
         { ...formantDefaults, frequency: 1200 },
         { ...formantDefaults, frequency: 2500 },
       ],
-      // [IPA.ɑ]: [
+      // [IPAEnum.ɑ]: [
       //   { ...formantDefaults, frequency: 750 },
       //   { ...formantDefaults, frequency: 940 },
       //   { ...formantDefaults, frequency: 190 },
       // ],
-      [IPA.i]: [
+      [IPAEnum.i]: [
         { ...formantDefaults, frequency: 270 },
         { ...formantDefaults, frequency: 2300 },
         { ...formantDefaults, frequency: 3000 },
       ],
-      // [IPA.i]: [
+      // [IPAEnum.i]: [
       //   { ...formantDefaults, frequency: 240 },
       //   { ...formantDefaults, frequency: 2400 },
       //   { ...formantDefaults, frequency: 2160 },
       // ],
-      [IPA.ɪ]: [
+      [IPAEnum.ɪ]: [
         { ...formantDefaults, frequency: 400 },
         { ...formantDefaults, frequency: 2000 },
         { ...formantDefaults, frequency: 2550 },
       ],
-      // [IPA.ɪ]: [
+      // [IPAEnum.ɪ]: [
       //   { ...formantDefaults, frequency: 390 },
       //   { ...formantDefaults, frequency: 1990 },
       //   { ...formantDefaults, frequency: 2550 },
       // ],
-      [IPA.ɛ]: [
+      [IPAEnum.ɛ]: [
         { ...formantDefaults, frequency: 530 },
         { ...formantDefaults, frequency: 1850 },
         { ...formantDefaults, frequency: 2500 },
       ],
-      // [IPA.ɛ]: [
+      // [IPAEnum.ɛ]: [
       //   { ...formantDefaults, frequency: 610 },
       //   { ...formantDefaults, frequency: 1900 },
       //   { ...formantDefaults, frequency: 1290 },
       // ],
-      [IPA.æ]: [
+      [IPAEnum.æ]: [
         { ...formantDefaults, frequency: 660 },
         { ...formantDefaults, frequency: 1700 },
         { ...formantDefaults, frequency: 2400 },
       ],
-      [IPA.ɔ]: [
+      [IPAEnum.ɔ]: [
         { ...formantDefaults, frequency: 500 },
         { ...formantDefaults, frequency: 800 },
         { ...formantDefaults, frequency: 2830 },
       ],
-      // [IPA.ɔ]: [
+      // [IPAEnum.ɔ]: [
       //   { ...formantDefaults, frequency: 500 },
       //   { ...formantDefaults, frequency: 700 },
       //   { ...formantDefaults, frequency: 200 },
       // ],
-      [IPA.ʊ]: [
+      [IPAEnum.ʊ]: [
         { ...formantDefaults, frequency: 640 },
         { ...formantDefaults, frequency: 1200 },
         { ...formantDefaults, frequency: 2400 },
       ],
-      [IPA.u]: [
+      [IPAEnum.u]: [
         { ...formantDefaults, frequency: 300 },
         { ...formantDefaults, frequency: 870 },
         { ...formantDefaults, frequency: 2250 },
       ],
-      // [IPA.u]: [
+      // [IPAEnum.u]: [
       //   { ...formantDefaults, frequency: 250 },
       //   { ...formantDefaults, frequency: 595 },
       //   { ...formantDefaults, frequency: 345 },
       // ],
-      [IPA.ə]: [
+      [IPAEnum.ə]: [
         { ...formantDefaults, frequency: 600 },
         { ...formantDefaults, frequency: 1000 },
         { ...formantDefaults, frequency: 2400 },
       ],
-      [IPA.y]: [
+      [IPAEnum.y]: [
         { ...formantDefaults, frequency: 235 },
         { ...formantDefaults, frequency: 2100 },
         { ...formantDefaults, frequency: 1865 },
       ],
-      [IPA.e]: [
+      [IPAEnum.e]: [
         { ...formantDefaults, frequency: 390 },
         { ...formantDefaults, frequency: 2300 },
         { ...formantDefaults, frequency: 1910 },
       ],
-      [IPA.ø]: [
+      [IPAEnum.ø]: [
         { ...formantDefaults, frequency: 370 },
         { ...formantDefaults, frequency: 1900 },
         { ...formantDefaults, frequency: 1530 },
       ],
-      [IPA.œ]: [
+      [IPAEnum.œ]: [
         { ...formantDefaults, frequency: 585 },
         { ...formantDefaults, frequency: 1710 },
         { ...formantDefaults, frequency: 1125 },
       ],
-      [IPA.a]: [
+      [IPAEnum.a]: [
         { ...formantDefaults, frequency: 850 },
         { ...formantDefaults, frequency: 1610 },
         { ...formantDefaults, frequency: 760 },
       ],
-      [IPA.ɶ]: [
+      [IPAEnum.ɶ]: [
         { ...formantDefaults, frequency: 820 },
         { ...formantDefaults, frequency: 1530 },
         { ...formantDefaults, frequency: 710 },
       ],
-      [IPA.ɒ]: [
+      [IPAEnum.ɒ]: [
         { ...formantDefaults, frequency: 700 },
         { ...formantDefaults, frequency: 760 },
         { ...formantDefaults, frequency: 60 },
       ],
-      [IPA.ʌ]: [
+      [IPAEnum.ʌ]: [
         { ...formantDefaults, frequency: 600 },
         { ...formantDefaults, frequency: 1170 },
         { ...formantDefaults, frequency: 570 },
       ],
-      [IPA.ɤ]: [
+      [IPAEnum.ɤ]: [
         { ...formantDefaults, frequency: 460 },
         { ...formantDefaults, frequency: 1310 },
         { ...formantDefaults, frequency: 850 },
       ],
-      [IPA.o]: [
+      [IPAEnum.o]: [
         { ...formantDefaults, frequency: 360 },
         { ...formantDefaults, frequency: 640 },
         { ...formantDefaults, frequency: 280 },
       ],
-      [IPA.ɯ]: [
+      [IPAEnum.ɯ]: [
         { ...formantDefaults, frequency: 300 },
         { ...formantDefaults, frequency: 1390 },
         { ...formantDefaults, frequency: 1090 },
       ],
-      // [IPA.ʊ]: [
+      // [IPAEnum.ʊ]: [
       //   { ...formantDefaults, frequency: 300 },
       //   { ...formantDefaults, frequency: 870 },
       //   { ...formantDefaults, frequency: 2240 },
       // ],
-      // [IPA.ə]: [
+      // [IPAEnum.ə]: [
       //   { ...formantDefaults, frequency: 520 },
       //   { ...formantDefaults, frequency: 1190 },
       //   { ...formantDefaults, frequency: 2390 },
       // ],
-      // [IPA.æ]: [
+      // [IPAEnum.æ]: [
       //   { ...formantDefaults, frequency: 660 },
       //   { ...formantDefaults, frequency: 1720 },
       //   { ...formantDefaults, frequency: 2410 },
       // ],
-      [IPA.ŋ]: [
+      [IPAEnum.ŋ]: [
         { ...formantDefaults, frequency: 325 },
         { ...formantDefaults, frequency: 1250 },
         { ...formantDefaults, frequency: 2500 },
       ],
-      [IPA.ʧ]: [
+      [IPAEnum.ʧ]: [
         { ...formantDefaults, frequency: 0 },
         { ...formantDefaults, frequency: 0 },
         { ...formantDefaults, frequency: 1750 },
       ],
-      [IPA.θ]: [
+      [IPAEnum.θ]: [
         { ...formantDefaults, frequency: 0 },
         { ...formantDefaults, frequency: 0 },
         { ...formantDefaults, frequency: 0 },
         { ...formantDefaults, frequency: 6000 },
       ],
-      [IPA.ð]: [
+      [IPAEnum.ð]: [
         { ...formantDefaults, frequency: 300 },
         { ...formantDefaults, frequency: 0 },
         { ...formantDefaults, frequency: 0 },
         { ...formantDefaults, frequency: 5250 },
       ],
-      [IPA.ʤ]: [
+      [IPAEnum.ʤ]: [
         { ...formantDefaults, frequency: 250 },
         { ...formantDefaults, frequency: 0 },
         { ...formantDefaults, frequency: 2500 },
         { ...formantDefaults, frequency: 0 },
       ],
-      [IPA.ʃ]: [
+      [IPAEnum.ʃ]: [
         { ...formantDefaults, frequency: 0 },
         { ...formantDefaults, frequency: 0 },
         { ...formantDefaults, frequency: 1750 },
         { ...formantDefaults, frequency: 5000 },
       ],
-      [IPA.w]: [
+      [IPAEnum.w]: [
         { ...formantDefaults, frequency: 525 },
         { ...formantDefaults, frequency: 0 },
         { ...formantDefaults, frequency: 0 },
         { ...formantDefaults, frequency: 0 },
       ],
-      [IPA.n]: [
+      [IPAEnum.n]: [
         { ...formantDefaults, frequency: 300 },
         { ...formantDefaults, frequency: 1250 },
         { ...formantDefaults, frequency: 2500 },
         { ...formantDefaults, frequency: 0 },
       ],
-      [IPA.m]: [
+      [IPAEnum.m]: [
         { ...formantDefaults, frequency: 300 },
         { ...formantDefaults, frequency: 1250 },
         { ...formantDefaults, frequency: 3000 },
         { ...formantDefaults, frequency: 0 },
       ],
-      [IPA.r]: [
+      [IPAEnum.r]: [
         { ...formantDefaults, frequency: 700 },
         { ...formantDefaults, frequency: 2250 },
         { ...formantDefaults, frequency: 2100 },
         { ...formantDefaults, frequency: 0 },
       ],
-      [IPA.g]: [
+      [IPAEnum.g]: [
         { ...formantDefaults, frequency: 250 },
         { ...formantDefaults, frequency: 0 },
         { ...formantDefaults, frequency: 2000 },
         { ...formantDefaults, frequency: 0 },
       ],
-      [IPA.j]: [
+      [IPAEnum.j]: [
         { ...formantDefaults, frequency: 250 },
         { ...formantDefaults, frequency: 0 },
         { ...formantDefaults, frequency: 2500 },
         { ...formantDefaults, frequency: 0 },
       ],
-      [IPA.l]: [
+      [IPAEnum.l]: [
         { ...formantDefaults, frequency: 325 },
         { ...formantDefaults, frequency: 0 },
         { ...formantDefaults, frequency: 2500 },
         { ...formantDefaults, frequency: 0 },
       ],
-      [IPA.d]: [
+      [IPAEnum.d]: [
         { ...formantDefaults, frequency: 350 },
         { ...formantDefaults, frequency: 0 },
         { ...formantDefaults, frequency: 2750 },
         { ...formantDefaults, frequency: 0 },
       ],
-      [IPA.z]: [
+      [IPAEnum.z]: [
         { ...formantDefaults, frequency: 250 },
         { ...formantDefaults, frequency: 0 },
         { ...formantDefaults, frequency: 0 },
         { ...formantDefaults, frequency: 4500 },
       ],
-      [IPA.v]: [
+      [IPAEnum.v]: [
         { ...formantDefaults, frequency: 350 },
         { ...formantDefaults, frequency: 0 },
         { ...formantDefaults, frequency: 0 },
         { ...formantDefaults, frequency: 4000 },
       ],
-      [IPA.h]: [
+      [IPAEnum.h]: [
         { ...formantDefaults, frequency: 0 },
         { ...formantDefaults, frequency: 0 },
         { ...formantDefaults, frequency: 1750 },
         { ...formantDefaults, frequency: 0 },
       ],
-      [IPA.p]: [
+      [IPAEnum.p]: [
         { ...formantDefaults, frequency: 0 },
         { ...formantDefaults, frequency: 0 },
         { ...formantDefaults, frequency: 1750 },
         { ...formantDefaults, frequency: 0 },
       ],
-      [IPA.k]: [
+      [IPAEnum.k]: [
         { ...formantDefaults, frequency: 0 },
         { ...formantDefaults, frequency: 0 },
         { ...formantDefaults, frequency: 2250 },
         { ...formantDefaults, frequency: 0 },
       ],
-      [IPA.t]: [
+      [IPAEnum.t]: [
         { ...formantDefaults, frequency: 0 },
         { ...formantDefaults, frequency: 0 },
         { ...formantDefaults, frequency: 3000 },
         { ...formantDefaults, frequency: 0 },
       ],
-      [IPA.s]: [
+      [IPAEnum.s]: [
         { ...formantDefaults, frequency: 0 },
         { ...formantDefaults, frequency: 0 },
         { ...formantDefaults, frequency: 0 },
         { ...formantDefaults, frequency: 5500 },
       ],
-      [IPA.f]: [
+      [IPAEnum.f]: [
         { ...formantDefaults, frequency: 0 },
         { ...formantDefaults, frequency: 0 },
         { ...formantDefaults, frequency: 0 },
         { ...formantDefaults, frequency: 4500 },
       ],
-      [IPA.b]: [
+      [IPAEnum.b]: [
         { ...formantDefaults, frequency: 350 },
         { ...formantDefaults, frequency: 0 },
         { ...formantDefaults, frequency: 2250 },
         { ...formantDefaults, frequency: 0 },
       ],
-      [IPA.ʒ]: [
+      [IPAEnum.ʒ]: [
         { ...formantDefaults, frequency: 500 },
         { ...formantDefaults, frequency: 1500 },
         { ...formantDefaults, frequency: 2500 },

@@ -2,7 +2,7 @@
 import * as PIXI from 'pixi.js';
 import type { Formant } from 'stores/useSettings';
 import tinycolor from 'tinycolor2';
-import { WASMCallback } from 'wasm';
+import type { WASMCallback } from 'wasm';
 import type { IPASpec } from './stores/useSettings';
 
 export const NOTE_RE = /^([a-gA-G])(#|b)?([0-8])?$/;

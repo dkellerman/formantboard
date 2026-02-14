@@ -36,7 +36,7 @@ const props = withDefaults(defineProps<Props>(), {
 </script>
 
 <template>
-  <div class="knob">
+  <div class="text-center text-sm">
     <label>{{ props.label }}</label>
     <PVKnob
       v-bind="props"
@@ -45,10 +45,3 @@ const props = withDefaults(defineProps<Props>(), {
     />
   </div>
 </template>
-
-<style lang="scss" scoped>
-.knob {
-  text-align: center;
-  font-size: 13px;
-}
-</style>

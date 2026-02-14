@@ -1,16 +1,15 @@
+/// <reference types="vitest/config" />
 import { defineConfig } from 'vite';
 import Vue from '@vitejs/plugin-vue';
 import AutoImport from 'unplugin-auto-import/vite';
 import Pages from 'vite-plugin-pages';
 import Components from 'unplugin-vue-components/vite';
-import Vuetify from 'vite-plugin-vuetify';
 
 // https://vitejs.dev/config/
 export default defineConfig(() => {
   return {
     plugins: [
       Vue(),
-      Vuetify(),
       AutoImport({
         dts: './src/auto-imports.d.ts',
         imports: [
@@ -32,5 +31,11 @@ export default defineConfig(() => {
         ],
       }),
     ],
+    test: {
+      globals: true,
+      environment: 'jsdom',
+      setupFiles: './src/test/setup.ts',
+      include: ['src/test/**/*.spec.ts'],
+    },
   };
 });

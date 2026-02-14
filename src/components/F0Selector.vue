@@ -50,8 +50,8 @@ defineExpose({
 
 <template>
   <v-text-field
-    class="f0"
-    label="F0"
+    class="max-w-[120px]"
+    label="Fundamental"
     v-model="f0"
     :append-inner-icon="!!playingF0 ? 'mdi-stop' : 'mdi-play'"
     @click:append-inner="toggleF0"
@@ -61,15 +61,3 @@ defineExpose({
     @keyup.down="() => { f0 = String(stepNoteOrFreq(f0, -1, -5)); restartF0(); }"
   />
 </template>
-
-<style scoped lang="scss">
-.f0 {
-  max-width: 100px;
-  :deep(.mdi-play::before) {
-    color: rgb(16, 116, 16);
-  }
-  :deep(.mdi-stop::before) {
-    color: rgb(181, 8, 8);
-  }
-}
-</style>
