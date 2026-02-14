@@ -1,17 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import * as PIXI from 'pixi.js';
+import type { Formant } from 'stores/useSettings';
 import tinycolor from 'tinycolor2';
-import type { WASMCallback } from './wasm';
-import { createWASMAudioWorkletNode } from './wasm';
-
-export interface Formant {
-  on: boolean;
-  frequency: number;
-  Q: number;
-  gain: number;
-}
-
-export type IPASpec = Formant[];
+import type { WASMCallback } from 'wasm';
+import type { IPASpec } from './stores/useSettings';
 
 export const NOTE_RE = /^([a-gA-G])(#|b)?([0-8])?$/;
 export const CANONICAL_NOTES: Record<string, string> = {

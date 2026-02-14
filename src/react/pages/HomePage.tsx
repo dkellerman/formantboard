@@ -9,9 +9,10 @@ export function HomePage() {
   return (
     <section className="space-y-6 pb-10">
       <div className="rounded border border-zinc-300 bg-white p-5 shadow-sm">
-        <h2 className="text-2xl font-semibold text-zinc-900">FormantBoard</h2>
+        <h2 className="text-2xl font-semibold text-zinc-900">React Migration Started</h2>
         <p className="mt-2 text-zinc-700">
-          React app with Zustand state and live audio controls.
+          This app now boots through React Router with Zustand-managed state. The next step is migrating
+          audio, keyboard, visualizer, and controls from Vue components into React components.
         </p>
       </div>
 
@@ -32,7 +33,7 @@ export function HomePage() {
 
       <div className="rounded border border-zinc-300 bg-sky-50 p-4 text-zinc-800">
         <p className="text-sm">
-          Open <Link className="font-semibold underline" to="/sandbox">Sandbox</Link> to play notes and tune settings.
+          Continue migration work in <Link className="font-semibold underline" to="/sandbox">Sandbox</Link>.
         </p>
       </div>
     </section>
