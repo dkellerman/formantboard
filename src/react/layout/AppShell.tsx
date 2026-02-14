@@ -36,7 +36,7 @@ export function AppShell() {
           ☰
         </button>
         <h1 className="m-0 text-xl font-medium tracking-tight">
-          <NavLink className="text-zinc-900 no-underline hover:underline" to="/sandbox">
+          <NavLink className="text-zinc-900 no-underline hover:underline" to="/">
             FormantBoard
           </NavLink>
         </h1>
@@ -46,10 +46,7 @@ export function AppShell() {
         <>
           <aside className={asideClass}>
             <nav className="mt-14 flex flex-col gap-4 text-xl">
-              <NavLink className={navLinkClass} to="/sandbox">
-                Home
-              </NavLink>
-              <NavLink className={navLinkClass} to="/sandbox">
+              <NavLink className={navLinkClass} to="/">
                 Sandbox
               </NavLink>
               <a
