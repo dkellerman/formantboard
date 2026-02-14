@@ -4,8 +4,8 @@ import SettingsPanel from '../components/SettingsPanel.vue';
 import Visualizer from '../components/Visualizer.vue';
 
 const player = usePlayer();
-const { settings } = storeToRefs(useSettings());
-const { visType } = storeToRefs(useVisType());
+const { settings } = toRefs(useSettings());
+const { visType } = toRefs(useVisType());
 const keyboard = ref<InstanceType<typeof Keyboard>>();
 </script>
 

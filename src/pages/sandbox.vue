@@ -24,8 +24,8 @@ const metrics = useMetrics();
 const player = usePlayer();
 const showHGains = ref(false);
 const keyboard = ref<InstanceType<typeof Keyboard>>();
-const { ipaSpec } = storeToRefs(useIPA());
-const { settings } = storeToRefs(useSettings());
+const { ipaSpec } = toRefs(useIPA());
+const { settings } = toRefs(useSettings());
 const { flutter, harmonics, compression, formants, vibrato, f0 } = settings.value;
 
 const r = () => f0selector.value?.restartF0();

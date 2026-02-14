@@ -6,7 +6,7 @@ interface Props {
 }
 const props = defineProps<Props>();
 
-const { layout, keyboardWidth } = storeToRefs(useKeyboardLayout());
+const { layout, keyboardWidth } = toRefs(useKeyboardLayout());
 const metrics = useMetrics();
 const noteIds = computed(() => layout.value.notes.map((n) => n.replace('#', 's')));
 const dragging = ref(false);

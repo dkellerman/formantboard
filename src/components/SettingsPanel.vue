@@ -2,9 +2,9 @@
 import F0Selector from './F0Selector.vue';
 
 const f0selector = ref<InstanceType<typeof F0Selector>>();
-const { ipaSpec } = storeToRefs(useIPA());
-const { settings } = storeToRefs(useSettings());
-const { visType } = storeToRefs(useVisType());
+const { ipaSpec } = toRefs(useIPA());
+const { settings } = toRefs(useSettings());
+const { visType } = toRefs(useVisType());
 const formantButtons = ref();
 
 function setFormants() {

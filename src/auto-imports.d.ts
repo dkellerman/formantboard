@@ -17,17 +17,16 @@ declare global {
   const IPA_WORDS: typeof import('./stores/useIPA')['IPA_WORDS']
   const KEY_SLOTS_PER_OCTAVE: typeof import('./utils')['KEY_SLOTS_PER_OCTAVE']
   const KeyboardLayout: typeof import('./utils')['KeyboardLayout']
-  const MidiStatus: typeof import('./stores/useMidi')['MidiStatus']
+  const MidiStatus: typeof import('./stores/midiTypes')['MidiStatus']
   const NOTES: typeof import('./utils')['NOTES']
   const NOTE_LETTERS: typeof import('./utils')['NOTE_LETTERS']
   const NOTE_RE: typeof import('./utils')['NOTE_RE']
   const PLOSIVES: typeof import('./stores/useIPA')['PLOSIVES']
   const ToggleContextKey: typeof import('./components/vui-toggle')['ToggleContextKey']
-  const VIS_TYPES: typeof import('./stores/useVisType')['VIS_TYPES']
+  const VIS_TYPES: typeof import('./stores/visTypes')['VIS_TYPES']
   const VOWELS: typeof import('./stores/useIPA')['VOWELS']
-  const VisType: typeof import('./stores/useVisType')['VisType']
+  const VisType: typeof import('./stores/visTypes')['VisType']
   const WASMNode: typeof import('./wasm')['WASMNode']
-  const acceptHMRUpdate: typeof import('pinia')['acceptHMRUpdate']
   const arr2rms: typeof import('./utils')['arr2rms']
   const asyncComputed: typeof import('@vueuse/core')['asyncComputed']
   const autoResetRef: typeof import('@vueuse/core')['autoResetRef']
@@ -41,13 +40,13 @@ declare global {
   const controlledRef: typeof import('@vueuse/core')['controlledRef']
   const countSlots: typeof import('./utils')['countSlots']
   const createApp: typeof import('vue')['createApp']
+  const createDefaultSettings: typeof import('./stores/settingsDefaults')['createDefaultSettings']
   const createEventHook: typeof import('@vueuse/core')['createEventHook']
   const createFormants: typeof import('./utils')['createFormants']
   const createGlobalState: typeof import('@vueuse/core')['createGlobalState']
   const createHarmonics: typeof import('./utils')['createHarmonics']
   const createInjectionState: typeof import('@vueuse/core')['createInjectionState']
   const createMicSource: typeof import('./utils')['createMicSource']
-  const createPinia: typeof import('pinia')['createPinia']
   const createPitchDetectionNode: typeof import('./utils')['createPitchDetectionNode']
   const createReactiveFn: typeof import('@vueuse/core')['createReactiveFn']
   const createSharedComposable: typeof import('@vueuse/core')['createSharedComposable']
@@ -62,7 +61,6 @@ declare global {
   const debugt: typeof import('./utils')['debugt']
   const defineAsyncComponent: typeof import('vue')['defineAsyncComponent']
   const defineComponent: typeof import('vue')['defineComponent']
-  const defineStore: typeof import('pinia')['defineStore']
   const eagerComputed: typeof import('@vueuse/core')['eagerComputed']
   const effectScope: typeof import('vue')['effectScope']
   const extendRef: typeof import('@vueuse/core')['extendRef']
@@ -72,7 +70,6 @@ declare global {
   const freq2noteCents: typeof import('./utils')['freq2noteCents']
   const freq2semitones: typeof import('./utils')['freq2semitones']
   const gain2db: typeof import('./utils')['gain2db']
-  const getActivePinia: typeof import('pinia')['getActivePinia']
   const getCurrentInstance: typeof import('vue')['getCurrentInstance']
   const getCurrentScope: typeof import('vue')['getCurrentScope']
   const getHarmonics: typeof import('./utils')['getHarmonics']
@@ -86,11 +83,6 @@ declare global {
   const isReadonly: typeof import('vue')['isReadonly']
   const isRef: typeof import('vue')['isRef']
   const makeDestructurable: typeof import('@vueuse/core')['makeDestructurable']
-  const mapActions: typeof import('pinia')['mapActions']
-  const mapGetters: typeof import('pinia')['mapGetters']
-  const mapState: typeof import('pinia')['mapState']
-  const mapStores: typeof import('pinia')['mapStores']
-  const mapWritableState: typeof import('pinia')['mapWritableState']
   const markRaw: typeof import('vue')['markRaw']
   const midi2note: typeof import('./utils')['midi2note']
   const nextTick: typeof import('vue')['nextTick']
@@ -132,17 +124,15 @@ declare global {
   const refDefault: typeof import('@vueuse/core')['refDefault']
   const refThrottled: typeof import('@vueuse/core')['refThrottled']
   const refWithControl: typeof import('@vueuse/core')['refWithControl']
+  const resetAllStores: typeof import('./stores/zustand')['resetAllStores']
   const resolveComponent: typeof import('vue')['resolveComponent']
   const resolveRef: typeof import('@vueuse/core')['resolveRef']
   const resolveUnref: typeof import('@vueuse/core')['resolveUnref']
   const round: typeof import('./utils')['round']
-  const setActivePinia: typeof import('pinia')['setActivePinia']
-  const setMapStoreSuffix: typeof import('pinia')['setMapStoreSuffix']
   const shallowReactive: typeof import('vue')['shallowReactive']
   const shallowReadonly: typeof import('vue')['shallowReadonly']
   const shallowRef: typeof import('vue')['shallowRef']
   const stepNoteOrFreq: typeof import('./utils')['stepNoteOrFreq']
-  const storeToRefs: typeof import('pinia')['storeToRefs']
   const str2hexColor: typeof import('./utils')['str2hexColor']
   const syncRef: typeof import('@vueuse/core')['syncRef']
   const syncRefs: typeof import('@vueuse/core')['syncRefs']
@@ -163,6 +153,7 @@ declare global {
   const unrefElement: typeof import('@vueuse/core')['unrefElement']
   const until: typeof import('@vueuse/core')['until']
   const useActiveElement: typeof import('@vueuse/core')['useActiveElement']
+  const useAppStore: typeof import('./stores/appStore')['useAppStore']
   const useArrayEvery: typeof import('@vueuse/core')['useArrayEvery']
   const useArrayFilter: typeof import('@vueuse/core')['useArrayFilter']
   const useArrayFind: typeof import('@vueuse/core')['useArrayFind']
@@ -361,17 +352,16 @@ declare module 'vue' {
     readonly IPA_WORDS: UnwrapRef<typeof import('./stores/useIPA')['IPA_WORDS']>
     readonly KEY_SLOTS_PER_OCTAVE: UnwrapRef<typeof import('./utils')['KEY_SLOTS_PER_OCTAVE']>
     readonly KeyboardLayout: UnwrapRef<typeof import('./utils')['KeyboardLayout']>
-    readonly MidiStatus: UnwrapRef<typeof import('./stores/useMidi')['MidiStatus']>
+    readonly MidiStatus: UnwrapRef<typeof import('./stores/midiTypes')['MidiStatus']>
     readonly NOTES: UnwrapRef<typeof import('./utils')['NOTES']>
     readonly NOTE_LETTERS: UnwrapRef<typeof import('./utils')['NOTE_LETTERS']>
     readonly NOTE_RE: UnwrapRef<typeof import('./utils')['NOTE_RE']>
     readonly PLOSIVES: UnwrapRef<typeof import('./stores/useIPA')['PLOSIVES']>
     readonly ToggleContextKey: UnwrapRef<typeof import('./components/vui-toggle')['ToggleContextKey']>
-    readonly VIS_TYPES: UnwrapRef<typeof import('./stores/useVisType')['VIS_TYPES']>
+    readonly VIS_TYPES: UnwrapRef<typeof import('./stores/visTypes')['VIS_TYPES']>
     readonly VOWELS: UnwrapRef<typeof import('./stores/useIPA')['VOWELS']>
-    readonly VisType: UnwrapRef<typeof import('./stores/useVisType')['VisType']>
+    readonly VisType: UnwrapRef<typeof import('./stores/visTypes')['VisType']>
     readonly WASMNode: UnwrapRef<typeof import('./wasm')['WASMNode']>
-    readonly acceptHMRUpdate: UnwrapRef<typeof import('pinia')['acceptHMRUpdate']>
     readonly arr2rms: UnwrapRef<typeof import('./utils')['arr2rms']>
     readonly asyncComputed: UnwrapRef<typeof import('@vueuse/core')['asyncComputed']>
     readonly autoResetRef: UnwrapRef<typeof import('@vueuse/core')['autoResetRef']>
@@ -385,13 +375,13 @@ declare module 'vue' {
     readonly controlledRef: UnwrapRef<typeof import('@vueuse/core')['controlledRef']>
     readonly countSlots: UnwrapRef<typeof import('./utils')['countSlots']>
     readonly createApp: UnwrapRef<typeof import('vue')['createApp']>
+    readonly createDefaultSettings: UnwrapRef<typeof import('./stores/settingsDefaults')['createDefaultSettings']>
     readonly createEventHook: UnwrapRef<typeof import('@vueuse/core')['createEventHook']>
     readonly createFormants: UnwrapRef<typeof import('./utils')['createFormants']>
     readonly createGlobalState: UnwrapRef<typeof import('@vueuse/core')['createGlobalState']>
     readonly createHarmonics: UnwrapRef<typeof import('./utils')['createHarmonics']>
     readonly createInjectionState: UnwrapRef<typeof import('@vueuse/core')['createInjectionState']>
     readonly createMicSource: UnwrapRef<typeof import('./utils')['createMicSource']>
-    readonly createPinia: UnwrapRef<typeof import('pinia')['createPinia']>
     readonly createPitchDetectionNode: UnwrapRef<typeof import('./utils')['createPitchDetectionNode']>
     readonly createReactiveFn: UnwrapRef<typeof import('@vueuse/core')['createReactiveFn']>
     readonly createSharedComposable: UnwrapRef<typeof import('@vueuse/core')['createSharedComposable']>
@@ -406,7 +396,6 @@ declare module 'vue' {
     readonly debugt: UnwrapRef<typeof import('./utils')['debugt']>
     readonly defineAsyncComponent: UnwrapRef<typeof import('vue')['defineAsyncComponent']>
     readonly defineComponent: UnwrapRef<typeof import('vue')['defineComponent']>
-    readonly defineStore: UnwrapRef<typeof import('pinia')['defineStore']>
     readonly eagerComputed: UnwrapRef<typeof import('@vueuse/core')['eagerComputed']>
     readonly effectScope: UnwrapRef<typeof import('vue')['effectScope']>
     readonly extendRef: UnwrapRef<typeof import('@vueuse/core')['extendRef']>
@@ -416,7 +405,6 @@ declare module 'vue' {
     readonly freq2noteCents: UnwrapRef<typeof import('./utils')['freq2noteCents']>
     readonly freq2semitones: UnwrapRef<typeof import('./utils')['freq2semitones']>
     readonly gain2db: UnwrapRef<typeof import('./utils')['gain2db']>
-    readonly getActivePinia: UnwrapRef<typeof import('pinia')['getActivePinia']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
     readonly getHarmonics: UnwrapRef<typeof import('./utils')['getHarmonics']>
@@ -430,11 +418,6 @@ declare module 'vue' {
     readonly isReadonly: UnwrapRef<typeof import('vue')['isReadonly']>
     readonly isRef: UnwrapRef<typeof import('vue')['isRef']>
     readonly makeDestructurable: UnwrapRef<typeof import('@vueuse/core')['makeDestructurable']>
-    readonly mapActions: UnwrapRef<typeof import('pinia')['mapActions']>
-    readonly mapGetters: UnwrapRef<typeof import('pinia')['mapGetters']>
-    readonly mapState: UnwrapRef<typeof import('pinia')['mapState']>
-    readonly mapStores: UnwrapRef<typeof import('pinia')['mapStores']>
-    readonly mapWritableState: UnwrapRef<typeof import('pinia')['mapWritableState']>
     readonly markRaw: UnwrapRef<typeof import('vue')['markRaw']>
     readonly midi2note: UnwrapRef<typeof import('./utils')['midi2note']>
     readonly nextTick: UnwrapRef<typeof import('vue')['nextTick']>
@@ -476,17 +459,15 @@ declare module 'vue' {
     readonly refDefault: UnwrapRef<typeof import('@vueuse/core')['refDefault']>
     readonly refThrottled: UnwrapRef<typeof import('@vueuse/core')['refThrottled']>
     readonly refWithControl: UnwrapRef<typeof import('@vueuse/core')['refWithControl']>
+    readonly resetAllStores: UnwrapRef<typeof import('./stores/zustand')['resetAllStores']>
     readonly resolveComponent: UnwrapRef<typeof import('vue')['resolveComponent']>
     readonly resolveRef: UnwrapRef<typeof import('@vueuse/core')['resolveRef']>
     readonly resolveUnref: UnwrapRef<typeof import('@vueuse/core')['resolveUnref']>
     readonly round: UnwrapRef<typeof import('./utils')['round']>
-    readonly setActivePinia: UnwrapRef<typeof import('pinia')['setActivePinia']>
-    readonly setMapStoreSuffix: UnwrapRef<typeof import('pinia')['setMapStoreSuffix']>
     readonly shallowReactive: UnwrapRef<typeof import('vue')['shallowReactive']>
     readonly shallowReadonly: UnwrapRef<typeof import('vue')['shallowReadonly']>
     readonly shallowRef: UnwrapRef<typeof import('vue')['shallowRef']>
     readonly stepNoteOrFreq: UnwrapRef<typeof import('./utils')['stepNoteOrFreq']>
-    readonly storeToRefs: UnwrapRef<typeof import('pinia')['storeToRefs']>
     readonly str2hexColor: UnwrapRef<typeof import('./utils')['str2hexColor']>
     readonly syncRef: UnwrapRef<typeof import('@vueuse/core')['syncRef']>
     readonly syncRefs: UnwrapRef<typeof import('@vueuse/core')['syncRefs']>
@@ -507,6 +488,7 @@ declare module 'vue' {
     readonly unrefElement: UnwrapRef<typeof import('@vueuse/core')['unrefElement']>
     readonly until: UnwrapRef<typeof import('@vueuse/core')['until']>
     readonly useActiveElement: UnwrapRef<typeof import('@vueuse/core')['useActiveElement']>
+    readonly useAppStore: UnwrapRef<typeof import('./stores/appStore')['useAppStore']>
     readonly useArrayEvery: UnwrapRef<typeof import('@vueuse/core')['useArrayEvery']>
     readonly useArrayFilter: UnwrapRef<typeof import('@vueuse/core')['useArrayFilter']>
     readonly useArrayFind: UnwrapRef<typeof import('@vueuse/core')['useArrayFind']>

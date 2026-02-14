@@ -23,6 +23,21 @@ class MockDynamicsCompressorNode {
   }
 }
 
+class MockGainNode {
+  gain = {
+    value: 1,
+    linearRampToValueAtTime() { return undefined; },
+    setTargetAtTime() { return undefined; },
+  };
+
+  constructor(_ctx: AudioContext, opts: { gain?: number } = {}) {
+    this.gain.value = opts.gain ?? 1;
+  }
+
+  connect() { return this; }
+  disconnect() { return this; }
+}
+
 class MockResizeObserver {
   observe() { return undefined; }
   unobserve() { return undefined; }
@@ -46,6 +61,12 @@ Object.defineProperty(globalThis, 'DynamicsCompressorNode', {
   configurable: true,
   writable: true,
   value: MockDynamicsCompressorNode,
+});
+
+Object.defineProperty(globalThis, 'GainNode', {
+  configurable: true,
+  writable: true,
+  value: MockGainNode,
 });
 
 Object.defineProperty(globalThis, 'ResizeObserver', {

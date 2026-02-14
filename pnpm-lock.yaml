@@ -17,9 +17,6 @@ importers:
       lodash-es:
         specifier: ^4.17.21
         version: 4.17.21
-      pinia:
-        specifier: ^2.0.30
-        version: 2.0.30(typescript@4.9.3)(vue@3.2.45)
       pixi.js:
         specifier: ^7.1.2
         version: 7.1.2
@@ -53,6 +50,9 @@ importers:
       webmidi:
         specifier: ^3.1.4
         version: 3.1.4
+      zustand:
+        specifier: ^5.0.8
+        version: 5.0.11
     devDependencies:
       '@types/react':
         specifier: ^19.1.10
@@ -2079,18 +2079,6 @@ packages:
     resolution: {integrity: sha512-udgsAY+fTnvv7kI7aaxbqwWNb0AHiB0qBO89PZKPkoTmGOgdbrHDKD+0B2X4uTfJ/FT1R09r9gTsjUjNJotuog==}
     engines: {node: '>=0.10.0'}
 
-  pinia@2.0.30:
-    resolution: {integrity: sha512-q6DUmxWwe/mQgg+55QQjykpKC+aGeGdaJV3niminl19V08dE+LRTvSEuqi6/NLSGCKHI49KGL6tMNEOssFiMyA==}
-    peerDependencies:
-      '@vue/composition-api': ^1.4.0
-      typescript: '>=4.4.4'
-      vue: ^2.6.14 || ^3.2.0
-    peerDependenciesMeta:
-      '@vue/composition-api':
-        optional: true
-      typescript:
-        optional: true
-
   pirates@4.0.7:
     resolution: {integrity: sha512-TfySrs/5nm8fQJDcBDuUng3VOUKsd7S+zqvbOTiGXHfxX4wK31ard+hoNuvkicM/2YFzlpDgABOevKSsB4G/FA==}
     engines: {node: '>= 6'}
@@ -2790,6 +2778,24 @@ packages:
   yocto-queue@1.2.2:
     resolution: {integrity: sha512-4LCcse/U2MHZ63HAJVE+v71o7yOdIe4cZ70Wpf8D/IyjDKYQLV5GD46B+hSTjJsvV5PztjvHoU580EftxjDZFQ==}
     engines: {node: '>=12.20'}
+
+  zustand@5.0.11:
+    resolution: {integrity: sha512-fdZY+dk7zn/vbWNCYmzZULHRrss0jx5pPFiOuMZ/5HJN6Yv3u+1Wswy/4MpZEkEGhtNH+pwxZB8OKgUBPzYAGg==}
+    engines: {node: '>=12.20.0'}
+    peerDependencies:
+      '@types/react': '>=18.0.0'
+      immer: '>=9.0.6'
+      react: '>=18.0.0'
+      use-sync-external-store: '>=1.2.0'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+      immer:
+        optional: true
+      react:
+        optional: true
+      use-sync-external-store:
+        optional: true
 
 snapshots:
 
@@ -4781,14 +4787,6 @@ snapshots:
 
   pify@2.3.0: {}
 
-  pinia@2.0.30(typescript@4.9.3)(vue@3.2.45):
-    dependencies:
-      '@vue/devtools-api': 6.6.4
-      vue: 3.2.45
-      vue-demi: 0.14.10(vue@3.2.45)
-    optionalDependencies:
-      typescript: 4.9.3
-
   pirates@4.0.7: {}
 
   pixi.js@7.1.2:
@@ -5553,3 +5551,5 @@ snapshots:
   yocto-queue@0.1.0: {}
 
   yocto-queue@1.2.2: {}
+
+  zustand@5.0.11: {}

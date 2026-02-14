@@ -7,7 +7,7 @@ let gain: GainNode, gain2: GainNode, a: AnalyserNode;
 let raf: number|undefined;
 let rafct = 0;
 
-const { layout, keyboardWidth } = storeToRefs(useKeyboardLayout());
+const { layout, keyboardWidth } = toRefs(useKeyboardLayout());
 
 function toggle() {
   if (started.value) {

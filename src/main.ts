@@ -4,8 +4,6 @@ import "primevue/resources/primevue.min.css";
 import './tailwind.css';
 import App from './App.vue';
 
-const store = createPinia();
-
 const router = createRouter({
   history: createWebHistory(),
   routes,
@@ -13,5 +11,4 @@ const router = createRouter({
 
 createApp(App)
   .use(router)
-  .use(store)
   .mount('#app');
