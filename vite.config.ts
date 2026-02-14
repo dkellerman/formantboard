@@ -1,5 +1,6 @@
 /// <reference types="vitest/config" />
 import { defineConfig } from 'vite';
+import React from '@vitejs/plugin-react';
 import Vue from '@vitejs/plugin-vue';
 import AutoImport from 'unplugin-auto-import/vite';
 import Pages from 'vite-plugin-pages';
@@ -9,6 +10,7 @@ import Components from 'unplugin-vue-components/vite';
 export default defineConfig(() => {
   return {
     plugins: [
+      React(),
       Vue(),
       AutoImport({
         dts: './src/auto-imports.d.ts',
