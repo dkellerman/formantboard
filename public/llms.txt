@@ -1,0 +1,30 @@
+# FormantBoard
+
+Machine-readable guidance for autonomous agents.
+
+## Canonical Entrypoints
+- Runtime API: `window.fb`
+- Human docs: `/api`
+- Machine docs (markdown): `/api.md`
+- JSON schema: `window.fb.getSchemaJson()` (or `window.fb.schemaJson`)
+
+## Required Workflow
+1. Build payload with canonical event fields: `note`, `time`, `dur`, optional `velocity`, `vowel`, `volume`, `tilt`, `formants`.
+2. Validate first:
+   - `window.fb.validatePlay(events)` for event arrays
+   - `window.fb.validateFromJSON(payload)` for JSON/object payloads
+3. If validation fails, stop and fix input.
+4. Only then call `window.fb.play(events)` or `window.fb.fromJSON(payload)`.
+
+## Constraints
+- Supported IPA vowels only: `ɑ, ɛ, ə, æ, ɔ, u, ʊ, ɪ, i`
+- Keep melody intact first: pitch + timing + duration are primary.
+- Formant controls are advanced. Use sparingly and only for a specific reason.
+- If using formants, target one index at a time (typically F1/F2/F3).
+
+## Runtime Discovery
+You can inspect:
+- `window.fb.discovery`
+- `window.fb.schemas`
+- `window.fb.schemaJson`
+- `window.fb.getSchemaJson()`

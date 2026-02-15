@@ -14,7 +14,7 @@ import {
   arr2rms,
   type Note,
 } from "@/utils";
-import type { HarmonicFrame, MetricsData, PlayerState } from "@/types";
+import type { HarmonicFrame, MetricsData, PlayerNoteOptions, PlayerState } from "@/types";
 
 export function usePlayer(): PlayerState {
   const { settings, ipa, setMetrics, player, setPlayer, playerRuntimeRef } = useAppContext();
@@ -53,10 +53,34 @@ export function usePlayer(): PlayerState {
     setPlayer((current) => ({ ...current, rafId: next }));
   }
 
-  function stop(note: number | Note, stopAnalysis = false) {
+  function now() {
+    return runtime.audioContext.currentTime;
+  }
+
+  function scheduleStopCleanup(
+    frequency: number,
+    stopVoice: NonNullable<(typeof runtime.playing)[number]>,
+    afterSeconds: number,
+  ) {
+    const cleanupMs = Math.max(0, afterSeconds + settings.f0.decayTime + 1.1) * 1000;
+    window.setTimeout(() => {
+      if (runtime.playing[frequency] === stopVoice) {
+        delete runtime.playing[frequency];
+      }
+    }, cleanupMs);
+  }
+
+  function stop(note: number | Note, stopAnalysis = false, atTime = 0) {
     const frequency = noteOrFreq2freq(note);
-    runtime.playing[frequency]?.(stopAnalysis);
-    delete runtime.playing[frequency];
+    const stopVoice = runtime.playing[frequency];
+    if (!stopVoice) return;
+    const time = runtime.audioContext.currentTime + Math.max(0, atTime);
+    stopVoice({ stopAnalysis, releaseAt: time });
+    if (atTime <= 0) {
+      delete runtime.playing[frequency];
+    } else {
+      scheduleStopCleanup(frequency, stopVoice, atTime);
+    }
   }
 
   function analyze() {
@@ -140,10 +164,30 @@ export function usePlayer(): PlayerState {
     setRafId(requestAnimationFrame(analyze));
   }
 
-  function play(note: number | Note, velocity = 1) {
+  function play(
+    note: number | Note,
+    velocity = 1,
+    atTime = 0,
+    duration?: number,
+    options?: PlayerNoteOptions,
+  ) {
     const perfStartTime = runtime.audioContext.currentTime;
     const frequency = noteOrFreq2freq(note);
     if (frequency > CAP_FREQ) return;
+    const timeOffset = Math.max(0, atTime);
+    const startTime = runtime.audioContext.currentTime + timeOffset + 0.002;
+    const harmonicTilt = options?.tilt ?? settings.harmonics.tilt;
+    const activeIpa = options?.vowel ?? ipa;
+    const formantOverrides = options?.formants;
+
+    // Only pre-stop for immediate retriggers. Scheduled sequences may include repeated
+    // pitches, and canceling by frequency here drops future notes.
+    if (timeOffset <= 0.01) {
+      runtime.playing[frequency]?.({
+        releaseAt: runtime.audioContext.currentTime + 0.01,
+      });
+      delete runtime.playing[frequency];
+    }
 
     const sourceType = settings.f0.sourceType;
     const oscillator = new OscillatorNode(runtime.audioContext, { frequency, type: sourceType });
@@ -172,7 +216,7 @@ export function usePlayer(): PlayerState {
         frequency,
         settings.harmonics.max,
         settings.harmonics.maxFreq,
-        settings.harmonics.tilt,
+        harmonicTilt,
       );
       source.setPeriodicWave(periodicWave);
       setMetrics((current) => ({
@@ -210,8 +254,17 @@ export function usePlayer(): PlayerState {
     }
 
     const formantsGain = new GainNode(runtime.audioContext, { gain: 1 });
-    if (settings.formants.on) {
-      const formants = createFormants(runtime.audioContext, settings.formants.ipa[ipa]);
+    const activeFormantSpec =
+      formantOverrides && formantOverrides.length > 0
+        ? settings.formants.ipa[activeIpa].map((formant, index) => {
+            const patch = formantOverrides.find((item) => item.index === index);
+            if (!patch) return formant;
+            const { index: _idx, ...next } = patch;
+            return { ...formant, ...next };
+          })
+        : settings.formants.ipa[activeIpa];
+    const formants = createFormants(runtime.audioContext, activeFormantSpec);
+    if (formants.length > 0) {
       formants.forEach((formant) => {
         sourceGain.connect(formant);
         formant.connect(formantsGain);
@@ -234,23 +287,44 @@ export function usePlayer(): PlayerState {
 
     output.connect(runtime.audioContext.destination);
 
-    const t = runtime.audioContext.currentTime + 0.002;
-    if (controlSource) source.start(t);
+    if (controlSource) source.start(startTime);
+    sourceGain.gain.setValueAtTime(0, startTime);
     sourceGain.gain.linearRampToValueAtTime(
       velocity * settings.f0.keyGain,
-      t + settings.f0.onsetTime,
+      startTime + settings.f0.onsetTime,
     );
 
-    runtime.playing[frequency] = (stopAnalysis = false) => {
-      const t2 = runtime.audioContext.currentTime + 0.05;
-      sourceGain.gain.setTargetAtTime(0, t2, settings.f0.decayTime);
-      if (controlSource) source.stop(t2 + settings.f0.decayTime + 1);
-      vibratoOsc?.stop(t2);
+    const stopVoice: (typeof runtime.playing)[number] = (opts) => {
+      const stopAnalysis = opts?.stopAnalysis ?? false;
+      const releaseAt = opts?.releaseAt ?? runtime.audioContext.currentTime + 0.05;
+      sourceGain.gain.setTargetAtTime(0, releaseAt, settings.f0.decayTime);
+      const stopAt = releaseAt + settings.f0.decayTime + 1;
+      if (controlSource) {
+        try {
+          source.stop(stopAt);
+        } catch {
+          // Source may already be stopped when external callers overlap stop schedules.
+        }
+      }
+      if (vibratoOsc) {
+        try {
+          vibratoOsc.stop(stopAt);
+        } catch {
+          // Vibrato may already be stopped for the same reason.
+        }
+      }
       if (stopAnalysis && player.rafId) {
         cancelAnimationFrame(player.rafId);
         setRafId(undefined);
       }
     };
+    runtime.playing[frequency] = stopVoice;
+
+    if (duration !== undefined) {
+      const holdDuration = Math.max(0, duration);
+      stopVoice({ releaseAt: startTime + holdDuration });
+      scheduleStopCleanup(frequency, stopVoice, timeOffset + holdDuration);
+    }
 
     setMetrics((current) => ({
       ...current,
@@ -269,7 +343,7 @@ export function usePlayer(): PlayerState {
   function reset() {
     Object.keys(runtime.playing).forEach((key) => {
       const frequency = Number(key);
-      runtime.playing[frequency]?.(true);
+      runtime.playing[frequency]?.({ stopAnalysis: true });
       delete runtime.playing[frequency];
     });
     Object.keys(runtime.analyzerListeners).forEach((key) => {
@@ -285,6 +359,7 @@ export function usePlayer(): PlayerState {
   return {
     setVolume,
     setRafId,
+    now,
     play,
     stop,
     addAnalyzerListener,

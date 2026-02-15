@@ -2,10 +2,14 @@ import { useEffect, useState } from "react";
 import { Menu } from "lucide-react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { cn } from "@/lib/cn";
+import { usePlayer } from "@/hooks/usePlayer";
+import { useFormantboardApi } from "@/hooks/useFormantboardApi";
 
 export function App() {
   const [drawer, setDrawer] = useState(false);
   const location = useLocation();
+  const player = usePlayer();
+  useFormantboardApi(player);
 
   useEffect(() => {
     setDrawer(false);
@@ -50,6 +54,9 @@ export function App() {
             </Link>
             <Link to="/sandbox" className="text-zinc-900 no-underline hover:underline">
               Sandbox
+            </Link>
+            <Link to="/api" className="text-zinc-900 no-underline hover:underline">
+              API / AI Instructions
             </Link>
             <a
               href="https://github.com/dkellerman/formantboard"

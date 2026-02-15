@@ -191,7 +191,7 @@ export function SandboxPage() {
   const sourceTypes: SelectControlItem[] =
     settings.f0.source === F0_SOURCE_OSC ? [...F0_OSC_SOURCE_TYPES] : [];
 
-  const { flutter, harmonics, compression, formants, vibrato, f0 } = settings;
+  const { flutter, harmonics, compression, vibrato, f0 } = settings;
 
   function restartF0() {
     setRestartSignal((current) => current + 1);
@@ -213,7 +213,6 @@ export function SandboxPage() {
       harmonics: { ...current.harmonics, on: value },
       flutter: { ...current.flutter, on: value },
       vibrato: { ...current.vibrato, on: value },
-      formants: { ...current.formants, on: value },
     }));
     restartF0();
   }
@@ -268,9 +267,6 @@ export function SandboxPage() {
   }
   function setVibratoOnsetTime(value: number) {
     setSettings((current) => ({ ...current, vibrato: { ...current.vibrato, onsetTime: value } }));
-  }
-  function setFormantsOn(value: boolean) {
-    setSettings((current) => ({ ...current, formants: { ...current.formants, on: value } }));
   }
   function setFormantEnabled(idx: number, value: boolean) {
     setSettings((current) => ({
@@ -709,16 +705,7 @@ export function SandboxPage() {
           "py-3",
         )}
       >
-        <label className="min-w-[170px]">
-          <SwitchControl
-            label="Formants"
-            modelValue={formants.on}
-            onUpdateModelValue={(v) => {
-              setFormantsOn(v);
-            }}
-            onChange={restartF0}
-          />
-        </label>
+        <div className="min-w-[170px] pt-1 font-medium text-zinc-900">Formants</div>
         <div className="flex flex-wrap gap-3">
           <IPASelector
             className="w-[200px]"

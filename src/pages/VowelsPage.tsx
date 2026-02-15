@@ -105,8 +105,6 @@ export function VowelsPage() {
   const noiseSourceRef = useRef<AudioBufferSourceNode | null>(null);
 
   const formantNodesRef = useRef<BiquadFilterNode[]>([]);
-  const formantGainNodesRef = useRef<GainNode[]>([]);
-  const formantsThruRef = useRef<GainNode | null>(null);
 
   const analyzeRafRef = useRef<number | null>(null);
   const skipStrictDevMountRef = useRef(import.meta.env.DEV);
@@ -117,7 +115,6 @@ export function VowelsPage() {
   const [sineGain, setSineGain] = useState(0.1);
   const [squareGain, setSquareGain] = useState(0.2);
   const [noiseGain, setNoiseGain] = useState(0.01);
-  const [formantsOn, setFormantsOn] = useState(true);
   const [vowel, setVowel] = useState<keyof FormantMap>("ah");
   const [formantVals, setFormantVals] = useState<FormantMap>(initialFormants);
   const [toggleSignal, setToggleSignal] = useState(0);
@@ -146,7 +143,6 @@ export function VowelsPage() {
     noiseGainNode.connect(sourceMix);
 
     const formantNodes: BiquadFilterNode[] = [];
-    const formantGains: GainNode[] = [];
 
     for (const [frequency, q, gain] of formantVals[vowel]) {
       const node = new BiquadFilterNode(ctx, {
@@ -155,15 +151,14 @@ export function VowelsPage() {
         Q: q,
         gain,
       });
-      const gainNode = new GainNode(ctx, { gain: formantsOn ? 1.0 : 0.0 });
+      const gainNode = new GainNode(ctx, { gain: 1.0 });
       sourceMix.connect(node);
       node.connect(gainNode);
       gainNode.connect(mix);
       formantNodes.push(node);
-      formantGains.push(gainNode);
     }
 
-    const formantsThru = new GainNode(ctx, { gain: formantsOn ? 0.0 : 1.0 });
+    const formantsThru = new GainNode(ctx, { gain: 0.0 });
     sourceMix.connect(formantsThru);
     formantsThru.connect(mix);
 
@@ -179,8 +174,6 @@ export function VowelsPage() {
     squareGainNodeRef.current = squareGainNode;
     noiseGainNodeRef.current = noiseGainNode;
     formantNodesRef.current = formantNodes;
-    formantGainNodesRef.current = formantGains;
-    formantsThruRef.current = formantsThru;
   }
 
   function renderWave(data: Float32Array) {
@@ -273,16 +266,6 @@ export function VowelsPage() {
     squareOscRef.current = null;
     noiseSourceRef.current = null;
     setStarted(false);
-  }
-
-  function updateFormantsOn(next: boolean) {
-    setFormantsOn(next);
-    for (const gainNode of formantGainNodesRef.current) {
-      gainNode.gain.value = next ? 1.0 : 0.0;
-    }
-    if (formantsThruRef.current) {
-      formantsThruRef.current.gain.value = next ? 0.0 : 1.0;
-    }
   }
 
   function updateFormantNodeValues(activeVowel: keyof FormantMap, nextVals: FormantMap) {
@@ -425,17 +408,6 @@ export function VowelsPage() {
           step={0.01}
           onValue={setNoiseGain}
         />
-      </fieldset>
-
-      <fieldset className="mt-5 flex flex-row flex-wrap justify-center gap-5 border-0 pl-2.5">
-        <label>
-          <input
-            type="checkbox"
-            checked={formantsOn}
-            onChange={(event) => updateFormantsOn(event.target.checked)}
-          />{" "}
-          Formants
-        </label>
       </fieldset>
 
       <fieldset className="mb-2.5 flex flex-row flex-wrap justify-center gap-5 border-0 pl-2.5">

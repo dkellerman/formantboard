@@ -1,0 +1,9 @@
+# FormantBoard Agent Entry
+
+Primary machine-readable guide: `/llms.txt`
+
+Quick start:
+1. Use `window.fb`.
+2. Validate before playback (`validatePlay` / `validateFromJSON`).
+3. Use only supported IPA vowels: `ɑ, ɛ, ə, æ, ɔ, u, ʊ, ɪ, i`.
+4. Keep melody (pitch/time/duration) stable; treat formant overrides as advanced.

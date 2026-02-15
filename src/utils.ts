@@ -108,6 +108,13 @@ export function midi2note(midi: number): Note | null {
   return NOTES[midi - 33] ?? null;
 }
 
+export function note2midi(note: Note): number | null {
+  const canonical = note2canon(note);
+  const idx = NOTES.indexOf(canonical);
+  if (idx === -1) return null;
+  return idx + 33;
+}
+
 export function stepNoteOrFreq(val: Note | number, stepNote = 1, stepFreq = 5): Note | number {
   const freq = parseFloat(String(val));
   if (!Number.isNaN(freq)) return clamp(freq + stepFreq, 0, CAP_FREQ);

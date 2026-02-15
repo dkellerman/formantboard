@@ -11,6 +11,7 @@ import {
   midi2note,
   note2canon,
   note2freq,
+  note2midi,
   noteOrFreq2freq,
   round,
   stepNoteOrFreq,
@@ -60,6 +61,7 @@ describe("utils", () => {
     expect(round(gain2db(db2gain(-12)), 4)).toBeCloseTo(-12, 4);
     expect(round(arr2rms([3, 4]), 3)).toBe(3.536);
     expect(midi2note(69)).toBe("A3");
+    expect(note2midi("A3")).toBe(69);
     expect(midi2note(0)).toBeNull();
   });
 });
