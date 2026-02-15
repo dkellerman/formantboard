@@ -109,7 +109,7 @@ export function VowelsPage() {
   const formantsThruRef = useRef<GainNode | null>(null);
 
   const analyzeRafRef = useRef<number | null>(null);
-  const pixiInitRafRef = useRef<number | null>(null);
+  const skipStrictDevMountRef = useRef(import.meta.env.DEV);
 
   const [started, setStarted] = useState(false);
   const [power, setPower] = useState(0);
@@ -312,9 +312,13 @@ export function VowelsPage() {
   }
 
   useEffect(() => {
+    if (skipStrictDevMountRef.current) {
+      skipStrictDevMountRef.current = false;
+      return;
+    }
+
     const canvas = canvasRef.current;
     if (!canvas) return;
-    let disposed = false;
 
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === " ") {
@@ -323,35 +327,26 @@ export function VowelsPage() {
       }
     }
 
-    pixiInitRafRef.current = requestAnimationFrame(() => {
-      if (disposed) return;
-
-      PIXI.settings.SPRITE_MAX_TEXTURES = Math.max(1, PIXI.settings.SPRITE_MAX_TEXTURES || 0);
-
-      const app = new PIXI.Application({
-        view: canvas,
-        width: graphWidth,
-        height: graphHeight,
-        backgroundColor: 0x000000,
-        antialias: true,
-      });
-
-      const graphics = new PIXI.Graphics();
-      app.stage.addChild(graphics);
-      graphicsRef.current = graphics;
-      appRef.current = app;
+    const app = new PIXI.Application({
+      view: canvas,
+      width: graphWidth,
+      height: graphHeight,
+      backgroundColor: 0x000000,
+      antialias: true,
     });
+    const graphics = new PIXI.Graphics();
+    app.stage.addChild(graphics);
+    graphicsRef.current = graphics;
+    appRef.current = app;
 
     window.addEventListener("keydown", onKeyDown);
     return () => {
-      disposed = true;
       window.removeEventListener("keydown", onKeyDown);
-      if (pixiInitRafRef.current !== null) {
-        cancelAnimationFrame(pixiInitRafRef.current);
-        pixiInitRafRef.current = null;
+      if (analyzeRafRef.current !== null) {
+        cancelAnimationFrame(analyzeRafRef.current);
+        analyzeRafRef.current = null;
       }
-      if (analyzeRafRef.current !== null) cancelAnimationFrame(analyzeRafRef.current);
-      appRef.current?.destroy(false, { children: true });
+      appRef.current?.destroy(false, { children: true, texture: true, baseTexture: true });
       appRef.current = null;
       graphicsRef.current = null;
       void ctxRef.current?.close();

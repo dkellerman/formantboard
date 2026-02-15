@@ -50,8 +50,9 @@ function NumberControl({
 export function DevResponsePage() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const appRef = useRef<PIXI.Application | null>(null);
-  const graphicsRef = useRef(new PIXI.Graphics());
+  const graphicsRef = useRef<PIXI.Graphics | null>(null);
   const ctxRef = useRef(new AudioContext());
+  const skipStrictDevMountRef = useRef(import.meta.env.DEV);
 
   const freqsRef = useRef(new Float32Array(ctxRef.current.sampleRate / 2).fill(0).map((_, i) => i));
   const magRef = useRef(new Float32Array(freqsRef.current.length));
@@ -102,6 +103,11 @@ export function DevResponsePage() {
   }
 
   useEffect(() => {
+    if (skipStrictDevMountRef.current) {
+      skipStrictDevMountRef.current = false;
+      return;
+    }
+
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -113,15 +119,17 @@ export function DevResponsePage() {
       antialias: true,
     });
 
-    const graphics = graphicsRef.current;
+    const graphics = new PIXI.Graphics();
+    graphicsRef.current = graphics;
     app.stage.addChild(graphics);
     appRef.current = app;
     draw();
 
     return () => {
       graphics.clear();
-      app.destroy(true, { children: true });
+      app.destroy(false, { children: true, texture: true, baseTexture: true });
       appRef.current = null;
+      graphicsRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
