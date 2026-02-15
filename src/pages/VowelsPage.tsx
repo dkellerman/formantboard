@@ -87,7 +87,7 @@ export function VowelsPage() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const appRef = useRef<PIXI.Application | null>(null);
-  const graphicsRef = useRef<PIXI.Graphics>(new PIXI.Graphics());
+  const graphicsRef = useRef<PIXI.Graphics | null>(null);
 
   const ctxRef = useRef<AudioContext | null>(null);
   const analyzerRef = useRef<AnalyserNode | null>(null);
@@ -109,6 +109,7 @@ export function VowelsPage() {
   const formantsThruRef = useRef<GainNode | null>(null);
 
   const analyzeRafRef = useRef<number | null>(null);
+  const pixiInitRafRef = useRef<number | null>(null);
 
   const [started, setStarted] = useState(false);
   const [power, setPower] = useState(0);
@@ -184,6 +185,8 @@ export function VowelsPage() {
 
   function renderWave(data: Float32Array) {
     const graphics = graphicsRef.current;
+    if (!graphics) return;
+
     graphics.clear();
     graphics.lineStyle(1, 0xffffff, 1);
 
@@ -309,21 +312,9 @@ export function VowelsPage() {
   }
 
   useEffect(() => {
-    ensureAudioGraph();
-
     const canvas = canvasRef.current;
     if (!canvas) return;
-
-    const app = new PIXI.Application({
-      view: canvas,
-      width: graphWidth,
-      height: graphHeight,
-      backgroundColor: 0x000000,
-      antialias: true,
-    });
-
-    app.stage.addChild(graphicsRef.current);
-    appRef.current = app;
+    let disposed = false;
 
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === " ") {
@@ -332,12 +323,37 @@ export function VowelsPage() {
       }
     }
 
+    pixiInitRafRef.current = requestAnimationFrame(() => {
+      if (disposed) return;
+
+      PIXI.settings.SPRITE_MAX_TEXTURES = Math.max(1, PIXI.settings.SPRITE_MAX_TEXTURES || 0);
+
+      const app = new PIXI.Application({
+        view: canvas,
+        width: graphWidth,
+        height: graphHeight,
+        backgroundColor: 0x000000,
+        antialias: true,
+      });
+
+      const graphics = new PIXI.Graphics();
+      app.stage.addChild(graphics);
+      graphicsRef.current = graphics;
+      appRef.current = app;
+    });
+
     window.addEventListener("keydown", onKeyDown);
     return () => {
+      disposed = true;
       window.removeEventListener("keydown", onKeyDown);
+      if (pixiInitRafRef.current !== null) {
+        cancelAnimationFrame(pixiInitRafRef.current);
+        pixiInitRafRef.current = null;
+      }
       if (analyzeRafRef.current !== null) cancelAnimationFrame(analyzeRafRef.current);
-      app.destroy(true, { children: true });
+      appRef.current?.destroy(false, { children: true });
       appRef.current = null;
+      graphicsRef.current = null;
       void ctxRef.current?.close();
       ctxRef.current = null;
     };
