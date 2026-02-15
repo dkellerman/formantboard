@@ -127,7 +127,7 @@ export function DevResponsePage() {
 
     return () => {
       graphics.clear();
-      app.destroy(false, { children: true, texture: true, baseTexture: true });
+      app.destroy(false, { children: true, texture: true });
       appRef.current = null;
       graphicsRef.current = null;
     };

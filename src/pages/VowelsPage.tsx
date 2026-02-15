@@ -346,7 +346,7 @@ export function VowelsPage() {
         cancelAnimationFrame(analyzeRafRef.current);
         analyzeRafRef.current = null;
       }
-      appRef.current?.destroy(false, { children: true, texture: true, baseTexture: true });
+      appRef.current?.destroy(false, { children: true, texture: true });
       appRef.current = null;
       graphicsRef.current = null;
       void ctxRef.current?.close();
