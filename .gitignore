@@ -17,6 +17,8 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+coverage
+.context
 *.local
 
 # Editor directories and files
