@@ -1,7 +1,7 @@
-import { useMetrics } from "../hooks/useStoreSlices";
+import { useAppContext } from "@/store";
 
 export function Readout() {
-  const metrics = useMetrics();
+  const { metrics } = useAppContext();
 
   return (
     <section className="mt-2">

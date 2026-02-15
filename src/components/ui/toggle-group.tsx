@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as ToggleGroupPrimitive from "@radix-ui/react-toggle-group";
 import { type VariantProps } from "class-variance-authority";
-import { cn } from "../../lib/cn";
+import { cn } from "@/lib/cn";
 import { buttonVariants } from "./button";
 
 const ToggleGroupContext = React.createContext<VariantProps<typeof buttonVariants>>({
@@ -40,7 +40,9 @@ const ToggleGroupItem = React.forwardRef<
           variant: context.variant || variant || "outline",
           size: context.size || size || "sm",
         }),
-        "min-w-9 bg-zinc-200 text-zinc-900 hover:bg-zinc-300 data-[state=on]:bg-white data-[state=on]:text-zinc-900 data-[state=on]:hover:bg-white",
+        "min-w-9 bg-zinc-200 text-zinc-900 hover:bg-zinc-300",
+        "data-[state=on]:bg-white data-[state=on]:text-zinc-900",
+        "data-[state=on]:hover:bg-white",
         className,
       )}
       {...props}

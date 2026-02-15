@@ -1,7 +1,10 @@
-## FormantBoard
+# FormantBoard
 
 Vocal synthesizer WIP
 
-Vue3, Vite, WebAudio, Rust/WASM
+<https://formantboard.vercel.app>
 
-https://formantboard.vercel.app
+## Dev setup
+
+- `pnpm i`
+- `pnpm dev`

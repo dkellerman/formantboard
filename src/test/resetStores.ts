@@ -1,5 +1,14 @@
-import { appStore } from "../store";
+import { initTestApp } from "./testApp";
+import { resetAppStore } from "@/store";
+
+let testApp = initTestApp();
 
 export function resetAllStores() {
-  appStore.getState().resetAll();
+  testApp.destroy();
+  resetAppStore();
+  testApp = initTestApp();
+}
+
+export function getTestApp() {
+  return testApp.getApp();
 }

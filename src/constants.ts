@@ -45,6 +45,76 @@ export enum IPA {
   ʒ = "ʒ",
 }
 
+export const IPA_WORDS: Record<IPA, string> = {
+  [IPA.i]: "fleece",
+  [IPA.y]: "mule",
+  [IPA.e]: "face",
+  [IPA.ø]: "bird",
+  [IPA.ɛ]: "dress",
+  [IPA.œ]: "goat",
+  [IPA.a]: "father",
+  [IPA.ɶ]: "nurse",
+  [IPA.ɑ]: "cot",
+  [IPA.ɒ]: "lot",
+  [IPA.ɔ]: "thought",
+  [IPA.ʌ]: "strut",
+  [IPA.ɤ]: "goose",
+  [IPA.o]: "boat",
+  [IPA.ɯ]: "fleece",
+  [IPA.u]: "boot",
+  [IPA.ɪ]: "kit",
+  [IPA.ʊ]: "foot",
+  [IPA.ə]: "sofa",
+  [IPA.æ]: "trap",
+  [IPA.ŋ]: "sing",
+  [IPA.ʧ]: "church",
+  [IPA.θ]: "think",
+  [IPA.ð]: "this",
+  [IPA.ʤ]: "judge",
+  [IPA.ʃ]: "ship",
+  [IPA.w]: "we",
+  [IPA.n]: "no",
+  [IPA.m]: "me",
+  [IPA.r]: "red",
+  [IPA.g]: "go",
+  [IPA.j]: "yes",
+  [IPA.l]: "low",
+  [IPA.d]: "do",
+  [IPA.z]: "zoo",
+  [IPA.v]: "view",
+  [IPA.h]: "he",
+  [IPA.p]: "pie",
+  [IPA.k]: "key",
+  [IPA.t]: "tea",
+  [IPA.s]: "sea",
+  [IPA.f]: "fee",
+  [IPA.b]: "be",
+  [IPA.ʒ]: "pleasure",
+};
+
+export const ALL_IPA = Object.values(IPA) as IPA[];
+export const VOWELS = [IPA.ɑ, IPA.ɛ, IPA.ə, IPA.æ, IPA.ɔ, IPA.u, IPA.ʊ, IPA.ɪ, IPA.i];
+export const COMMON_IPA = VOWELS;
+export const CONSONANTS = [
+  IPA.m,
+  IPA.r,
+  IPA.g,
+  IPA.j,
+  IPA.l,
+  IPA.d,
+  IPA.z,
+  IPA.v,
+  IPA.h,
+  IPA.p,
+  IPA.k,
+  IPA.t,
+  IPA.s,
+  IPA.f,
+  IPA.b,
+];
+export const FRICATIVES = [IPA.ʃ, IPA.ʒ, IPA.f, IPA.v, IPA.s, IPA.z, IPA.h];
+export const PLOSIVES = [IPA.p, IPA.b, IPA.t, IPA.d, IPA.k, IPA.g];
+
 export enum MidiStatus {
   Disabled,
   Enabled,
@@ -60,6 +130,23 @@ export const VIS_TYPES = [
   { title: "Spectrum", value: VisType.POWER },
   { title: "Wave", value: VisType.WAVE },
 ];
+
+export const F0_SOURCE_OSC = "osc";
+export const F0_SOURCE_NOISE = "noise";
+export const OSC_TYPE_SINE = "sine";
+export const OSC_TYPE_SAWTOOTH = "sawtooth";
+export const OSC_TYPE_SQUARE = "square";
+
+export const F0_SOURCES = [
+  { title: "Tone", value: F0_SOURCE_OSC },
+  { title: "Noise", value: F0_SOURCE_NOISE },
+] as const;
+
+export const F0_OSC_SOURCE_TYPES = [
+  { title: "Sine", value: OSC_TYPE_SINE },
+  { title: "Sawtooth", value: OSC_TYPE_SAWTOOTH },
+  { title: "Square", value: OSC_TYPE_SQUARE },
+] as const;
 
 const compressorDefaults = new DynamicsCompressorNode(new AudioContext());
 const formantDefaults = { on: true, Q: 10, gain: 20 };
@@ -89,8 +176,8 @@ export function createDefaultSettings() {
       keyGain: 0.1,
       onsetTime: 0.02,
       decayTime: 0.05,
-      source: "osc",
-      sourceType: "sine",
+      source: F0_SOURCE_OSC as typeof F0_SOURCE_OSC | typeof F0_SOURCE_NOISE,
+      sourceType: F0_OSC_SOURCE_TYPES[0].value as OscillatorType,
     },
     harmonics: {
       on: true,

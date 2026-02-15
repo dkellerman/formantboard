@@ -1,10 +1,10 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { App } from "./App";
-import { DevResponsePage } from "./pages/DevResponsePage";
-import { DevTestPage } from "./pages/DevTestPage";
-import { HomePage } from "./pages/HomePage";
-import { SandboxPage } from "./pages/SandboxPage";
-import { VowelsPage } from "./pages/VowelsPage";
+import { DevResponsePage } from "@/pages/DevResponsePage";
+import { DevTestPage } from "@/pages/DevTestPage";
+import { HomePage } from "@/pages/HomePage";
+import { SandboxPage } from "@/pages/SandboxPage";
+import { VowelsPage } from "@/pages/VowelsPage";
 
 export function AppRoutes() {
   return (

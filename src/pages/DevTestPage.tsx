@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { countSlots, db2gain, note2freq } from "../utils";
-import { useKeyboardLayoutSlice } from "../hooks/useStoreSlices";
-import { Button } from "../components/ui/button";
+import { countSlots, db2gain, note2freq, type Note } from "@/utils";
+import { useKeyboardLayout } from "@/hooks/useKeyboardLayout";
+import { Button } from "@/components/ui/button";
 
 export function DevTestPage() {
   const [started, setStarted] = useState(false);
-  const keyboardLayout = useKeyboardLayoutSlice();
+  const keyboardLayout = useKeyboardLayout();
 
   const ctxRef = useRef<AudioContext | null>(null);
   const osc1Ref = useRef<OscillatorNode | null>(null);
@@ -91,7 +91,7 @@ export function DevTestPage() {
         {started ? "Stop" : "Start"}
       </Button>
 
-      {keyboardLayout.layout.notes.map((note) => (
+      {keyboardLayout.layout.notes.map((note: Note) => (
         <div key={note}>
           {note} :: {countSlots("A0", note)} ::{" "}
           {keyboardLayout.layout.freq2px(note2freq(note), keyboardLayout.keyboardWidth)}

@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Mic, Square } from "lucide-react";
-import { createMicSource, createPitchDetectionNode, freq2noteCents, getHarmonics } from "../utils";
-import { useMetrics, usePlayer, useSettings } from "../hooks/useStoreSlices";
-import { Button } from "./ui/button";
+import { useAppContext } from "@/store";
+import { createMicSource, createPitchDetectionNode, freq2noteCents, getHarmonics } from "@/utils";
+import { usePlayer } from "@/hooks/usePlayer";
+import { Button } from "@/components/ui/button";
 
 export interface MicButtonProps {
   showButton?: boolean;
@@ -15,38 +16,44 @@ export function MicButton({
   startText = "Listen",
   stopText = "Stop",
 }: MicButtonProps) {
-  const player = usePlayer();
-  const metrics = useMetrics();
-  const settings = useSettings();
+  const playerActions = usePlayer();
+  const { settings, setMetrics, player, playerRuntimeRef } = useAppContext();
 
   const micRef = useRef<MediaStreamAudioSourceNode | null>(null);
   const micRafIdRef = useRef<number | null>(null);
   const [listening, setListening] = useState(false);
 
   async function enableMic() {
-    const ctx = player.analyzer.context as AudioContext;
+    const runtime = playerRuntimeRef.current;
+    if (!runtime) return;
+    const analyzer = runtime.analyzer;
+    const output = runtime.output;
+    const ctx = analyzer.context as AudioContext;
     if (ctx.state === "suspended") await ctx.resume();
 
     if (player.rafId) {
-      player.output.disconnect(player.analyzer);
+      output.disconnect(analyzer);
     } else {
-      micRafIdRef.current = requestAnimationFrame(player.analyze);
+      micRafIdRef.current = requestAnimationFrame(playerActions.analyze);
     }
 
     const mic = await createMicSource(ctx);
-    mic.connect(player.analyzer);
+    mic.connect(analyzer);
     micRef.current = mic;
 
     const pitchDetection = await createPitchDetectionNode(ctx, (freq: number) => {
       const [note, cents] = freq2noteCents(freq);
-      metrics.source = "mic";
-      metrics.pitch = { freq, note, cents };
       const hcfg = settings.harmonics;
-      metrics.harmonics = getHarmonics(freq, hcfg.tilt, hcfg.max, hcfg.maxFreq).map(([f, g]) => [
-        f,
-        g,
-        0.0,
-      ]);
+      setMetrics((current) => ({
+        ...current,
+        source: "mic",
+        pitch: { freq, note, cents },
+        harmonics: getHarmonics(freq, hcfg.tilt, hcfg.max, hcfg.maxFreq).map(([f, g]) => [
+          f,
+          g,
+          0.0,
+        ]),
+      }));
     });
 
     mic.connect(pitchDetection);
@@ -58,7 +65,10 @@ export function MicButton({
     micRafIdRef.current = null;
     micRef.current?.disconnect();
     micRef.current = null;
-    if (player.rafId) player.output.connect(player.analyzer);
+    if (player.rafId) {
+      const runtime = playerRuntimeRef.current;
+      if (runtime) runtime.output.connect(runtime.analyzer);
+    }
     setListening(false);
   }
 

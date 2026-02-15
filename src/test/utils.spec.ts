@@ -14,7 +14,7 @@ import {
   noteOrFreq2freq,
   round,
   stepNoteOrFreq,
-} from "../utils";
+} from "@/utils";
 
 describe("utils", () => {
   it("normalizes note spellings to canonical names", () => {

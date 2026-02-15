@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Menu } from "lucide-react";
 import { Link, Outlet, useLocation } from "react-router-dom";
+import { cn } from "@/lib/cn";
 
 export function App() {
   const [drawer, setDrawer] = useState(false);
@@ -12,12 +13,17 @@ export function App() {
 
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-50 flex h-14 items-center gap-3 border-b border-zinc-300 bg-sky-50 px-3 shadow-sm">
+      <header
+        className={cn(
+          "sticky top-0 z-50 flex h-14 items-center gap-3 border-b border-zinc-300",
+          "bg-sky-50 px-3 shadow-sm",
+        )}
+      >
         <button
-          className={[
+          className={cn(
             "relative z-[60] inline-flex h-9 w-9 items-center justify-center text-zinc-700",
             "transition-colors hover:bg-zinc-200",
-          ].join(" ")}
+          )}
           type="button"
           aria-label="Toggle menu"
           onClick={() => setDrawer((open) => !open)}
@@ -33,10 +39,10 @@ export function App() {
 
       {drawer ? (
         <aside
-          className={[
+          className={cn(
             "fixed left-0 top-0 z-40 h-screen w-[85vw] max-w-[375px] border-r border-zinc-300",
             "bg-sky-50 p-5 shadow-lg",
-          ].join(" ")}
+          )}
         >
           <nav className="mt-14 flex flex-col gap-4 text-xl">
             <Link to="/" className="text-zinc-900 no-underline hover:underline">
@@ -44,15 +50,6 @@ export function App() {
             </Link>
             <Link to="/sandbox" className="text-zinc-900 no-underline hover:underline">
               Sandbox
-            </Link>
-            <Link to="/vowels" className="text-zinc-900 no-underline hover:underline">
-              Vowels
-            </Link>
-            <Link to="/dev/test" className="text-zinc-900 no-underline hover:underline">
-              Dev Test
-            </Link>
-            <Link to="/dev/response" className="text-zinc-900 no-underline hover:underline">
-              Response
             </Link>
             <a
               href="https://github.com/dkellerman/formantboard"

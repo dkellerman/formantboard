@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as PIXI from "pixi.js";
-import { arr2rms, createWhiteNoise, gain2db } from "../utils";
-import { F0Selector, type F0SelectorHandle } from "../components/F0Selector";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
+import { arr2rms, createWhiteNoise, gain2db } from "@/utils";
+import { OSC_TYPE_SAWTOOTH, OSC_TYPE_SINE, OSC_TYPE_SQUARE } from "@/constants";
+import { F0Selector } from "@/components/F0Selector";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const delay = 0.01;
 const onset = 0.1;
@@ -83,7 +84,6 @@ function NumberControl({ label, value, min, max, step, className, onValue }: Num
 }
 
 export function VowelsPage() {
-  const f0Ref = useRef<F0SelectorHandle>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const appRef = useRef<PIXI.Application | null>(null);
@@ -119,6 +119,7 @@ export function VowelsPage() {
   const [formantsOn, setFormantsOn] = useState(true);
   const [vowel, setVowel] = useState<keyof FormantMap>("ah");
   const [formantVals, setFormantVals] = useState<FormantMap>(initialFormants);
+  const [toggleSignal, setToggleSignal] = useState(0);
 
   const vowelKeys = useMemo(
     () => Object.keys(formantVals) as Array<keyof FormantMap>,
@@ -217,9 +218,9 @@ export function VowelsPage() {
 
     if (!ctx || !sawGainNode || !sineGainNode || !squareGainNode || !noiseGainNode || !mix) return;
 
-    const saw = new OscillatorNode(ctx, { type: "sawtooth", frequency });
-    const sine = new OscillatorNode(ctx, { type: "sine", frequency });
-    const square = new OscillatorNode(ctx, { type: "square", frequency });
+    const saw = new OscillatorNode(ctx, { type: OSC_TYPE_SAWTOOTH, frequency });
+    const sine = new OscillatorNode(ctx, { type: OSC_TYPE_SINE, frequency });
+    const square = new OscillatorNode(ctx, { type: OSC_TYPE_SQUARE, frequency });
     const noise = createWhiteNoise(ctx);
 
     saw.connect(sawGainNode);
@@ -327,7 +328,7 @@ export function VowelsPage() {
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === " ") {
         event.preventDefault();
-        f0Ref.current?.toggleF0();
+        setToggleSignal((current) => current + 1);
       }
     }
 
@@ -381,7 +382,7 @@ export function VowelsPage() {
       </fieldset>
 
       <fieldset className="flex flex-row flex-wrap justify-center gap-5 border-0 pl-2.5">
-        <F0Selector ref={f0Ref} className="w-[120px]" play={play} stop={stop} />
+        <F0Selector className="w-[120px]" play={play} stop={stop} toggleSignal={toggleSignal} />
       </fieldset>
 
       <fieldset className="flex flex-row flex-wrap justify-center gap-5 border-0 pl-2.5">

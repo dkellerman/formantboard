@@ -1,8 +1,8 @@
+import { act } from "react";
 import { beforeEach, describe, expect, it } from "vitest";
-import { resetAllStores } from "../resetStores";
-import { IPA } from "../../constants";
-import { useIPA } from "../../hooks/useIPA";
-import { useSettings } from "../../hooks/useSettings";
+import { resetAllStores } from "@/test/resetStores";
+import { IPA } from "@/constants";
+import { getTestApp } from "@/test/resetStores";
 
 describe("useIPA store", () => {
   beforeEach(() => {
@@ -10,18 +10,22 @@ describe("useIPA store", () => {
   });
 
   it("initializes from app defaults", () => {
-    const settings = useSettings();
-    const store = useIPA();
+    const settings = getTestApp().context.settings;
+    const ipa = getTestApp().context.ipa;
+    const ipaSpec = settings.formants.ipa[ipa];
 
-    expect(store.ipa).toBe(settings.settings.defaultIPA);
-    expect(store.ipaSpec[0].frequency).toBe(800);
+    expect(ipa).toBe(settings.defaultIPA);
+    expect(ipaSpec[0].frequency).toBe(800);
   });
 
   it("switches IPA profile and formant set", () => {
-    const store = useIPA();
-    store.ipa = IPA.i;
+    act(() => {
+      getTestApp().context.setIPA(IPA.i);
+    });
 
-    expect(store.ipaSpec[0].frequency).toBe(270);
-    expect(store.ipaSpec[1].frequency).toBe(2300);
+    const settings = getTestApp().context.settings;
+    const ipaSpec = settings.formants.ipa[getTestApp().context.ipa];
+    expect(ipaSpec[0].frequency).toBe(270);
+    expect(ipaSpec[1].frequency).toBe(2300);
   });
 });

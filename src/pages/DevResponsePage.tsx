@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import * as PIXI from "pixi.js";
-import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface FilterConfig {
   type: BiquadFilterType;

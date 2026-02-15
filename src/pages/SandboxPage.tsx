@@ -1,30 +1,37 @@
-import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
-import { VisType } from "../constants";
-import { ALL_IPA, COMMON_IPA, CONSONANTS, FRICATIVES, VOWELS } from "../hooks/useIPA";
-import { useIPASlice, useMetrics, usePlayer, useSettings } from "../hooks/useStoreSlices";
-import { F0Selector, type F0SelectorHandle } from "../components/F0Selector";
-import { IPASelector } from "../components/IPASelector";
-import { Keyboard, type KeyboardHandle } from "../components/Keyboard";
-import { MicButton } from "../components/MicButton";
-import { MidiButton } from "../components/MidiButton";
-import { Visualizer } from "../components/Visualizer";
-import { cn } from "../lib/cn";
-import { Checkbox } from "../components/ui/checkbox";
-import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
+import { type ReactNode, useEffect, useState } from "react";
+import { useAppContext } from "@/store";
+import {
+  ALL_IPA,
+  COMMON_IPA,
+  CONSONANTS,
+  F0_OSC_SOURCE_TYPES,
+  F0_SOURCE_OSC,
+  F0_SOURCES,
+  FRICATIVES,
+  VOWELS,
+  VisType,
+} from "@/constants";
+import { usePlayer } from "@/hooks/usePlayer";
+import { F0Selector } from "@/components/F0Selector";
+import { IPASelector } from "@/components/IPASelector";
+import { Keyboard } from "@/components/Keyboard";
+import { MicButton } from "@/components/MicButton";
+import { MidiButton } from "@/components/MidiButton";
+import { Visualizer } from "@/components/Visualizer";
+import { cn } from "@/lib/cn";
+import type { Formant } from "@/types";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../components/ui/select";
-import { Switch } from "../components/ui/switch";
-
-const sources = [
-  { title: "Tone", value: "osc" },
-  { title: "Noise", value: "noise" },
-];
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { note2freq, type Note } from "@/utils";
 
 interface NumberControlProps {
   className?: string;
@@ -171,50 +178,195 @@ function CheckboxControl({ label, modelValue, onUpdateModelValue }: CheckboxCont
 }
 
 export function SandboxPage() {
-  const metrics = useMetrics();
+  const { metrics, settings, setSettings, ipa, setIPA, player: playerState } = useAppContext();
   const player = usePlayer();
-  const ipaStore = useIPASlice();
-  const settings = useSettings();
-
-  const f0SelectorRef = useRef<F0SelectorHandle>(null);
-  const keyboardRef = useRef<KeyboardHandle>(null);
+  const ipaSpec = settings.formants.ipa[ipa];
 
   const [allEffects, setAllEffects] = useState(true);
   const [showHGains, setShowHGains] = useState(false);
+  const [restartSignal, setRestartSignal] = useState(0);
+  const [toggleSignal, setToggleSignal] = useState(0);
+  const [midiNotes, setMidiNotes] = useState<Set<string>>(new Set());
 
-  const sourceTypes = useMemo(
-    () =>
-      settings.f0.source === "osc"
-        ? [
-            { title: "Sine", value: "sine" },
-            { title: "Sawtooth", value: "sawtooth" },
-            { title: "Square", value: "square" },
-          ]
-        : [],
-    [settings.f0.source],
-  );
+  const sourceTypes: SelectControlItem[] =
+    settings.f0.source === F0_SOURCE_OSC ? [...F0_OSC_SOURCE_TYPES] : [];
 
   const { flutter, harmonics, compression, formants, vibrato, f0 } = settings;
 
   function restartF0() {
-    f0SelectorRef.current?.restartF0();
+    setRestartSignal((current) => current + 1);
+  }
+
+  function toggleF0() {
+    setToggleSignal((current) => current + 1);
+  }
+
+  function noteId(note: Note) {
+    return note.replace("#", "s");
   }
 
   function toggleEffects(value: boolean) {
     setAllEffects(value);
-    compression.on = value;
-    harmonics.on = value;
-    flutter.on = value;
-    vibrato.on = value;
-    formants.on = value;
+    setSettings((current) => ({
+      ...current,
+      compression: { ...current.compression, on: value },
+      harmonics: { ...current.harmonics, on: value },
+      flutter: { ...current.flutter, on: value },
+      vibrato: { ...current.vibrato, on: value },
+      formants: { ...current.formants, on: value },
+    }));
     restartF0();
+  }
+
+  function setF0On(value: boolean) {
+    setSettings((current) => ({ ...current, f0: { ...current.f0, on: value } }));
+  }
+  function setF0KeyGain(value: number) {
+    setSettings((current) => ({ ...current, f0: { ...current.f0, keyGain: value } }));
+  }
+  function setF0OnsetTime(value: number) {
+    setSettings((current) => ({ ...current, f0: { ...current.f0, onsetTime: value } }));
+  }
+  function setF0DecayTime(value: number) {
+    setSettings((current) => ({ ...current, f0: { ...current.f0, decayTime: value } }));
+  }
+  function setF0Source(value: (typeof F0_SOURCES)[number]["value"]) {
+    setSettings((current) => ({ ...current, f0: { ...current.f0, source: value } }));
+  }
+  function setF0SourceType(value: (typeof F0_OSC_SOURCE_TYPES)[number]["value"]) {
+    setSettings((current) => ({ ...current, f0: { ...current.f0, sourceType: value } }));
+  }
+  function setHarmonicsOn(value: boolean) {
+    setSettings((current) => ({ ...current, harmonics: { ...current.harmonics, on: value } }));
+  }
+  function setHarmonicsMax(value: number) {
+    setSettings((current) => ({ ...current, harmonics: { ...current.harmonics, max: value } }));
+  }
+  function setHarmonicsMaxFreq(value: number) {
+    setSettings((current) => ({ ...current, harmonics: { ...current.harmonics, maxFreq: value } }));
+  }
+  function setHarmonicsTilt(value: number) {
+    setSettings((current) => ({ ...current, harmonics: { ...current.harmonics, tilt: value } }));
+  }
+  function setFlutterOn(value: boolean) {
+    setSettings((current) => ({ ...current, flutter: { ...current.flutter, on: value } }));
+  }
+  function setFlutterAmount(value: number) {
+    setSettings((current) => ({ ...current, flutter: { ...current.flutter, amount: value } }));
+  }
+  function setVibratoOn(value: boolean) {
+    setSettings((current) => ({ ...current, vibrato: { ...current.vibrato, on: value } }));
+  }
+  function setVibratoRate(value: number) {
+    setSettings((current) => ({ ...current, vibrato: { ...current.vibrato, rate: value } }));
+  }
+  function setVibratoExtent(value: number) {
+    setSettings((current) => ({ ...current, vibrato: { ...current.vibrato, extent: value } }));
+  }
+  function setVibratoJitter(value: number) {
+    setSettings((current) => ({ ...current, vibrato: { ...current.vibrato, jitter: value } }));
+  }
+  function setVibratoOnsetTime(value: number) {
+    setSettings((current) => ({ ...current, vibrato: { ...current.vibrato, onsetTime: value } }));
+  }
+  function setFormantsOn(value: boolean) {
+    setSettings((current) => ({ ...current, formants: { ...current.formants, on: value } }));
+  }
+  function setFormantEnabled(idx: number, value: boolean) {
+    setSettings((current) => ({
+      ...current,
+      formants: {
+        ...current.formants,
+        ipa: {
+          ...current.formants.ipa,
+          [ipa]: current.formants.ipa[ipa].map((formant, i) =>
+            i === idx ? { ...formant, on: value } : formant,
+          ),
+        },
+      },
+    }));
+  }
+  function setFormantFrequency(idx: number, value: number) {
+    setSettings((current) => ({
+      ...current,
+      formants: {
+        ...current.formants,
+        ipa: {
+          ...current.formants.ipa,
+          [ipa]: current.formants.ipa[ipa].map((formant, i) =>
+            i === idx ? { ...formant, frequency: value } : formant,
+          ),
+        },
+      },
+    }));
+  }
+  function setFormantQ(idx: number, value: number) {
+    setSettings((current) => ({
+      ...current,
+      formants: {
+        ...current.formants,
+        ipa: {
+          ...current.formants.ipa,
+          [ipa]: current.formants.ipa[ipa].map((formant, i) =>
+            i === idx ? { ...formant, Q: value } : formant,
+          ),
+        },
+      },
+    }));
+  }
+  function setFormantGain(idx: number, value: number) {
+    setSettings((current) => ({
+      ...current,
+      formants: {
+        ...current.formants,
+        ipa: {
+          ...current.formants.ipa,
+          [ipa]: current.formants.ipa[ipa].map((formant, i) =>
+            i === idx ? { ...formant, gain: value } : formant,
+          ),
+        },
+      },
+    }));
+  }
+  function setCompressionOn(value: boolean) {
+    setSettings((current) => ({ ...current, compression: { ...current.compression, on: value } }));
+  }
+  function setCompressionThreshold(value: number) {
+    setSettings((current) => ({
+      ...current,
+      compression: { ...current.compression, threshold: value },
+    }));
+  }
+  function setCompressionKnee(value: number) {
+    setSettings((current) => ({
+      ...current,
+      compression: { ...current.compression, knee: value },
+    }));
+  }
+  function setCompressionRatio(value: number) {
+    setSettings((current) => ({
+      ...current,
+      compression: { ...current.compression, ratio: value },
+    }));
+  }
+  function setCompressionAttack(value: number) {
+    setSettings((current) => ({
+      ...current,
+      compression: { ...current.compression, attack: value },
+    }));
+  }
+  function setCompressionRelease(value: number) {
+    setSettings((current) => ({
+      ...current,
+      compression: { ...current.compression, release: value },
+    }));
   }
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === " ") {
         event.preventDefault();
-        f0SelectorRef.current?.toggleF0();
+        toggleF0();
       }
     }
 
@@ -226,15 +378,29 @@ export function SandboxPage() {
 
   return (
     <section
-      className={[
+      className={cn(
         "px-5 pb-8 text-xs",
         "[&_.vui-input]:text-sm [&_.vui-select]:text-sm [&_.vui-field-label]:text-[11px]",
         "[&_.vui-switch-label]:text-xs [&_.vui-checkbox-label]:text-xs",
-      ].join(" ")}
+      )}
     >
       <fieldset className="border-0 pb-2">
         <div className="flex items-center gap-3 pr-8">
-          <MidiButton keyboardRef={keyboardRef} text="MIDI" />
+          <MidiButton
+            text="MIDI"
+            onNoteOn={(note, velocity) => {
+              player.play(note2freq(note), velocity);
+              setMidiNotes((prev) => new Set(prev).add(noteId(note)));
+            }}
+            onNoteOff={(note) => {
+              player.stop(note2freq(note));
+              setMidiNotes((prev) => {
+                const next = new Set(prev);
+                next.delete(noteId(note));
+                return next;
+              });
+            }}
+          />
           <MicButton />
           {metrics.pitch ? (
             <div className="ml-5 font-mono text-sm">
@@ -248,29 +414,43 @@ export function SandboxPage() {
 
       <div className="mb-6 w-[95vw]">
         <Visualizer vtype={VisType.POWER} height={80} combined />
-        <Keyboard ref={keyboardRef} onKeyOn={player.play} onKeyOff={player.stop} height={80} />
+        <Keyboard
+          activeNotes={midiNotes}
+          onKeyOn={player.play}
+          onKeyOff={player.stop}
+          height={80}
+        />
       </div>
 
-      <fieldset className="mb-2 flex flex-row items-start border-0 border-b border-dotted border-zinc-300 py-3">
+      <fieldset
+        className={cn(
+          "mb-2 flex flex-row items-start border-0 border-b border-dotted border-zinc-300",
+          "py-3",
+        )}
+      >
         <label className="min-w-[170px]">
           <SwitchControl
             label="F0"
             modelValue={f0.on}
             onChange={restartF0}
             onUpdateModelValue={(v) => {
-              f0.on = v;
+              setF0On(v);
             }}
           />
         </label>
         <div className="flex flex-wrap gap-3">
-          <F0Selector ref={f0SelectorRef} className="w-[150px]" />
+          <F0Selector
+            className="w-[150px]"
+            restartSignal={restartSignal}
+            toggleSignal={toggleSignal}
+          />
           <NumberControl
             className="w-[150px]"
             label="Volume"
-            modelValue={player.volume}
+            modelValue={playerState.volume}
             max="100"
             onUpdateModelValue={(v) => {
-              player.volume = Number(v);
+              player.setVolume(Number(v));
             }}
           />
           <NumberControl
@@ -280,7 +460,7 @@ export function SandboxPage() {
             max="1"
             step=".1"
             onUpdateModelValue={(v) => {
-              f0.keyGain = Number(v);
+              setF0KeyGain(Number(v));
             }}
             onChange={restartF0}
           />
@@ -291,7 +471,7 @@ export function SandboxPage() {
             suffix="s"
             step=".01"
             onUpdateModelValue={(v) => {
-              f0.onsetTime = Number(v);
+              setF0OnsetTime(Number(v));
             }}
             onChange={restartF0}
           />
@@ -302,7 +482,7 @@ export function SandboxPage() {
             suffix="s"
             step=".01"
             onUpdateModelValue={(v) => {
-              f0.decayTime = Number(v);
+              setF0DecayTime(Number(v));
             }}
             onChange={restartF0}
           />
@@ -310,9 +490,9 @@ export function SandboxPage() {
             className="w-[150px]"
             label="Source"
             modelValue={f0.source}
-            items={sources}
+            items={[...F0_SOURCES]}
             onUpdateModelValue={(v) => {
-              f0.source = String(v);
+              setF0Source(v as (typeof F0_SOURCES)[number]["value"]);
               restartF0();
             }}
           />
@@ -322,7 +502,7 @@ export function SandboxPage() {
             modelValue={f0.sourceType}
             items={sourceTypes}
             onUpdateModelValue={(v) => {
-              f0.sourceType = String(v);
+              setF0SourceType(v as (typeof F0_OSC_SOURCE_TYPES)[number]["value"]);
               restartF0();
             }}
           />
@@ -352,13 +532,18 @@ export function SandboxPage() {
         />
       </fieldset>
 
-      <fieldset className="mb-2 flex flex-row items-start border-0 border-b border-dotted border-zinc-300 py-3">
+      <fieldset
+        className={cn(
+          "mb-2 flex flex-row items-start border-0 border-b border-dotted border-zinc-300",
+          "py-3",
+        )}
+      >
         <label className="min-w-[170px]">
           <SwitchControl
             label="Harmonics"
             modelValue={harmonics.on}
             onUpdateModelValue={(v) => {
-              harmonics.on = v;
+              setHarmonicsOn(v);
             }}
             onChange={restartF0}
           />
@@ -369,7 +554,7 @@ export function SandboxPage() {
             label="Max num"
             modelValue={harmonics.max}
             onUpdateModelValue={(v) => {
-              harmonics.max = Number(v);
+              setHarmonicsMax(Number(v));
             }}
             onChange={restartF0}
           />
@@ -380,7 +565,7 @@ export function SandboxPage() {
             suffix="hz"
             step="50"
             onUpdateModelValue={(v) => {
-              harmonics.maxFreq = Number(v);
+              setHarmonicsMaxFreq(Number(v));
             }}
             onChange={restartF0}
           />
@@ -393,7 +578,7 @@ export function SandboxPage() {
             suffix="dB/oct"
             step=".5"
             onUpdateModelValue={(v) => {
-              harmonics.tilt = Number(v);
+              setHarmonicsTilt(Number(v));
             }}
             onChange={restartF0}
           />
@@ -425,13 +610,18 @@ export function SandboxPage() {
         </div>
       </fieldset>
 
-      <fieldset className="mb-2 flex flex-row items-start border-0 border-b border-dotted border-zinc-300 py-3">
+      <fieldset
+        className={cn(
+          "mb-2 flex flex-row items-start border-0 border-b border-dotted border-zinc-300",
+          "py-3",
+        )}
+      >
         <label className="min-w-[170px]">
           <SwitchControl
             label="Flutter"
             modelValue={flutter.on}
             onUpdateModelValue={(v) => {
-              flutter.on = v;
+              setFlutterOn(v);
             }}
             onChange={restartF0}
           />
@@ -443,20 +633,25 @@ export function SandboxPage() {
             modelValue={flutter.amount}
             step=".5"
             onUpdateModelValue={(v) => {
-              flutter.amount = Number(v);
+              setFlutterAmount(Number(v));
             }}
             onChange={restartF0}
           />
         </div>
       </fieldset>
 
-      <fieldset className="mb-2 flex flex-row items-start border-0 border-b border-dotted border-zinc-300 py-3">
+      <fieldset
+        className={cn(
+          "mb-2 flex flex-row items-start border-0 border-b border-dotted border-zinc-300",
+          "py-3",
+        )}
+      >
         <label className="min-w-[170px]">
           <SwitchControl
             label="Vibrato"
             modelValue={vibrato.on}
             onUpdateModelValue={(v) => {
-              vibrato.on = v;
+              setVibratoOn(v);
             }}
             onChange={restartF0}
           />
@@ -469,7 +664,7 @@ export function SandboxPage() {
             suffix="hz"
             step=".5"
             onUpdateModelValue={(v) => {
-              vibrato.rate = Number(v);
+              setVibratoRate(Number(v));
             }}
             onChange={restartF0}
           />
@@ -480,7 +675,7 @@ export function SandboxPage() {
             suffix="hz"
             step=".5"
             onUpdateModelValue={(v) => {
-              vibrato.extent = Number(v);
+              setVibratoExtent(Number(v));
             }}
             onChange={restartF0}
           />
@@ -490,7 +685,7 @@ export function SandboxPage() {
             modelValue={vibrato.jitter}
             step=".5"
             onUpdateModelValue={(v) => {
-              vibrato.jitter = Number(v);
+              setVibratoJitter(Number(v));
             }}
             onChange={restartF0}
           />
@@ -501,57 +696,86 @@ export function SandboxPage() {
             suffix="s"
             step=".1"
             onUpdateModelValue={(v) => {
-              vibrato.onsetTime = Number(v);
+              setVibratoOnsetTime(Number(v));
             }}
             onChange={restartF0}
           />
         </div>
       </fieldset>
 
-      <fieldset className="mb-2 flex flex-row items-start border-0 border-b border-dotted border-zinc-300 py-3">
+      <fieldset
+        className={cn(
+          "mb-2 flex flex-row items-start border-0 border-b border-dotted border-zinc-300",
+          "py-3",
+        )}
+      >
         <label className="min-w-[170px]">
           <SwitchControl
             label="Formants"
             modelValue={formants.on}
             onUpdateModelValue={(v) => {
-              formants.on = v;
+              setFormantsOn(v);
             }}
             onChange={restartF0}
           />
         </label>
         <div className="flex flex-wrap gap-3">
-          <IPASelector className="w-[200px]" onChange={restartF0} ipaSet={ALL_IPA} />
+          <IPASelector
+            className="w-[200px]"
+            onChange={restartF0}
+            ipaSet={ALL_IPA}
+            value={ipa}
+            onSelect={setIPA}
+          />
           <IPASelector
             className="w-[200px]"
             onChange={restartF0}
             ipaSet={COMMON_IPA}
             title="Common"
+            value={ipa}
+            onSelect={setIPA}
           />
-          <IPASelector className="w-[200px]" onChange={restartF0} ipaSet={VOWELS} title="Vowels" />
+          <IPASelector
+            className="w-[200px]"
+            onChange={restartF0}
+            ipaSet={VOWELS}
+            title="Vowels"
+            value={ipa}
+            onSelect={setIPA}
+          />
           <IPASelector
             className="w-[200px]"
             onChange={restartF0}
             ipaSet={CONSONANTS}
             title="Consonants"
+            value={ipa}
+            onSelect={setIPA}
           />
           <IPASelector
             className="w-[200px]"
             onChange={restartF0}
             ipaSet={FRICATIVES}
             title="Fricatives"
+            value={ipa}
+            onSelect={setIPA}
           />
         </div>
       </fieldset>
 
-      {ipaStore.ipaSpec.map((formantSpec, idx) => (
+      {ipaSpec.map((formantSpec: Formant, idx: number) => (
         <div key={idx}>
-          <fieldset className="mb-2 flex flex-row items-start border-0 border-b border-dotted border-zinc-300 py-3">
+          <fieldset
+            className={cn(
+              "mb-2 flex flex-row items-start border-0 border-b border-dotted border-zinc-300",
+              "py-3",
+            )}
+          >
             <label className="min-w-[170px]">
               <SwitchControl
                 label={`F${idx + 1}`}
                 modelValue={formantSpec.on}
                 onUpdateModelValue={(value) => {
-                  formantSpec.on = value;
+                  setFormantEnabled(idx, value);
                 }}
                 onChange={restartF0}
               />
@@ -564,7 +788,7 @@ export function SandboxPage() {
                 suffix="hz"
                 step="50"
                 onUpdateModelValue={(v) => {
-                  formantSpec.frequency = Number(v);
+                  setFormantFrequency(idx, Number(v));
                 }}
                 onChange={restartF0}
               />
@@ -575,7 +799,7 @@ export function SandboxPage() {
                 max="1"
                 step=".01"
                 onUpdateModelValue={(v) => {
-                  formantSpec.Q = Number(v);
+                  setFormantQ(idx, Number(v));
                 }}
                 onChange={restartF0}
               />
@@ -585,7 +809,7 @@ export function SandboxPage() {
                 modelValue={formantSpec.gain}
                 step=".1"
                 onUpdateModelValue={(v) => {
-                  formantSpec.gain = Number(v);
+                  setFormantGain(idx, Number(v));
                 }}
                 onChange={restartF0}
               />
@@ -594,13 +818,18 @@ export function SandboxPage() {
         </div>
       ))}
 
-      <fieldset className="mb-2 flex flex-row items-start border-0 border-b border-dotted border-zinc-300 py-3">
+      <fieldset
+        className={cn(
+          "mb-2 flex flex-row items-start border-0 border-b border-dotted border-zinc-300",
+          "py-3",
+        )}
+      >
         <label className="min-w-[170px]">
           <SwitchControl
             label="Compression"
             modelValue={compression.on}
             onUpdateModelValue={(v) => {
-              compression.on = v;
+              setCompressionOn(v);
             }}
             onChange={restartF0}
           />
@@ -611,7 +840,7 @@ export function SandboxPage() {
             label="Treshold"
             modelValue={compression.threshold}
             onUpdateModelValue={(v) => {
-              compression.threshold = Number(v);
+              setCompressionThreshold(Number(v));
             }}
             onChange={restartF0}
           />
@@ -620,7 +849,7 @@ export function SandboxPage() {
             label="Knee"
             modelValue={compression.knee}
             onUpdateModelValue={(v) => {
-              compression.knee = Number(v);
+              setCompressionKnee(Number(v));
             }}
             onChange={restartF0}
           />
@@ -629,7 +858,7 @@ export function SandboxPage() {
             label="Ratio"
             modelValue={compression.ratio}
             onUpdateModelValue={(v) => {
-              compression.ratio = Number(v);
+              setCompressionRatio(Number(v));
             }}
             onChange={restartF0}
           />
@@ -638,7 +867,7 @@ export function SandboxPage() {
             label="Attack"
             modelValue={compression.attack}
             onUpdateModelValue={(v) => {
-              compression.attack = Number(v);
+              setCompressionAttack(Number(v));
             }}
             onChange={restartF0}
           />
@@ -647,7 +876,7 @@ export function SandboxPage() {
             label="Release"
             modelValue={compression.release}
             onUpdateModelValue={(v) => {
-              compression.release = Number(v);
+              setCompressionRelease(Number(v));
             }}
             onChange={restartF0}
           />

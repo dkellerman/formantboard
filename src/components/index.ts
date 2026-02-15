@@ -1,6 +1,6 @@
-export { F0Selector, type F0SelectorHandle, type F0SelectorProps } from "./F0Selector";
+export { F0Selector, type F0SelectorProps } from "./F0Selector";
 export { IPASelector, type IPASelectorProps } from "./IPASelector";
-export { Keyboard, type KeyboardHandle, type KeyboardProps } from "./Keyboard";
+export { Keyboard, type KeyboardProps } from "./Keyboard";
 export { MicButton, type MicButtonProps } from "./MicButton";
 export { MidiButton, type MidiButtonProps } from "./MidiButton";
 export { Readout } from "./Readout";

@@ -1,13 +1,10 @@
 import { useEffect, useMemo, useRef } from "react";
 import * as PIXI from "pixi.js";
-import { VisType } from "../constants";
-import { fillRect, hsl, str2hexColor } from "../utils";
-import {
-  useIPASlice,
-  useKeyboardLayoutSlice,
-  usePlayer,
-  useSettings,
-} from "../hooks/useStoreSlices";
+import { useAppContext } from "@/store";
+import { VisType } from "@/constants";
+import { fillRect, hsl, str2hexColor } from "@/utils";
+import { useKeyboardLayout } from "@/hooks/useKeyboardLayout";
+import { usePlayer } from "@/hooks/usePlayer";
 
 interface FFTBin {
   bufferIndex: number;
@@ -36,10 +33,10 @@ export function Visualizer({
   vtype = VisType.POWER,
   combined = false,
 }: VisualizerProps) {
+  const { settings, ipa, player: playerState, playerRuntimeRef } = useAppContext();
   const player = usePlayer();
-  const keyboardLayout = useKeyboardLayoutSlice();
-  const ipaStore = useIPASlice();
-  const settings = useSettings();
+  const keyboardLayout = useKeyboardLayout();
+  const ipaSpec = settings.formants.ipa[ipa];
 
   const id = useMemo(() => `viz-${vtype}-${Math.random().toString(36).slice(2, 9)}`, [vtype]);
 
@@ -59,7 +56,7 @@ export function Visualizer({
     combined,
     viz: settings.viz,
     layout: keyboardLayout.layout,
-    ipaSpec: ipaStore.ipaSpec,
+    ipaSpec,
   });
 
   latestRef.current = {
@@ -69,13 +66,15 @@ export function Visualizer({
     combined,
     viz: settings.viz,
     layout: keyboardLayout.layout,
-    ipaSpec: ipaStore.ipaSpec,
+    ipaSpec,
   };
 
   function makeFreqBins(binCount: number): FFTBin[] {
     const { layout } = latestRef.current;
     const bins: FFTBin[] = [];
-    const sampleRate = player.analyzer.context.sampleRate;
+    const analyzer = playerRuntimeRef.current?.analyzer;
+    if (!analyzer) return [];
+    const sampleRate = analyzer.context.sampleRate;
     const fwidth = sampleRate / 2 / binCount;
 
     for (let i = 0; i < binCount; i++) {
@@ -178,8 +177,8 @@ export function Visualizer({
     overlayRef.current?.removeChildren();
     appRef.current?.stage.removeChildren();
 
-    if (player.rafId) cancelAnimationFrame(player.rafId);
-    player.rafId = undefined;
+    if (playerState.rafId) cancelAnimationFrame(playerState.rafId);
+    player.setRafId(undefined);
 
     appRef.current = null;
     waveRef.current = null;
@@ -228,7 +227,7 @@ export function Visualizer({
   useEffect(() => {
     renderOverlay();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(ipaStore.ipaSpec)]);
+  }, [JSON.stringify(ipaSpec)]);
 
   useEffect(() => {
     player.addAnalyzerListener(id, {

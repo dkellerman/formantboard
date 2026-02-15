@@ -38,8 +38,8 @@ export async function createWASMAudioWorkletNode(
   id: string,
   callback: WASMCallback,
   sampleSize = 1024,
-  wasmUrl: string | undefined = undefined,
-  processorUrl: string | undefined = undefined,
+  wasmUrl?: string,
+  processorUrl?: string,
 ) {
   if (ctx.state === "suspended") await ctx.resume();
 

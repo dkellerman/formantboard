@@ -1,5 +1,11 @@
 export {};
 
+Object.defineProperty(globalThis, "IS_REACT_ACT_ENVIRONMENT", {
+  configurable: true,
+  writable: true,
+  value: true,
+});
+
 class MockAudioContext {
   sampleRate: number;
   currentTime = 0;
