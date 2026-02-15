@@ -36,6 +36,8 @@ export function HomePage() {
   const [apiPayload, setApiPayload] = useState("");
   const [apiPayloadSeeded, setApiPayloadSeeded] = useState(false);
   const [aiPasteStatus, setAiPasteStatus] = useState("Ready.");
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [llmGenerating, setLlmGenerating] = useState(false);
 
   function runAIPayload(raw: string) {
     const text = raw.trim();
@@ -78,6 +80,89 @@ export function HomePage() {
       setAiPasteStatus("JSON formatted.");
     } catch (error) {
       setAiPasteStatus(error instanceof Error ? error.message : "Could not format JSON.");
+    }
+  }
+
+  async function generateAndPlayFromPrompt() {
+    const prompt = aiPrompt.trim();
+    if (!prompt) {
+      return;
+    }
+
+    const fb = (window as Window & { fb?: FormantboardAPI }).fb;
+    if (!fb) {
+      return;
+    }
+    const apiKey = (import.meta.env.VITE_OPENAI_KEY as string | undefined)?.trim() ?? "";
+    if (!apiKey) {
+      return;
+    }
+
+    setLlmGenerating(true);
+
+    try {
+      const schema = JSON.stringify(fb.schemaJson?.jsonPayload ?? {}, null, 2);
+      const system = [
+        "You generate valid FormantBoard performance payload JSON only.",
+        "Return exactly one JSON object and no markdown.",
+        "It must satisfy the provided JSON schema.",
+        "Keep phrases musical and concise, 8-24 notes unless requested otherwise.",
+      ].join(" ");
+      const user = [
+        `Request: ${prompt}`,
+        "Output format: JSON object with a notes array.",
+        "Use this schema:",
+        schema,
+      ].join("\n\n");
+
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: "gpt-4.1-mini",
+          temperature: 0.2,
+          response_format: { type: "json_object" },
+          messages: [
+            { role: "system", content: system },
+            { role: "user", content: user },
+          ],
+        }),
+      });
+
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`LLM request failed (${response.status}): ${text}`);
+      }
+
+      const data = (await response.json()) as {
+        choices?: Array<{
+          message?: {
+            content?: string;
+          };
+        }>;
+      };
+      const content = data.choices?.[0]?.message?.content;
+      if (!content) {
+        throw new Error("Model returned empty content.");
+      }
+
+      const parsed = JSON.parse(content) as FormantboardJSONPayload;
+      const validation = fb.validateFromJSON(parsed);
+      if (!validation.ok) {
+        throw new Error(`Validation failed: ${validation.error}`);
+      }
+
+      fb.fromJSON(parsed);
+      const pretty = JSON.stringify(parsed, null, 2);
+      setApiPayload(pretty);
+      setAiPasteStatus(`Scheduled ${parsed.notes.length} note event(s).`);
+    } catch (error) {
+      void error;
+    } finally {
+      setLlmGenerating(false);
     }
   }
 
@@ -124,6 +209,34 @@ export function HomePage() {
         </Button>
       </div>
       <Readout />
+      <section className="mb-10 mt-6 w-[95vw] max-w-[560px] rounded-md border border-zinc-300 bg-zinc-50 p-3">
+        <form
+          className="flex items-center gap-2"
+          onSubmit={(event) => {
+            event.preventDefault();
+            void generateAndPlayFromPrompt();
+            setAiPrompt("");
+          }}
+        >
+          <input
+            id="fb-ai-prompt"
+            type="text"
+            className="h-10 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900"
+            value={aiPrompt}
+            onChange={(event) => setAiPrompt(event.target.value)}
+            placeholder="Type a song prompt, e.g. Play twinkle twinkle little star"
+          />
+          <Button
+            variant="default"
+            size="sm"
+            className="bg-sky-600 px-4 text-white hover:bg-sky-500"
+            disabled={llmGenerating}
+            type="submit"
+          >
+            {llmGenerating ? "Sending..." : "Send"}
+          </Button>
+        </form>
+      </section>
 
       {apiModalOpen ? (
         <div className="fixed inset-0 z-[70] flex items-center justify-center">

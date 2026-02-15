@@ -5,6 +5,7 @@ TODO.md
 .cursor
 .pnpm-store
 .codex
+.env*
 
 # Logs
 logs
