@@ -32,27 +32,27 @@ type SourceLink = {
 };
 
 const VOWEL_FORMANTS: Record<string, FormantSpec[]> = {
-  "ɑ": [
+  ɑ: [
     { frequency: 800, Q: 6.5, gain: 16 },
     { frequency: 1200, Q: 7.5, gain: 15 },
     { frequency: 2500, Q: 8, gain: 14 },
   ],
-  "i": [
+  i: [
     { frequency: 270, Q: 8, gain: 17 },
     { frequency: 2300, Q: 8, gain: 16 },
     { frequency: 3000, Q: 9, gain: 13 },
   ],
-  "u": [
+  u: [
     { frequency: 300, Q: 8, gain: 16 },
     { frequency: 870, Q: 7, gain: 15 },
     { frequency: 2250, Q: 8, gain: 14 },
   ],
-  "ɛ": [
+  ɛ: [
     { frequency: 530, Q: 6, gain: 16 },
     { frequency: 1850, Q: 7, gain: 15 },
     { frequency: 2500, Q: 8, gain: 13 },
   ],
-  "ə": [
+  ə: [
     { frequency: 600, Q: 6.5, gain: 15 },
     { frequency: 1000, Q: 7, gain: 14 },
     { frequency: 2400, Q: 8, gain: 12 },
@@ -234,7 +234,7 @@ function NumberControl({
   return (
     <label className={cn("flex min-w-0 flex-col gap-1", className)}>
       <Label className={cn("text-xs font-normal text-zinc-500")}>{label}</Label>
-      <div className={cn("flex h-11 items-center gap-2 rounded-md border border-zinc-300 px-2")}> 
+      <div className={cn("flex h-11 items-center gap-2 rounded-md border border-zinc-300 px-2")}>
         <Input
           className={cn("h-full border-0 p-0 shadow-none ring-0 focus-visible:ring-0")}
           type="number"
@@ -256,14 +256,19 @@ interface SourceListProps {
 
 function SourceList({ sources }: SourceListProps) {
   return (
-    <div className={cn("rounded-md border border-zinc-200 bg-zinc-50 p-3 text-sm")}> 
+    <div className={cn("rounded-md border border-zinc-200 bg-zinc-50 p-3 text-sm")}>
       <div className={cn("mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500")}>
         Sources
       </div>
-      <ul className={cn("m-0 list-disc space-y-1 pl-5")}> 
+      <ul className={cn("m-0 list-disc space-y-1 pl-5")}>
         {sources.map((source) => (
           <li key={source.url}>
-            <a href={source.url} target="_blank" rel="noreferrer" className={cn("text-sky-700 underline")}> 
+            <a
+              href={source.url}
+              target="_blank"
+              rel="noreferrer"
+              className={cn("text-sky-700 underline")}
+            >
               {source.label}
             </a>
           </li>
@@ -284,12 +289,12 @@ interface SectionProps {
 
 function AnalysisSection({ id, title, summary, sources, children, details }: SectionProps) {
   return (
-    <section id={id} className={cn("rounded-lg border border-zinc-200 bg-white p-5 shadow-sm")}> 
+    <section id={id} className={cn("rounded-lg border border-zinc-200 bg-white p-5 shadow-sm")}>
       <h2 className={cn("m-0 text-xl font-semibold text-zinc-900")}>{title}</h2>
       <p className={cn("mt-2 text-sm leading-6 text-zinc-700")}>{summary}</p>
       <SourceList sources={sources} />
       <div className={cn("mt-4 rounded-md border border-zinc-200 bg-zinc-50 p-4")}>{children}</div>
-      <details className={cn("mt-4 rounded-md border border-zinc-200 bg-white p-3")}> 
+      <details className={cn("mt-4 rounded-md border border-zinc-200 bg-white p-3")}>
         <summary className={cn("cursor-pointer text-sm font-medium text-zinc-800")}>
           Acoustic + code details
         </summary>
@@ -301,7 +306,7 @@ function AnalysisSection({ id, title, summary, sources, children, details }: Sec
 
 function ModeToggle({ mode, onMode }: { mode: DemoMode; onMode: (mode: DemoMode) => void }) {
   return (
-    <div className={cn("inline-flex rounded-md border border-zinc-300 bg-white p-1")}> 
+    <div className={cn("inline-flex rounded-md border border-zinc-300 bg-white p-1")}>
       <Button
         variant={mode === "legacy" ? "secondary" : "ghost"}
         size="sm"
@@ -309,7 +314,11 @@ function ModeToggle({ mode, onMode }: { mode: DemoMode; onMode: (mode: DemoMode)
       >
         Legacy
       </Button>
-      <Button variant={mode === "fix" ? "secondary" : "ghost"} size="sm" onClick={() => onMode("fix")}>
+      <Button
+        variant={mode === "fix" ? "secondary" : "ghost"}
+        size="sm"
+        onClick={() => onMode("fix")}
+      >
         Fix
       </Button>
     </div>
@@ -325,33 +334,33 @@ function TerminologyPrimer() {
       <div className={cn("mt-3 grid gap-3 text-sm leading-6 text-zinc-700 md:grid-cols-2")}>
         <div className={cn("rounded-md border border-zinc-200 bg-zinc-50 p-3")}>
           <strong>DC (Direct Current)</strong>
-          <br />
-          A constant offset in the waveform, equivalent to <strong>0 Hz</strong>. In `PeriodicWave`,
-          coefficient index `0` is the DC term, not a musical harmonic. If you put the fundamental there,
-          you shift the whole harmonic map.
+          <br />A constant offset in the waveform, equivalent to <strong>0 Hz</strong>. In
+          `PeriodicWave`, coefficient index `0` is the DC term, not a musical harmonic. If you put
+          the fundamental there, you shift the whole harmonic map.
         </div>
         <div className={cn("rounded-md border border-zinc-200 bg-zinc-50 p-3")}>
           <strong>Fundamental (F0)</strong>
           <br />
-          The base pitch frequency (for example 220 Hz). Harmonics occur at integer multiples of F0: `2*F0`,
-          `3*F0`, etc.
+          The base pitch frequency (for example 220 Hz). Harmonics occur at integer multiples of F0:
+          `2*F0`, `3*F0`, etc.
         </div>
         <div className={cn("rounded-md border border-zinc-200 bg-zinc-50 p-3")}>
           <strong>Harmonics / Overtones</strong>
           <br />
-          Spectral partials above the fundamental. Their relative amplitudes shape the source timbre (bright,
-          dark, buzzy, breathy).
+          Spectral partials above the fundamental. Their relative amplitudes shape the source timbre
+          (bright, dark, buzzy, breathy).
         </div>
         <div className={cn("rounded-md border border-zinc-200 bg-zinc-50 p-3")}>
           <strong>Formants</strong>
           <br />
-          Resonance peaks of the vocal tract (commonly F1/F2/F3). They define vowel identity more than the
-          raw source does.
+          Resonance peaks of the vocal tract (commonly F1/F2/F3). They define vowel identity more
+          than the raw source does.
         </div>
         <div className={cn("rounded-md border border-zinc-200 bg-zinc-50 p-3")}>
           <strong>Q (Quality Factor)</strong>
           <br />
-          Controls resonance sharpness. Higher Q means narrower, sharper peak; lower Q means broader peak.
+          Controls resonance sharpness. Higher Q means narrower, sharper peak; lower Q means broader
+          peak.
         </div>
         <div className={cn("rounded-md border border-zinc-200 bg-zinc-50 p-3")}>
           <strong>Bandwidth</strong>
@@ -401,8 +410,8 @@ function HarmonicIndexDemo() {
   );
 
   return (
-    <div className={cn("space-y-4")}> 
-      <div className={cn("flex flex-wrap items-center gap-3")}> 
+    <div className={cn("space-y-4")}>
+      <div className={cn("flex flex-wrap items-center gap-3")}>
         <ModeToggle mode={mode} onMode={setMode} />
         <F0Selector
           className="w-[180px]"
@@ -411,7 +420,7 @@ function HarmonicIndexDemo() {
           restartSignal={restartSignal}
         />
       </div>
-      <div className={cn("grid gap-3 md:grid-cols-2")}> 
+      <div className={cn("grid gap-3 md:grid-cols-2")}>
         <NumberControl
           label="Spectral tilt"
           value={tilt}
@@ -430,7 +439,7 @@ function HarmonicIndexDemo() {
           onValue={(next) => setMaxHarmonics(clamp(Math.round(next), 2, 60))}
         />
       </div>
-      <p className={cn("m-0 text-xs text-zinc-600")}> 
+      <p className={cn("m-0 text-xs text-zinc-600")}>
         Legacy mode intentionally maps harmonic 1 into index 0 (DC slot). Fix mode inserts DC=0 and
         starts harmonics at index 1.
       </p>
@@ -441,7 +450,7 @@ function HarmonicIndexDemo() {
 function TopologyDiagram({ mode }: { mode: DemoMode }) {
   if (mode === "legacy") {
     return (
-      <svg viewBox="0 0 720 140" className={cn("h-[100px] w-full")}> 
+      <svg viewBox="0 0 720 140" className={cn("h-[100px] w-full")}>
         <text x="16" y="22" fontSize="14" fill="#334155">
           Source
         </text>
@@ -465,7 +474,7 @@ function TopologyDiagram({ mode }: { mode: DemoMode }) {
   }
 
   return (
-    <svg viewBox="0 0 720 140" className={cn("h-[100px] w-full")}> 
+    <svg viewBox="0 0 720 140" className={cn("h-[100px] w-full")}>
       <text x="16" y="22" fontSize="14" fill="#334155">
         Source
       </text>
@@ -563,9 +572,9 @@ function FormantTopologyDemo() {
   );
 
   return (
-    <div className={cn("space-y-4")}> 
+    <div className={cn("space-y-4")}>
       <TopologyDiagram mode={mode} />
-      <div className={cn("flex flex-wrap items-center gap-3")}> 
+      <div className={cn("flex flex-wrap items-center gap-3")}>
         <ModeToggle mode={mode} onMode={setMode} />
         <F0Selector
           className="w-[180px]"
@@ -573,9 +582,12 @@ function FormantTopologyDemo() {
           stop={() => engine.stopCurrent()}
           restartSignal={restartSignal}
         />
-        <label className={cn("flex min-w-[120px] flex-col gap-1")}> 
+        <label className={cn("flex min-w-[120px] flex-col gap-1")}>
           <Label className={cn("text-xs font-normal text-zinc-500")}>Vowel target</Label>
-          <Select value={vowel} onValueChange={(value) => setVowel(value as keyof typeof VOWEL_FORMANTS)}>
+          <Select
+            value={vowel}
+            onValueChange={(value) => setVowel(value as keyof typeof VOWEL_FORMANTS)}
+          >
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
@@ -589,10 +601,10 @@ function FormantTopologyDemo() {
           </Select>
         </label>
       </div>
-      <p className={cn("m-0 text-xs text-zinc-600")}> 
-        Legacy path sums independent formant boosts; fix path routes one tract-like cascade so spectral
-        shaping compounds stage by stage. Parallel branches are normalized by `1/sqrt(N)` to keep level
-        comparison fair as branch count changes.
+      <p className={cn("m-0 text-xs text-zinc-600")}>
+        Legacy path sums independent formant boosts; fix path routes one tract-like cascade so
+        spectral shaping compounds stage by stage. Parallel branches are normalized by `1/sqrt(N)`
+        to keep level comparison fair as branch count changes.
       </p>
     </div>
   );
@@ -657,8 +669,8 @@ function QBandwidthDemo() {
   const f2BandwidthFix = (1200 / Math.max(0.01, effectiveFixQ)).toFixed(0);
 
   return (
-    <div className={cn("space-y-4")}> 
-      <div className={cn("flex flex-wrap items-center gap-3")}> 
+    <div className={cn("space-y-4")}>
+      <div className={cn("flex flex-wrap items-center gap-3")}>
         <ModeToggle mode={mode} onMode={setMode} />
         <F0Selector
           className="w-[180px]"
@@ -675,7 +687,11 @@ function QBandwidthDemo() {
         step={0.1}
         onValue={(next) => setRequestedQ(clamp(next, 0.1, 12))}
       />
-      <div className={cn("grid gap-2 rounded-md border border-zinc-200 bg-white p-3 text-xs text-zinc-700 md:grid-cols-2")}> 
+      <div
+        className={cn(
+          "grid gap-2 rounded-md border border-zinc-200 bg-white p-3 text-xs text-zinc-700 md:grid-cols-2",
+        )}
+      >
         <div>
           <strong>Legacy effective Q:</strong> {effectiveLegacyQ.toFixed(2)} (UI cap 1, then `/10`)
           <br />
@@ -732,7 +748,12 @@ function VibratoDemo() {
         return {
           stop: (stopAt) => {
             carrierGain.gain.setTargetAtTime(0, stopAt, DEMO_NOTE_DECAY_SEC);
-            stopAndDisconnect(ctx, stopAt + 0.25, [carrier, vibLfo], [carrier, carrierGain, vibLfo, vibGain]);
+            stopAndDisconnect(
+              ctx,
+              stopAt + 0.25,
+              [carrier, vibLfo],
+              [carrier, carrierGain, vibLfo, vibGain],
+            );
           },
         };
       });
@@ -741,8 +762,8 @@ function VibratoDemo() {
   );
 
   return (
-    <div className={cn("space-y-4")}> 
-      <div className={cn("flex flex-wrap items-center gap-3")}> 
+    <div className={cn("space-y-4")}>
+      <div className={cn("flex flex-wrap items-center gap-3")}>
         <ModeToggle mode={mode} onMode={setMode} />
         <F0Selector
           className="w-[180px]"
@@ -751,7 +772,7 @@ function VibratoDemo() {
           restartSignal={restartSignal}
         />
       </div>
-      <div className={cn("grid gap-3 md:grid-cols-3")}> 
+      <div className={cn("grid gap-3 md:grid-cols-3")}>
         <NumberControl
           label="Rate"
           value={rateHz}
@@ -780,9 +801,9 @@ function VibratoDemo() {
           onValue={(next) => setOnsetSec(clamp(next, 0, 2))}
         />
       </div>
-      <p className={cn("m-0 text-xs text-zinc-600")}> 
-        Legacy mode keeps vibrato depth at zero (inaudible). Fix mode applies depth and onset directly to
-        oscillator frequency modulation.
+      <p className={cn("m-0 text-xs text-zinc-600")}>
+        Legacy mode keeps vibrato depth at zero (inaudible). Fix mode applies depth and onset
+        directly to oscillator frequency modulation.
       </p>
     </div>
   );
@@ -863,7 +884,12 @@ function ArticulationDemo() {
           stop: (stopAt) => {
             sourceGain.gain.setTargetAtTime(0, stopAt, DEMO_NOTE_DECAY_SEC);
             aspirationGain.gain.setTargetAtTime(0.0001, stopAt, 0.03);
-            stopAndDisconnect(ctx, stopAt + 0.25, [osc, noise], [osc, noise, sourceGain, aspirationGain, out, ...filters]);
+            stopAndDisconnect(
+              ctx,
+              stopAt + 0.25,
+              [osc, noise],
+              [osc, noise, sourceGain, aspirationGain, out, ...filters],
+            );
           },
         };
       });
@@ -872,8 +898,8 @@ function ArticulationDemo() {
   );
 
   return (
-    <div className={cn("space-y-4")}> 
-      <div className={cn("flex flex-wrap items-center gap-3")}> 
+    <div className={cn("space-y-4")}>
+      <div className={cn("flex flex-wrap items-center gap-3")}>
         <ModeToggle mode={mode} onMode={setMode} />
         <F0Selector
           className="w-[180px]"
@@ -882,8 +908,8 @@ function ArticulationDemo() {
           restartSignal={restartSignal}
         />
       </div>
-      <div className={cn("grid gap-3 md:grid-cols-2")}> 
-        <label className={cn("flex min-w-0 flex-col gap-1")}> 
+      <div className={cn("grid gap-3 md:grid-cols-2")}>
+        <label className={cn("flex min-w-0 flex-col gap-1")}>
           <Label className={cn("text-xs font-normal text-zinc-500")}>Start vowel</Label>
           <Select
             value={startVowel}
@@ -901,7 +927,7 @@ function ArticulationDemo() {
             </SelectContent>
           </Select>
         </label>
-        <label className={cn("flex min-w-0 flex-col gap-1")}> 
+        <label className={cn("flex min-w-0 flex-col gap-1")}>
           <Label className={cn("text-xs font-normal text-zinc-500")}>Target vowel</Label>
           <Select
             value={targetVowel}
@@ -920,9 +946,9 @@ function ArticulationDemo() {
           </Select>
         </label>
       </div>
-      <p className={cn("m-0 text-xs text-zinc-600")}> 
-        Legacy mode uses static timbre + basic amplitude onset. Fix mode adds dynamic formant movement,
-        brief aspiration burst, and pitch settling.
+      <p className={cn("m-0 text-xs text-zinc-600")}>
+        Legacy mode uses static timbre + basic amplitude onset. Fix mode adds dynamic formant
+        movement, brief aspiration burst, and pitch settling.
       </p>
     </div>
   );
@@ -985,16 +1011,20 @@ export function DevAnalysisPage() {
           <div>
             <h4 className={cn("m-0 text-sm font-semibold text-zinc-900")}>What is happening?</h4>
             <p>
-              A periodic waveform can be represented as a sum of sinusoidal components. In Web Audio,
-              `createPeriodicWave(real, imag)` expects coefficient arrays where index `0` is the DC term
-              (constant offset, 0 Hz), index `1` is H1 (fundamental), index `2` is H2, and so on.
+              A periodic waveform can be represented as a sum of sinusoidal components. In Web
+              Audio, `createPeriodicWave(real, imag)` expects coefficient arrays where index `0` is
+              the DC term (constant offset, 0 Hz), index `1` is H1 (fundamental), index `2` is H2,
+              and so on.
             </p>
             <p>
-              So when you hear me say "DC slot", I mean "array index 0 in the periodic wave coefficients."
-              That slot does not represent pitch. If H1 is accidentally written into index 0, the harmonic
-              structure is shifted and the source timbre is wrong before formants even run.
+              So when you hear me say "DC slot", I mean "array index 0 in the periodic wave
+              coefficients." That slot does not represent pitch. If H1 is accidentally written into
+              index 0, the harmonic structure is shifted and the source timbre is wrong before
+              formants even run.
             </p>
-            <h4 className={cn("mb-0 mt-4 text-sm font-semibold text-zinc-900")}>Implementation in Web Audio</h4>
+            <h4 className={cn("mb-0 mt-4 text-sm font-semibold text-zinc-900")}>
+              Implementation in Web Audio
+            </h4>
             <p className={cn("mb-2")}>
               Correct coefficient mapping for N harmonics should look like this:
             </p>
@@ -1012,13 +1042,14 @@ osc.setPeriodicWave(wave);`}</code>
             </pre>
             <h4 className={cn("mb-0 mt-4 text-sm font-semibold text-zinc-900")}>How to verify</h4>
             <p>
-              Use a fixed F0 (for example 220 Hz) with no formants. In a spectrum view, strongest lines should
-              occur at integer multiples: 220, 440, 660, 880... Hz. In the waveform view, the signal should be
-              centered around 0 with no obvious baseline shift unless you intentionally add DC.
+              Use a fixed F0 (for example 220 Hz) with no formants. In a spectrum view, strongest
+              lines should occur at integer multiples: 220, 440, 660, 880... Hz. In the waveform
+              view, the signal should be centered around 0 with no obvious baseline shift unless you
+              intentionally add DC.
             </p>
             <p>
-              In this codebase, the production fix was made in `createHarmonics` by allocating one extra slot
-              and copying harmonic gains into `hmReal[i + 1]`.
+              In this codebase, the production fix was made in `createHarmonics` by allocating one
+              extra slot and copying harmonic gains into `hmReal[i + 1]`.
             </p>
           </div>
         }
@@ -1049,15 +1080,18 @@ osc.setPeriodicWave(wave);`}</code>
           <div>
             <h4 className={cn("m-0 text-sm font-semibold text-zinc-900")}>What is happening?</h4>
             <p>
-              Formants are resonances of the vocal tract transfer function. In DSP terms, the tract is one
-              system that shapes the source. In your legacy path, each peaking filter receives the same input
-              and outputs are summed in parallel, which behaves more like stacked EQ boosts than a tract.
+              Formants are resonances of the vocal tract transfer function. In DSP terms, the tract
+              is one system that shapes the source. In your legacy path, each peaking filter
+              receives the same input and outputs are summed in parallel, which behaves more like
+              stacked EQ boosts than a tract.
             </p>
-            <h4 className={cn("mb-0 mt-4 text-sm font-semibold text-zinc-900")}>Parallel vs cascade</h4>
+            <h4 className={cn("mb-0 mt-4 text-sm font-semibold text-zinc-900")}>
+              Parallel vs cascade
+            </h4>
             <p>
-              Parallel means: `out = F1(x) + F2(x) + F3(x)`. Cascade means:
-              `out = F3(F2(F1(x)))`. In cascade, each stage modifies what the next stage sees, so interactions
-              between resonances are stronger and usually more voice-like.
+              Parallel means: `out = F1(x) + F2(x) + F3(x)`. Cascade means: `out = F3(F2(F1(x)))`.
+              In cascade, each stage modifies what the next stage sees, so interactions between
+              resonances are stronger and usually more voice-like.
             </p>
             <pre className={cn("overflow-x-auto rounded-md bg-zinc-950 p-3 text-xs text-zinc-100")}>
               <code>{`// parallel
@@ -1071,20 +1105,23 @@ f1.connect(f2);
 f2.connect(f3);
 f3.connect(out);`}</code>
             </pre>
-            <h4 className={cn("mb-0 mt-4 text-sm font-semibold text-zinc-900")}>How to implement safely</h4>
+            <h4 className={cn("mb-0 mt-4 text-sm font-semibold text-zinc-900")}>
+              How to implement safely
+            </h4>
             <p>
-              Add a topology setting (`"parallel"` or `"cascade"`) and keep both paths while tuning. Start by
-              moving only vowels to cascade, compare recordings, then retune frequency/Q/gain tables because
-              the same numbers will not sound identical across topologies.
+              Add a topology setting (`"parallel"` or `"cascade"`) and keep both paths while tuning.
+              Start by moving only vowels to cascade, compare recordings, then retune
+              frequency/Q/gain tables because the same numbers will not sound identical across
+              topologies.
             </p>
             <p>
-              Level handling in this demo follows a production-style comparison: no mode-specific boost is
-              applied. The only normalization is `1/sqrt(N)` on parallel branch sums to avoid accidental
-              loudness jumps when multiple branches are added.
+              Level handling in this demo follows a production-style comparison: no mode-specific
+              boost is applied. The only normalization is `1/sqrt(N)` on parallel branch sums to
+              avoid accidental loudness jumps when multiple branches are added.
             </p>
             <p>
-              Validation target: with a fixed source and vowel set, cascade should improve vowel cohesion and
-              reduce the "three independent EQ bumps" character.
+              Validation target: with a fixed source and vowel set, cascade should improve vowel
+              cohesion and reduce the "three independent EQ bumps" character.
             </p>
           </div>
         }
@@ -1115,16 +1152,20 @@ f3.connect(out);`}</code>
           <div>
             <h4 className={cn("m-0 text-sm font-semibold text-zinc-900")}>What is happening?</h4>
             <p>
-              Q controls resonance sharpness. Bandwidth is approximately `centerFrequency / Q`. If Q is
-              extremely small, each formant is very broad and the vowel spectrum gets smeared.
+              Q controls resonance sharpness. Bandwidth is approximately `centerFrequency / Q`. If Q
+              is extremely small, each formant is very broad and the vowel spectrum gets smeared.
             </p>
-            <h4 className={cn("mb-0 mt-4 text-sm font-semibold text-zinc-900")}>Why the legacy mapping breaks</h4>
+            <h4 className={cn("mb-0 mt-4 text-sm font-semibold text-zinc-900")}>
+              Why the legacy mapping breaks
+            </h4>
             <p>
-              Legacy behavior effectively did two compressions: UI constrained Q to 1 or below, then DSP
-              divided by `10`, producing values like `0.1`. For F2 around 1200 Hz, that implies a huge
-              bandwidth (~12 kHz), which is far wider than typical speech-formant peaks.
+              Legacy behavior effectively did two compressions: UI constrained Q to 1 or below, then
+              DSP divided by `10`, producing values like `0.1`. For F2 around 1200 Hz, that implies
+              a huge bandwidth (~12 kHz), which is far wider than typical speech-formant peaks.
             </p>
-            <h4 className={cn("mb-0 mt-4 text-sm font-semibold text-zinc-900")}>Implementation pattern</h4>
+            <h4 className={cn("mb-0 mt-4 text-sm font-semibold text-zinc-900")}>
+              Implementation pattern
+            </h4>
             <pre className={cn("overflow-x-auto rounded-md bg-zinc-950 p-3 text-xs text-zinc-100")}>
               <code>{`// preferred: one canonical Q definition everywhere
 // UI
@@ -1139,12 +1180,12 @@ new BiquadFilterNode(ctx, {
 });`}</code>
             </pre>
             <p>
-              Choose a single range that is meaningful for your model, then keep that same meaning in UI,
-              state, API payloads, and filter construction.
+              Choose a single range that is meaningful for your model, then keep that same meaning
+              in UI, state, API payloads, and filter construction.
             </p>
             <p>
-              Validation target: sweep Q while listening to one vowel and one F0. You should hear gradual
-              sharpening/broadening, not sudden collapse into a broad EQ wash.
+              Validation target: sweep Q while listening to one vowel and one F0. You should hear
+              gradual sharpening/broadening, not sudden collapse into a broad EQ wash.
             </p>
           </div>
         }
@@ -1175,11 +1216,13 @@ new BiquadFilterNode(ctx, {
           <div>
             <h4 className={cn("m-0 text-sm font-semibold text-zinc-900")}>What is happening?</h4>
             <p>
-              Vibrato is low-frequency modulation of pitch. You need three pieces: rate (how fast), extent
-              (how deep), and onset (how quickly depth ramps in). If extent is zero, vibrato is mathematically
-              present but acoustically inaudible.
+              Vibrato is low-frequency modulation of pitch. You need three pieces: rate (how fast),
+              extent (how deep), and onset (how quickly depth ramps in). If extent is zero, vibrato
+              is mathematically present but acoustically inaudible.
             </p>
-            <h4 className={cn("mb-0 mt-4 text-sm font-semibold text-zinc-900")}>Web Audio wiring</h4>
+            <h4 className={cn("mb-0 mt-4 text-sm font-semibold text-zinc-900")}>
+              Web Audio wiring
+            </h4>
             <pre className={cn("overflow-x-auto rounded-md bg-zinc-950 p-3 text-xs text-zinc-100")}>
               <code>{`const lfo = new OscillatorNode(ctx, { frequency: rateHz });
 const depth = new GainNode(ctx, { gain: 0 });
@@ -1190,17 +1233,18 @@ depth.gain.setValueAtTime(0, t0);
 depth.gain.linearRampToValueAtTime(extentHz, t0 + onsetSec);`}</code>
             </pre>
             <p>
-              This is the key implementation point: `extent` must drive `depth.gain`, and onset must schedule
-              that gain over time.
+              This is the key implementation point: `extent` must drive `depth.gain`, and onset must
+              schedule that gain over time.
             </p>
             <h4 className={cn("mb-0 mt-4 text-sm font-semibold text-zinc-900")}>Hz vs cents</h4>
             <p>
-              If you store extent in cents, convert per note so perceived vibrato depth stays consistent across
-              pitch: `extentHz = f0 * (2^(cents/1200) - 1)`.
+              If you store extent in cents, convert per note so perceived vibrato depth stays
+              consistent across pitch: `extentHz = f0 * (2^(cents/1200) - 1)`.
             </p>
             <p>
-              Validation target: keep rate constant and vary extent from 0 upward; you should hear clean
-              emergence of vibrato. Then vary onset to hear immediate vs delayed vibrato entry.
+              Validation target: keep rate constant and vary extent from 0 upward; you should hear
+              clean emergence of vibrato. Then vary onset to hear immediate vs delayed vibrato
+              entry.
             </p>
           </div>
         }
@@ -1231,16 +1275,19 @@ depth.gain.linearRampToValueAtTime(extentHz, t0 + onsetSec);`}</code>
           <div>
             <h4 className={cn("m-0 text-sm font-semibold text-zinc-900")}>What is happening?</h4>
             <p>
-              Real speech is trajectory-driven. The listener uses time movement (formant transitions, pitch
-              settling, noise bursts) as major cues for naturalness. Static per-note settings miss those cues.
+              Real speech is trajectory-driven. The listener uses time movement (formant
+              transitions, pitch settling, noise bursts) as major cues for naturalness. Static
+              per-note settings miss those cues.
             </p>
             <h4 className={cn("mb-0 mt-4 text-sm font-semibold text-zinc-900")}>Key terms</h4>
             <p>
-              Coarticulation: neighboring phonemes influence each other. Transition: parameters move between
-              targets. Aspiration: noise-like airflow component. Onset transient: brief early-time event that
-              colors attack.
+              Coarticulation: neighboring phonemes influence each other. Transition: parameters move
+              between targets. Aspiration: noise-like airflow component. Onset transient: brief
+              early-time event that colors attack.
             </p>
-            <h4 className={cn("mb-0 mt-4 text-sm font-semibold text-zinc-900")}>Implementation pattern</h4>
+            <h4 className={cn("mb-0 mt-4 text-sm font-semibold text-zinc-900")}>
+              Implementation pattern
+            </h4>
             <pre className={cn("overflow-x-auto rounded-md bg-zinc-950 p-3 text-xs text-zinc-100")}>
               <code>{`// Example: per-note envelopes
 formant1.frequency.setValueAtTime(f1Start, t0);
@@ -1253,13 +1300,14 @@ aspiration.gain.setValueAtTime(0.03, t0);
 aspiration.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.09);`}</code>
             </pre>
             <p>
-              Treat each note as phases: onset, steady state, release. For each phase, schedule envelopes for
-              amplitude, F0, and key formants. This is more effective than only changing static values.
+              Treat each note as phases: onset, steady state, release. For each phase, schedule
+              envelopes for amplitude, F0, and key formants. This is more effective than only
+              changing static values.
             </p>
             <p>
-              Validation target: with identical note sequence, compare static vs envelope-driven articulation.
-              The envelope-driven version should sound less organ-like and more speech-like even at the same
-              nominal vowel targets.
+              Validation target: with identical note sequence, compare static vs envelope-driven
+              articulation. The envelope-driven version should sound less organ-like and more
+              speech-like even at the same nominal vowel targets.
             </p>
           </div>
         }
@@ -1281,8 +1329,9 @@ aspiration.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.09);`}</code>
           Dev Analysis: Voice Realism A/B
         </h1>
         <p className={cn("m-0 max-w-4xl text-sm leading-6 text-zinc-700")}>
-          This page demos five concrete reasons the current synth sounds less voice-like. Each section is
-          self-contained: read the diagnosis, review sources, then audition <strong>Legacy</strong> vs
+          This page demos five concrete reasons the current synth sounds less voice-like. Each
+          section is self-contained: read the diagnosis, review sources, then audition{" "}
+          <strong>Legacy</strong> vs
           <strong> Fix</strong> using the same pitch input.
         </p>
         <div className={cn("flex flex-wrap gap-2")}>

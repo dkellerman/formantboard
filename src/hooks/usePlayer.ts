@@ -310,15 +310,16 @@ export function usePlayer(): PlayerState {
     const perfStartTime = runtime.audioContext.currentTime;
     const frequency = noteOrFreq2freq(note);
     if (frequency > CAP_FREQ) return;
+    const playbackSource = options?.source ?? "ui";
     const timeOffset = Math.max(0, atTime);
     const startTime = runtime.audioContext.currentTime + timeOffset + 0.002;
     const harmonicTilt = options?.tilt ?? settings.harmonics.tilt;
     const activeIpa = options?.vowel ?? ipa;
     const formantOverrides = options?.formants;
 
-    // Only pre-stop for immediate retriggers. Scheduled sequences may include repeated
-    // pitches, and canceling by frequency here drops future notes.
-    if (timeOffset <= 0.01) {
+    // API-triggered immediate retriggers should replace the current voice.
+    // UI playback (keyboard/F0/MIDI) should not pre-stop by frequency.
+    if (playbackSource === "api" && timeOffset <= 0.01) {
       runtime.playing[frequency]?.({
         releaseAt: runtime.audioContext.currentTime + 0.01,
       });
@@ -625,11 +626,8 @@ export function usePlayer(): PlayerState {
       (formant) => formant.on && formant.frequency > 0,
     ) as FormantLike[];
     const cascadePctDefault = settings.formants.cascadePctDefault ?? DEFAULT_FORMANT_CASCADE_PCT;
-    const cascadePct = clamp(
-      settings.formants.cascadePctByIPA?.[activeIpa] ?? cascadePctDefault,
-      0,
-      1,
-    );
+    const cascadePctMultiplier = Math.max(0, settings.formants.cascadePctByIPA?.[activeIpa] ?? 1);
+    const cascadePct = clamp(cascadePctDefault * cascadePctMultiplier, 0, 1);
 
     if (activeFormants.length === 0) {
       sourceGain.connect(formantsGain);

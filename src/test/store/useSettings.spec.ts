@@ -16,9 +16,8 @@ describe("useAppStore core slices", () => {
     expect(settings.defaultVisType).toBe(VisType.POWER);
     expect(settings.audioContextConfig.sampleRate).toBe(44100);
     expect(settings.formants.ipa[IPA.ɑ]).toHaveLength(3);
-    expect(settings.formants.cascadePctDefault).toBeCloseTo(0.5);
-    expect(settings.formants.cascadePctByIPA[IPA.ɑ]).toBeUndefined();
     expect(settings.formants.compensation.on).toBe(true);
+    expect(settings.vibrato.onsetTime).toBeCloseTo(0.5);
     expect(metrics.sampleRate).toBe(44100);
     expect(metrics.freqData).toBeInstanceOf(Uint8Array);
     expect(metrics.timeData).toBeInstanceOf(Uint8Array);
@@ -39,15 +38,13 @@ describe("useAppStore core slices", () => {
       rms: -18,
       compression: 3,
     }));
-    useAppStore
-      .getState()
-      .setPlayer({
-        volume: 72,
-        rafId: 9,
-        activeNoteIds: [],
-        isPlaying: false,
-        isApiPlaying: false,
-      });
+    useAppStore.getState().setPlayer({
+      volume: 72,
+      rafId: 9,
+      activeNoteIds: [],
+      isPlaying: false,
+      isApiPlaying: false,
+    });
 
     expect(useAppStore.getState().settings.f0.on).toBe(false);
     expect(useAppStore.getState().settings.harmonics.max).toBe(12);

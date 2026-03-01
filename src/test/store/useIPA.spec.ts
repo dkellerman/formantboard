@@ -12,9 +12,10 @@ describe("useAppStore IPA slice", () => {
     const settings = useAppStore.getState().settings;
     const ipa = useAppStore.getState().ipa;
     const ipaSpec = settings.formants.ipa[ipa];
+    const defaults = createDefaultSettings();
 
     expect(ipa).toBe(settings.defaultIPA);
-    expect(ipaSpec[0].frequency).toBe(800);
+    expect(ipaSpec[0].frequency).toBe(defaults.formants.ipa[IPA.ɑ][0].frequency);
   });
 
   it("supports direct and functional IPA updates without touching settings", () => {
@@ -23,15 +24,15 @@ describe("useAppStore IPA slice", () => {
     useAppStore.getState().setIPA(IPA.i);
     let ipa = useAppStore.getState().ipa;
     let ipaSpec = useAppStore.getState().settings.formants.ipa[ipa];
-    expect(ipaSpec[0].frequency).toBe(270);
-    expect(ipaSpec[1].frequency).toBe(2300);
+    const defaults = createDefaultSettings();
+    expect(ipaSpec[0].frequency).toBe(defaults.formants.ipa[IPA.i][0].frequency);
+    expect(ipaSpec[1].frequency).toBe(defaults.formants.ipa[IPA.i][1].frequency);
     expect(useAppStore.getState().settings).toBe(initialSettings);
 
     useAppStore.getState().setIPA((current) => (current === IPA.i ? IPA.ɑ : IPA.i));
     ipa = useAppStore.getState().ipa;
     ipaSpec = useAppStore.getState().settings.formants.ipa[ipa];
-    const defaults = createDefaultSettings();
     expect(ipa).toBe(defaults.defaultIPA);
-    expect(ipaSpec[0].frequency).toBe(800);
+    expect(ipaSpec[0].frequency).toBe(defaults.formants.ipa[IPA.ɑ][0].frequency);
   });
 });

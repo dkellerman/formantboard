@@ -1,10 +1,10 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { App } from "./App";
 import { ApiPage } from "@/pages/ApiPage";
-import { DevAnalysisPage } from "@/pages/DevAnalysisPage";
-import { DevNaturalnessPage } from "@/pages/DevNaturalnessPage";
-import { DevResponsePage } from "@/pages/DevResponsePage";
-import { DevTestPage } from "@/pages/DevTestPage";
+import { DevAnalysisPage } from "@/pages/dev/DevAnalysisPage";
+import { DevNaturalnessPage } from "@/pages/dev/DevNaturalnessPage";
+import { DevResponsePage } from "@/pages/dev/DevResponsePage";
+import { DevTestPage } from "@/pages/dev/DevTestPage";
 import { HomePage } from "@/pages/HomePage";
 import { SandboxPage } from "@/pages/SandboxPage";
 import { VowelsPage } from "@/pages/VowelsPage";

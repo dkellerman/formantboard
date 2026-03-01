@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { useAppContext } from "@/store";
 import { cn } from "@/lib/cn";
 import { note2freq, note2midi, type Note } from "@/utils";
@@ -22,6 +22,7 @@ export function Keyboard({ height, activeNotes, onKeyOn, onKeyOff }: KeyboardPro
 
   const [dragging, setDragging] = useState(false);
   const [activeNote, setActiveNote] = useState<string | null>(null);
+  const activeNoteRef = useRef<string | null>(null);
   const [detectedNotes, setDetectedNotes] = useState<Set<string>>(new Set());
 
   const keyboardHeight = height ?? keyboardWidth / 10.0;
@@ -114,20 +115,36 @@ export function Keyboard({ height, activeNotes, onKeyOn, onKeyOff }: KeyboardPro
   }
 
   function play(id: string, velocity = 1) {
+    const previous = activeNoteRef.current;
+    if (previous === id) return;
+    if (previous) {
+      onKeyOff?.(previous.replace("s", "#") as Note);
+    }
     onKeyOn?.(id.replace("s", "#") as Note, velocity);
+    activeNoteRef.current = id;
     setActiveNote(id);
   }
 
   function stop(id: string) {
+    if (activeNoteRef.current !== id) return;
     onKeyOff?.(id.replace("s", "#") as Note);
-    if (activeNote === id) setActiveNote(null);
+    activeNoteRef.current = null;
+    setActiveNote(null);
+  }
+
+  function stopActiveNote() {
+    const current = activeNoteRef.current;
+    if (!current) return;
+    onKeyOff?.(current.replace("s", "#") as Note);
+    activeNoteRef.current = null;
+    setActiveNote(null);
   }
 
   return (
     <div
       className={cn("w-full overflow-hidden border border-zinc-300 border-t-0")}
       onMouseLeave={() => {
-        setActiveNote(null);
+        stopActiveNote();
         setDragging(false);
       }}
     >
@@ -169,7 +186,7 @@ export function Keyboard({ height, activeNotes, onKeyOn, onKeyOff }: KeyboardPro
                 if (dragging) play(id);
               }}
               onMouseOut={() => {
-                stop(id);
+                if (dragging) stop(id);
               }}
               onTouchStart={(event) => {
                 event.preventDefault();

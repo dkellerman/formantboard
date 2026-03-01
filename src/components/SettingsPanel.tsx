@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { SquareArrowOutUpRight, X } from "lucide-react";
 import { useAppContext } from "@/store";
-import { VIS_TYPES, type VisType } from "@/constants";
+import { DEFAULT_FORMANT_CASCADE_PCT, VIS_TYPES, type VisType } from "@/constants";
 import { cn } from "@/lib/cn";
 import type { Formant, Vibrato } from "@/types";
 import { formantRange } from "@/utils";
@@ -27,16 +27,22 @@ export interface SettingsPanelProps {
   onVisTypeChange: (value: VisType) => void;
 }
 
-export function SettingsPanel({
-  className,
-  visType,
-  onVisTypeChange,
-}: SettingsPanelProps) {
+export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsPanelProps) {
   const { settings, setSettings, ipa, setIPA } = useAppContext();
   const [restartSignal, setRestartSignal] = useState(0);
   const [formantPopoverOpen, setFormantPopoverOpen] = useState(false);
   const [vibratoPopoverOpen, setVibratoPopoverOpen] = useState(false);
   const ipaSpec = settings.formants.ipa[ipa];
+  const cascadePctDefault = Math.max(
+    0,
+    Math.min(1, settings.formants.cascadePctDefault ?? DEFAULT_FORMANT_CASCADE_PCT),
+  );
+  const cascadePctMultiplierForIPA = Math.max(0, settings.formants.cascadePctByIPA?.[ipa] ?? 1);
+  const cascadePctForIPA = Math.max(0, Math.min(1, cascadePctDefault * cascadePctMultiplierForIPA));
+  const hasCascadePctOverride = Object.prototype.hasOwnProperty.call(
+    settings.formants.cascadePctByIPA ?? {},
+    ipa,
+  );
   const vibrato = settings.vibrato;
 
   function restartF0() {
@@ -81,6 +87,44 @@ export function SettingsPanel({
           ),
         },
       },
+    }));
+    restartF0();
+  }
+
+  function normalizeCascadePct(value: number) {
+    const next = Number.isFinite(value) ? value : 0;
+    return Math.max(0, Math.min(1, next));
+  }
+
+  function normalizeCascadeMultiplier(value: number) {
+    const next = Number.isFinite(value) ? value : 1;
+    return Math.max(0, Math.min(4, next));
+  }
+
+  function updateFormantCascadePct(value: number) {
+    setSettings((current) => ({
+      ...current,
+      formants: (() => {
+        const cascadePctDefaultCurrent = Math.max(
+          0,
+          Math.min(1, current.formants.cascadePctDefault ?? DEFAULT_FORMANT_CASCADE_PCT),
+        );
+        const nextPct = normalizeCascadePct(value);
+        const nextMultiplier =
+          cascadePctDefaultCurrent <= 0
+            ? 1
+            : normalizeCascadeMultiplier(nextPct / cascadePctDefaultCurrent);
+        const nextByIPA = { ...(current.formants.cascadePctByIPA ?? {}) };
+        if (Math.abs(nextMultiplier - 1) < 1e-6) {
+          delete nextByIPA[ipa];
+        } else {
+          nextByIPA[ipa] = nextMultiplier;
+        }
+        return {
+          ...current.formants,
+          cascadePctByIPA: nextByIPA,
+        };
+      })(),
     }));
     restartF0();
   }
@@ -184,6 +228,42 @@ export function SettingsPanel({
                     <div className="text-[10px] text-zinc-500">Hz</div>
                   </div>
                 ))}
+
+                <label className="grid grid-cols-[52px_minmax(0,1fr)_42px_12px] items-center gap-1 rounded border border-zinc-200 px-1 py-1">
+                  <span className="flex flex-col leading-none">
+                    <span className="text-[11px] text-zinc-500">Cascade</span>
+                    <span className="text-[9px] text-zinc-400">
+                      {hasCascadePctOverride ? "IPA" : "Default"}
+                    </span>
+                  </span>
+                  <input
+                    className="h-2 w-full accent-zinc-900"
+                    type="range"
+                    step={1}
+                    min={0}
+                    max={100}
+                    value={Math.round(cascadePctForIPA * 100)}
+                    onInput={(event) => {
+                      const next = Number((event.target as HTMLInputElement).value);
+                      if (!Number.isFinite(next)) return;
+                      updateFormantCascadePct(next / 100);
+                    }}
+                  />
+                  <Input
+                    className="h-6 px-1 text-right text-xs"
+                    type="number"
+                    step={1}
+                    min={0}
+                    max={100}
+                    value={Math.round(cascadePctForIPA * 100)}
+                    onInput={(event) => {
+                      const next = Number((event.target as HTMLInputElement).value);
+                      if (!Number.isFinite(next)) return;
+                      updateFormantCascadePct(next / 100);
+                    }}
+                  />
+                  <span className="text-[10px] text-zinc-500">%</span>
+                </label>
               </div>
             </PopoverContent>
           </Popover>
@@ -287,7 +367,9 @@ export function SettingsPanel({
             checked={vibrato.on}
             onCheckedChange={(value) => commitVibrato({ on: value })}
             className={cn(
-              "origin-left scale-75",
+              "h-4 w-7 shrink-0",
+              "[&>span]:h-3 [&>span]:w-3",
+              "data-[state=checked]:[&>span]:translate-x-3",
               "data-[state=checked]:bg-zinc-900 data-[state=unchecked]:bg-zinc-300",
             )}
             aria-label="Toggle vibrato"
@@ -492,7 +574,9 @@ export function SettingsPanel({
             }}
             onChange={restartF0}
           />
-          <span className="w-8 text-right text-[11px] text-zinc-500">{vibrato.rate.toFixed(1)}</span>
+          <span className="w-8 text-right text-[11px] text-zinc-500">
+            {vibrato.rate.toFixed(1)}
+          </span>
         </div>
       </div>
 

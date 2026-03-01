@@ -148,18 +148,47 @@ export const F0_OSC_SOURCE_TYPES = [
   { title: "Square", value: OSC_TYPE_SQUARE },
 ] as const;
 
-export const FORMANT_TOPOLOGY_PARALLEL = "parallel";
-export const FORMANT_TOPOLOGY_CASCADE = "cascade";
-export const FORMANT_TOPOLOGIES = [
-  { title: "Parallel", value: FORMANT_TOPOLOGY_PARALLEL },
-  { title: "Cascade", value: FORMANT_TOPOLOGY_CASCADE },
-] as const;
-export const DEFAULT_FORMANT_CASCADE_PCT = 0.5;
+export const DEFAULT_FORMANT_CASCADE_PCT = 0.4;
 
 const compressorDefaults = new DynamicsCompressorNode(new AudioContext());
 const formantDefaults = { on: true, Q: 10, gain: 20 };
+type CommonVowel = IPA.ɑ | IPA.ɛ | IPA.ə | IPA.æ | IPA.ɔ | IPA.u | IPA.ʊ | IPA.ɪ | IPA.i;
+type FormantTriplet = readonly [number, number, number];
+type CommonVowelPreset = {
+  formants: FormantTriplet;
+  cascadeMultiplier?: number;
+};
+
+const COMMON_VOWEL_PRESET_BY_IPA: Record<CommonVowel, CommonVowelPreset> = {
+  [IPA.ɑ]: { formants: [785, 1154, 2599], cascadeMultiplier: 1.375 },
+  [IPA.ɛ]: { formants: [633, 1737, 2627], cascadeMultiplier: 1.3 },
+  [IPA.ə]: { formants: [540, 1582, 2607], cascadeMultiplier: 1.2 },
+  [IPA.æ]: { formants: [721, 1711, 2537], cascadeMultiplier: 1.35 },
+  [IPA.ɔ]: { formants: [656, 1023, 2521], cascadeMultiplier: 1.45 },
+  [IPA.u]: { formants: [293, 969, 2331], cascadeMultiplier: 1.5 },
+  [IPA.ʊ]: { formants: [487, 1322, 2394], cascadeMultiplier: 1.4 },
+  [IPA.ɪ]: { formants: [449, 1912, 2642] },
+  [IPA.i]: { formants: [267, 2407, 3184], cascadeMultiplier: 1.325 },
+};
+
+function createCommonVowelFormants(ipa: CommonVowel) {
+  const [f1, f2, f3] = COMMON_VOWEL_PRESET_BY_IPA[ipa].formants;
+  return [
+    { ...formantDefaults, frequency: f1 },
+    { ...formantDefaults, frequency: f2 },
+    { ...formantDefaults, frequency: f3 },
+  ];
+}
 
 export function createDefaultSettings() {
+  const commonCascadeMultiplierByIPA = Object.fromEntries(
+    (Object.entries(COMMON_VOWEL_PRESET_BY_IPA) as Array<[CommonVowel, CommonVowelPreset]>)
+      .filter(
+        ([, preset]) => preset.cascadeMultiplier !== undefined && preset.cascadeMultiplier !== 1,
+      )
+      .map(([ipa, preset]) => [ipa, preset.cascadeMultiplier]),
+  ) as Partial<Record<(typeof IPA)[keyof typeof IPA], number>>;
+
   return {
     defaultNote: "E3",
     defaultIPA: IPA.ɑ,
@@ -199,10 +228,10 @@ export function createDefaultSettings() {
     },
     vibrato: {
       on: true,
-      rate: 3,
-      extent: 1.0,
-      jitter: 0.2,
-      onsetTime: 0.2,
+      rate: 4,
+      extent: 0.5,
+      jitter: 0.1,
+      onsetTime: 0.5,
     },
     compression: {
       on: false,
@@ -222,88 +251,24 @@ export function createDefaultSettings() {
     formants: {
       on: true,
       cascadePctDefault: DEFAULT_FORMANT_CASCADE_PCT,
-      cascadePctByIPA: {} as Partial<Record<(typeof IPA)[keyof typeof IPA], number>>,
+      cascadePctByIPA: {
+        ...commonCascadeMultiplierByIPA,
+      } as Partial<Record<(typeof IPA)[keyof typeof IPA], number>>,
       compensation: {
         on: true,
         maxBoostDb: 18,
         maxCutDb: 18,
       },
       ipa: {
-        [IPA.ɑ]: [
-          { ...formantDefaults, frequency: 800 },
-          { ...formantDefaults, frequency: 1200 },
-          { ...formantDefaults, frequency: 2500 },
-        ],
-        // [IPA.ɑ]: [
-        //   { ...formantDefaults, frequency: 750 },
-        //   { ...formantDefaults, frequency: 940 },
-        //   { ...formantDefaults, frequency: 190 },
-        // ],
-        [IPA.i]: [
-          { ...formantDefaults, frequency: 270 },
-          { ...formantDefaults, frequency: 2300 },
-          { ...formantDefaults, frequency: 3000 },
-        ],
-        // [IPA.i]: [
-        //   { ...formantDefaults, frequency: 240 },
-        //   { ...formantDefaults, frequency: 2400 },
-        //   { ...formantDefaults, frequency: 2160 },
-        // ],
-        [IPA.ɪ]: [
-          { ...formantDefaults, frequency: 400 },
-          { ...formantDefaults, frequency: 2000 },
-          { ...formantDefaults, frequency: 2550 },
-        ],
-        // [IPA.ɪ]: [
-        //   { ...formantDefaults, frequency: 390 },
-        //   { ...formantDefaults, frequency: 1990 },
-        //   { ...formantDefaults, frequency: 2550 },
-        // ],
-        [IPA.ɛ]: [
-          { ...formantDefaults, frequency: 530 },
-          { ...formantDefaults, frequency: 1850 },
-          { ...formantDefaults, frequency: 2500 },
-        ],
-        // [IPA.ɛ]: [
-        //   { ...formantDefaults, frequency: 610 },
-        //   { ...formantDefaults, frequency: 1900 },
-        //   { ...formantDefaults, frequency: 1290 },
-        // ],
-        [IPA.æ]: [
-          { ...formantDefaults, frequency: 660 },
-          { ...formantDefaults, frequency: 1700 },
-          { ...formantDefaults, frequency: 2400 },
-        ],
-        [IPA.ɔ]: [
-          { ...formantDefaults, frequency: 500 },
-          { ...formantDefaults, frequency: 800 },
-          { ...formantDefaults, frequency: 2830 },
-        ],
-        // [IPA.ɔ]: [
-        //   { ...formantDefaults, frequency: 500 },
-        //   { ...formantDefaults, frequency: 700 },
-        //   { ...formantDefaults, frequency: 200 },
-        // ],
-        [IPA.ʊ]: [
-          { ...formantDefaults, frequency: 640 },
-          { ...formantDefaults, frequency: 1200 },
-          { ...formantDefaults, frequency: 2400 },
-        ],
-        [IPA.u]: [
-          { ...formantDefaults, frequency: 300 },
-          { ...formantDefaults, frequency: 870 },
-          { ...formantDefaults, frequency: 2250 },
-        ],
-        // [IPA.u]: [
-        //   { ...formantDefaults, frequency: 250 },
-        //   { ...formantDefaults, frequency: 595 },
-        //   { ...formantDefaults, frequency: 345 },
-        // ],
-        [IPA.ə]: [
-          { ...formantDefaults, frequency: 600 },
-          { ...formantDefaults, frequency: 1000 },
-          { ...formantDefaults, frequency: 2400 },
-        ],
+        [IPA.ɑ]: createCommonVowelFormants(IPA.ɑ),
+        [IPA.i]: createCommonVowelFormants(IPA.i),
+        [IPA.ɪ]: createCommonVowelFormants(IPA.ɪ),
+        [IPA.ɛ]: createCommonVowelFormants(IPA.ɛ),
+        [IPA.æ]: createCommonVowelFormants(IPA.æ),
+        [IPA.ɔ]: createCommonVowelFormants(IPA.ɔ),
+        [IPA.ʊ]: createCommonVowelFormants(IPA.ʊ),
+        [IPA.u]: createCommonVowelFormants(IPA.u),
+        [IPA.ə]: createCommonVowelFormants(IPA.ə),
         [IPA.y]: [
           { ...formantDefaults, frequency: 235 },
           { ...formantDefaults, frequency: 2100 },
@@ -359,21 +324,6 @@ export function createDefaultSettings() {
           { ...formantDefaults, frequency: 1390 },
           { ...formantDefaults, frequency: 1090 },
         ],
-        // [IPA.ʊ]: [
-        //   { ...formantDefaults, frequency: 300 },
-        //   { ...formantDefaults, frequency: 870 },
-        //   { ...formantDefaults, frequency: 2240 },
-        // ],
-        // [IPA.ə]: [
-        //   { ...formantDefaults, frequency: 520 },
-        //   { ...formantDefaults, frequency: 1190 },
-        //   { ...formantDefaults, frequency: 2390 },
-        // ],
-        // [IPA.æ]: [
-        //   { ...formantDefaults, frequency: 660 },
-        //   { ...formantDefaults, frequency: 1720 },
-        //   { ...formantDefaults, frequency: 2410 },
-        // ],
         [IPA.ŋ]: [
           { ...formantDefaults, frequency: 325 },
           { ...formantDefaults, frequency: 1250 },

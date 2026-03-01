@@ -83,7 +83,9 @@ export function IPASelector({
 
   const fallbackItems = useMemo(() => {
     if (!isCommonVowelSet) return items;
-    const grouped = new Set(groupedVowels.flatMap((group) => group.items.map((item) => item.value)));
+    const grouped = new Set(
+      groupedVowels.flatMap((group) => group.items.map((item) => item.value)),
+    );
     return items.filter((item) => !grouped.has(item.value));
   }, [groupedVowels, isCommonVowelSet, items]);
 
@@ -142,7 +144,10 @@ export function IPASelector({
                 {groupedVowels.length > 0 ? (
                   <div className="grid gap-2 sm:grid-cols-3">
                     {groupedVowels.map((group) => (
-                      <section key={group.title} className="rounded-md border border-zinc-200 p-1.5">
+                      <section
+                        key={group.title}
+                        className="rounded-md border border-zinc-200 p-1.5"
+                      >
                         <h4 className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-zinc-500">
                           {group.title}
                         </h4>
@@ -162,7 +167,12 @@ export function IPASelector({
                                 onClick={() => handleSelect(item.value as IPAType)}
                               >
                                 <span className="text-base leading-none">{item.value}</span>
-                                <span className={cn("text-xs", selected ? "text-zinc-200" : "text-zinc-500")}>
+                                <span
+                                  className={cn(
+                                    "text-xs",
+                                    selected ? "text-zinc-200" : "text-zinc-500",
+                                  )}
+                                >
                                   {IPA_WORDS[item.value as IPAType]}
                                 </span>
                               </button>
@@ -197,7 +207,12 @@ export function IPASelector({
                             onClick={() => handleSelect(item.value as IPAType)}
                           >
                             <div className="text-base leading-none">{item.value}</div>
-                            <div className={cn("text-xs", selected ? "text-zinc-200" : "text-zinc-500")}>
+                            <div
+                              className={cn(
+                                "text-xs",
+                                selected ? "text-zinc-200" : "text-zinc-500",
+                              )}
+                            >
                               {IPA_WORDS[item.value as IPAType]}
                             </div>
                           </button>

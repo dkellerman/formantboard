@@ -197,14 +197,17 @@ export function SandboxPage() {
     0,
     Math.min(1, formants.cascadePctDefault ?? DEFAULT_FORMANT_CASCADE_PCT),
   );
-  const cascadePctForIPA = Math.max(
-    0,
-    Math.min(1, formants.cascadePctByIPA?.[ipa] ?? cascadePctDefault),
-  );
+  const cascadePctMultiplierForIPA = Math.max(0, formants.cascadePctByIPA?.[ipa] ?? 1);
+  const cascadePctForIPA = Math.max(0, Math.min(1, cascadePctDefault * cascadePctMultiplierForIPA));
 
   function normalizeCascadePct(value: number) {
     const next = Number.isFinite(value) ? value : 0;
     return Math.max(0, Math.min(1, next));
+  }
+
+  function normalizeCascadeMultiplier(value: number) {
+    const next = Number.isFinite(value) ? value : 1;
+    return Math.max(0, Math.min(4, next));
   }
 
   function restartF0() {
@@ -361,10 +364,24 @@ export function SandboxPage() {
       ...current,
       formants: {
         ...current.formants,
-        cascadePctByIPA: {
-          ...(current.formants.cascadePctByIPA ?? {}),
-          [ipa]: normalizeCascadePct(value),
-        },
+        cascadePctByIPA: (() => {
+          const cascadePctDefaultCurrent = Math.max(
+            0,
+            Math.min(1, current.formants.cascadePctDefault ?? DEFAULT_FORMANT_CASCADE_PCT),
+          );
+          const nextPct = normalizeCascadePct(value);
+          const nextMultiplier =
+            cascadePctDefaultCurrent <= 0
+              ? 1
+              : normalizeCascadeMultiplier(nextPct / cascadePctDefaultCurrent);
+          const nextByIPA = { ...(current.formants.cascadePctByIPA ?? {}) };
+          if (Math.abs(nextMultiplier - 1) < 1e-6) {
+            delete nextByIPA[ipa];
+          } else {
+            nextByIPA[ipa] = nextMultiplier;
+          }
+          return nextByIPA;
+        })(),
       },
     }));
   }

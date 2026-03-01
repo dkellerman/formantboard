@@ -26,7 +26,7 @@ export function AIPromptInput({
       )}
     >
       <form
-        className={cn("flex items-center gap-2")}
+        className={cn("flex items-end gap-2")}
         onSubmit={(event) => {
           event.preventDefault();
           if (isLoading || isPlaying) {
@@ -40,17 +40,19 @@ export function AIPromptInput({
           setPrompt("");
         }}
       >
-        <input
+        <textarea
           id="fb-ai-prompt"
-          type="text"
           className={cn(
-            "h-10 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-900",
+            "w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900",
+            "leading-5",
             "focus:outline-none focus:ring-1 focus:ring-zinc-900",
+            "resize-none",
           )}
+          rows={2}
           disabled={isLoading}
           value={prompt}
           onChange={(event) => setPrompt(event.target.value)}
-          placeholder="Type a song prompt, e.g. Play twinkle twinkle little star"
+          placeholder="Enter request, e.g.: Play a C major scale alternating between ee and ah sounds"
         />
         <Button
           variant="default"
