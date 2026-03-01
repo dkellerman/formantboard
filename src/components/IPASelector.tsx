@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { SquareArrowOutUpRight, X } from "lucide-react";
-import { useAppContext } from "@/store";
+import { useAppStore } from "@/store";
 import { COMMON_IPA, COMMON_IPA_DETAILS, type CommonIPAPlacement, IPA_WORDS } from "@/constants";
 import { cn } from "@/lib/cn";
 import type { IPAType } from "@/types";
@@ -34,7 +34,7 @@ export function IPASelector({
   onChange,
   showPopout = true,
 }: IPASelectorProps) {
-  const { setIPA } = useAppContext();
+  const setIPA = useAppStore((state) => state.setIPA);
   const [pickerOpen, setPickerOpen] = useState(false);
 
   const values = useMemo(() => ipaSet ?? COMMON_IPA, [ipaSet]);

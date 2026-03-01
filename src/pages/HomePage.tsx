@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { Square } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useAppContext } from "@/store";
+import { useAppStore } from "@/store";
 import { cn } from "@/lib/cn";
 import { usePlayer } from "@/hooks/usePlayer";
 import { usePromptToPayload } from "@/hooks/usePromptToPayload";
@@ -32,7 +32,8 @@ const HOME_API_SAMPLE = JSON.stringify(
 );
 
 export function HomePage() {
-  const { settings, player: playerState } = useAppContext();
+  const settings = useAppStore((state) => state.settings);
+  const playerState = useAppStore((state) => state.player);
   const player = usePlayer();
   const [visType, setVisType] = useState<VisType>(settings.defaultVisType);
   const [apiModalOpen, setApiModalOpen] = useState(false);

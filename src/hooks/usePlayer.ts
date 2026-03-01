@@ -1,5 +1,5 @@
 import regression from "regression";
-import { useAppContext } from "@/store";
+import { useAppStore } from "@/store";
 import { DEFAULT_FORMANT_CASCADE_PCT, F0_SOURCE_NOISE } from "@/constants";
 import {
   CAP_FREQ,
@@ -234,7 +234,12 @@ function computeDynamicCompensationGain(
 }
 
 export function usePlayer(): PlayerState {
-  const { settings, ipa, setMetrics, player, setPlayer, playerRuntimeRef } = useAppContext();
+  const settings = useAppStore((state) => state.settings);
+  const ipa = useAppStore((state) => state.ipa);
+  const setMetrics = useAppStore((state) => state.setMetrics);
+  const player = useAppStore((state) => state.player);
+  const setPlayer = useAppStore((state) => state.setPlayer);
+  const playerRuntimeRef = useAppStore((state) => state.playerRuntimeRef);
 
   if (!playerRuntimeRef.current) {
     const audioContext = new AudioContext(settings.audioContextConfig);
@@ -277,8 +282,15 @@ export function usePlayer(): PlayerState {
   }
 
   function setRafId(next: number | undefined) {
+    const prev = runtime.analyzeRafId;
     runtime.analyzeRafId = next;
-    setPlayer((current) => ({ ...current, rafId: next }));
+    const transitioned =
+      (prev === undefined && next !== undefined) || (prev !== undefined && next === undefined);
+    if (!transitioned) return;
+    setPlayer((current) => {
+      if (current.rafId === next) return current;
+      return { ...current, rafId: next };
+    });
   }
 
   function toNoteId(frequency: number) {
@@ -605,8 +617,8 @@ export function usePlayer(): PlayerState {
       });
 
       const rms = useFloatData
-        ? gain2db(arr2rms([...freqData], 1.0))
-        : gain2db(arr2rms([...freqData], 256.0));
+        ? gain2db(arr2rms(freqData, 1.0))
+        : gain2db(arr2rms(freqData, 256.0));
       const tilt = regression.logarithmic(harmonics.map((harmonic) => [harmonic[0], harmonic[2]]));
       const nextMetrics = {
         ...current,

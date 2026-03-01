@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Play, Square } from "lucide-react";
-import { useAppContext } from "@/store";
+import { useAppStore } from "@/store";
 import { cn } from "@/lib/cn";
 import { noteOrFreq2freq, stepNoteOrFreq } from "@/utils";
 import { usePlayer } from "@/hooks/usePlayer";
@@ -23,7 +23,7 @@ export function F0Selector({
   restartSignal = 0,
   toggleSignal = 0,
 }: F0SelectorProps) {
-  const { settings } = useAppContext();
+  const settings = useAppStore((state) => state.settings);
   const player = usePlayer();
   const [f0, setF0] = useState(String(settings.defaultNote));
   const [playingF0, setPlayingF0] = useState<number>();

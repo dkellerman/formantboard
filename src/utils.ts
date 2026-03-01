@@ -245,10 +245,13 @@ export function debugt(...args: any[]) {
   w.__debug_ts = performance.now();
 }
 
-export function arr2rms(arr: number[], normFactor = 1.0) {
-  return Math.sqrt(
-    arr.reduce((prev, curr) => prev + (curr / normFactor) * (curr / normFactor), 0.0) / arr.length,
-  );
+export function arr2rms(arr: ArrayLike<number>, normFactor = 1.0) {
+  let sum = 0;
+  for (let i = 0; i < arr.length; i += 1) {
+    const normalized = arr[i] / normFactor;
+    sum += normalized * normalized;
+  }
+  return Math.sqrt(sum / arr.length);
 }
 
 export function gain2db(gain: number) {

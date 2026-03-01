@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
-import { useAppContext } from "@/store";
+import { useAppStore } from "@/store";
 import { cn } from "@/lib/cn";
 import { note2freq, note2midi, type Note } from "@/utils";
 import { useKeyboardLayout } from "@/hooks/useKeyboardLayout";
@@ -125,7 +125,8 @@ export interface KeyboardProps {
 
 export function Keyboard({ height, activeNotes, onKeyOn, onKeyOff }: KeyboardProps) {
   const keyboardLayout = useKeyboardLayout();
-  const { metrics, player } = useAppContext();
+  const metrics = useAppStore((state) => state.metrics);
+  const player = useAppStore((state) => state.player);
 
   const layout = keyboardLayout.layout;
   const keyboardWidth = keyboardLayout.keyboardWidth;

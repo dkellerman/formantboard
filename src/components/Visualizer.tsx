@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from "react";
 import * as PIXI from "pixi.js";
-import { useAppContext } from "@/store";
+import { useAppStore } from "@/store";
 import { cn } from "@/lib/cn";
 import { VisType } from "@/constants";
 import { fillRect, hsl, str2hexColor } from "@/utils";
@@ -34,7 +34,9 @@ export function Visualizer({
   vtype = VisType.POWER,
   combined = false,
 }: VisualizerProps) {
-  const { settings, ipa, playerRuntimeRef } = useAppContext();
+  const settings = useAppStore((state) => state.settings);
+  const ipa = useAppStore((state) => state.ipa);
+  const playerRuntimeRef = useAppStore((state) => state.playerRuntimeRef);
   const player = usePlayer();
   const keyboardLayout = useKeyboardLayout();
   const ipaSpec = settings.formants.ipa[ipa];

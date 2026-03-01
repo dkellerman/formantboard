@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { SquareArrowOutUpRight, X } from "lucide-react";
-import { useAppContext } from "@/store";
+import { useAppStore } from "@/store";
 import { DEFAULT_FORMANT_CASCADE_PCT, VIS_TYPES, type VisType } from "@/constants";
 import { cn } from "@/lib/cn";
 import type { Formant, Vibrato } from "@/types";
@@ -28,7 +28,10 @@ export interface SettingsPanelProps {
 }
 
 export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsPanelProps) {
-  const { settings, setSettings, ipa, setIPA } = useAppContext();
+  const settings = useAppStore((state) => state.settings);
+  const setSettings = useAppStore((state) => state.setSettings);
+  const ipa = useAppStore((state) => state.ipa);
+  const setIPA = useAppStore((state) => state.setIPA);
   const [restartSignal, setRestartSignal] = useState(0);
   const [formantPopoverOpen, setFormantPopoverOpen] = useState(false);
   const [vibratoPopoverOpen, setVibratoPopoverOpen] = useState(false);

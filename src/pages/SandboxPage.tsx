@@ -1,5 +1,5 @@
 import { type ReactNode, useEffect, useState } from "react";
-import { useAppContext } from "@/store";
+import { useAppStore } from "@/store";
 import {
   ALL_IPA,
   COMMON_IPA,
@@ -183,7 +183,12 @@ function CheckboxControl({ label, modelValue, onUpdateModelValue }: CheckboxCont
 }
 
 export function SandboxPage() {
-  const { metrics, settings, setSettings, ipa, setIPA, player: playerState } = useAppContext();
+  const metrics = useAppStore((state) => state.metrics);
+  const settings = useAppStore((state) => state.settings);
+  const setSettings = useAppStore((state) => state.setSettings);
+  const ipa = useAppStore((state) => state.ipa);
+  const setIPA = useAppStore((state) => state.setIPA);
+  const playerState = useAppStore((state) => state.player);
   const player = usePlayer();
   const ipaSpec = settings.formants.ipa[ipa];
 

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Mic, Square } from "lucide-react";
-import { useAppContext } from "@/store";
+import { useAppStore } from "@/store";
 import { cn } from "@/lib/cn";
 import { createMicSource, createPitchDetectionNode, freq2noteCents, getHarmonics } from "@/utils";
 import { usePlayer } from "@/hooks/usePlayer";
@@ -18,7 +18,10 @@ export function MicButton({
   stopText = "Stop",
 }: MicButtonProps) {
   const playerActions = usePlayer();
-  const { settings, setMetrics, player, playerRuntimeRef } = useAppContext();
+  const settings = useAppStore((state) => state.settings);
+  const setMetrics = useAppStore((state) => state.setMetrics);
+  const player = useAppStore((state) => state.player);
+  const playerRuntimeRef = useAppStore((state) => state.playerRuntimeRef);
 
   const micRef = useRef<MediaStreamAudioSourceNode | null>(null);
   const [listening, setListening] = useState(false);

@@ -1,8 +1,8 @@
-import { useAppContext } from "@/store";
+import { useAppStore } from "@/store";
 import { cn } from "@/lib/cn";
 
 export function Readout() {
-  const { metrics } = useAppContext();
+  const metrics = useAppStore((state) => state.metrics);
   const rmsLabel = Number.isFinite(metrics.rms) ? `${metrics.rms.toFixed(1)}dB` : "";
 
   return (
