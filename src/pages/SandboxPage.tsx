@@ -503,7 +503,7 @@ export function SandboxPage() {
         <Keyboard
           activeNotes={midiNotes}
           onKeyOn={player.play}
-          onKeyOff={player.stop}
+          onKeyOff={(note, options) => player.stop(note, false, 0, options?.immediate)}
           height={80}
         />
       </div>

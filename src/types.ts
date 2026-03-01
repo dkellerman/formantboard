@@ -55,7 +55,7 @@ export interface PlayerState {
     duration?: number,
     options?: PlayerNoteOptions,
   ) => void;
-  stop: (note: number | Note, stopAnalysis?: boolean, atTime?: number) => void;
+  stop: (note: number | Note, stopAnalysis?: boolean, atTime?: number, immediate?: boolean) => void;
   stopApiPlayback: () => void;
   addAnalyzerListener: (id: string, listener: AnalyzerListener) => void;
   removeAnalyzerListener: (id: string) => void;
@@ -98,7 +98,7 @@ export interface PlayerRuntimeVoice {
   startTimerId?: number;
   deactivateTimerId?: number;
   cleanupTimerId?: number;
-  stopVoice: (opts?: { stopAnalysis?: boolean; releaseAt?: number }) => void;
+  stopVoice: (opts?: { stopAnalysis?: boolean; releaseAt?: number; immediate?: boolean }) => void;
 }
 
 export interface PlayerRuntime {
@@ -112,7 +112,10 @@ export interface PlayerRuntime {
   compressorConnectedToOutput: boolean;
   analyzeRafId: number | undefined;
   micAnalyzing: boolean;
-  playing: Record<number, (opts?: { stopAnalysis?: boolean; releaseAt?: number }) => void>;
+  playing: Record<
+    number,
+    (opts?: { stopAnalysis?: boolean; releaseAt?: number; immediate?: boolean }) => void
+  >;
   voices: Record<string, PlayerRuntimeVoice>;
   nextVoiceId: number;
   nextStartOrder: number;
@@ -132,6 +135,12 @@ export interface FormantboardVoiceOptions {
   volume?: number;
   tilt?: number;
   formants?: FormantOverride[];
+}
+
+export type FormantboardLoopSetting = boolean | number | "infinite";
+
+export interface FormantboardPlayOptions {
+  loop?: FormantboardLoopSetting;
 }
 
 export interface FormantboardPlayEvent {
@@ -166,12 +175,14 @@ export interface FormantboardJSONNote {
 
 export interface FormantboardJSONPayload {
   bpm?: number;
+  loop?: FormantboardLoopSetting;
   voice?: FormantboardVoiceOptions;
   notes: FormantboardJSONNote[];
 }
 
 export interface FormantboardNormalizedPayload {
   bpm?: number;
+  loop?: FormantboardLoopSetting;
   voice?: FormantboardVoiceOptions;
   notes: FormantboardPlayEvent[];
 }
@@ -220,6 +231,8 @@ export interface FormantboardAPI {
   validatePlay: (events: unknown) => FormantboardValidationResult<FormantboardPlayEvent[]>;
   validateFromJSON: (input: unknown) => FormantboardValidationResult<FormantboardNormalizedPayload>;
   setVoice: (voice: FormantboardVoiceOptions) => void;
+  setLoop: (loop: FormantboardLoopSetting) => void;
+  getLoop: () => FormantboardLoopSetting;
   setFormantActive: (index: number, on: boolean) => void;
   now: () => number;
   press: (
@@ -231,6 +244,6 @@ export interface FormantboardAPI {
   ) => void;
   clickKey: (midi: number, atTime?: number, duration?: number, velocity?: number) => void;
   stop: () => void;
-  play: (events: FormantboardPlayEvent[]) => void;
+  play: (events: FormantboardPlayEvent[], options?: FormantboardPlayOptions) => void;
   fromJSON: (input: string | FormantboardJSONPayload) => void;
 }

@@ -100,7 +100,7 @@ export function HomePage() {
         {settings.viz.on ? <Visualizer vtype={visType} height={150} /> : null}
         <Keyboard
           onKeyOn={(note, velocity) => player.play(note, velocity)}
-          onKeyOff={(note) => player.stop(note)}
+          onKeyOff={(note, options) => player.stop(note, false, 0, options?.immediate)}
         />
       </div>
       <div className={cn("my-10 inline-flex gap-5")}>

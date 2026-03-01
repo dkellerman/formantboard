@@ -63,6 +63,26 @@ const ADVANCED_SAMPLE = JSON.stringify(
   2,
 );
 
+const LOOP_SAMPLE = JSON.stringify(
+  {
+    bpm: 96,
+    loop: 4,
+    voice: {
+      vowel: "ɑ",
+      volume: 0.72,
+      tilt: -4,
+    },
+    notes: [
+      { note: 60, time: 0, dur: 0.5, vowel: "ɑ" },
+      { note: 64, time: 0.5, dur: 0.5, vowel: "ɛ" },
+      { note: 67, time: 1, dur: 0.5, vowel: "i" },
+      { note: 72, time: 1.5, dur: 0.5, vowel: "u" },
+    ],
+  },
+  null,
+  2,
+);
+
 type HappyBirthdayStep = {
   note: string;
   beats: number;
@@ -201,7 +221,8 @@ const METHOD_PARAM_DOCS: MethodParamDoc[] = [
   {
     method: "fb.play(events)",
     summary: "Schedule multiple note events using seconds from now.",
-    signature: "fb.play(events: PlayEvent[])",
+    signature:
+      "fb.play(events: PlayEvent[], options?: { loop?: false | true | number | 'infinite' })",
     caveat: `vowel must be one of: ${SUPPORTED_IPA_VOWELS_TEXT}`,
     params: [
       {
@@ -209,6 +230,13 @@ const METHOD_PARAM_DOCS: MethodParamDoc[] = [
         type: "PlayEvent[]",
         required: true,
         description: "Each item is one note event. time/dur are in seconds from now.",
+      },
+      {
+        name: "options.loop",
+        type: "false | true | number | 'infinite'",
+        required: false,
+        description:
+          "Loop mode override for this call: false=once, true/'infinite'=repeat until stop, number=total iterations.",
       },
     ],
     shape: `type PlayEvent = {
@@ -237,6 +265,7 @@ const METHOD_PARAM_DOCS: MethodParamDoc[] = [
     ],
     shape: `type PerformancePayload = {
   bpm?: number; // if set, time/dur are interpreted as beats
+  loop?: false | true | number | "infinite"; // false=once, true/"infinite"=until stop, number=total iterations
   voice?: { vowel?: SupportedIPA; volume?: number; tilt?: number; formants?: FormantOverride[] };
   notes: Array<{
     note: number | string;
@@ -271,6 +300,26 @@ const METHOD_PARAM_DOCS: MethodParamDoc[] = [
   tilt?: number;
   formants?: Array<{ index: number; on?: boolean; frequency?: number; Q?: number; gain?: number }>;
 }`,
+  },
+  {
+    method: "fb.setLoop(mode)",
+    summary: "Set default loop mode used by future fb.play/fb.fromJSON calls.",
+    signature: "fb.setLoop(mode: false | true | number | 'infinite')",
+    params: [
+      {
+        name: "mode",
+        type: "false | true | number | 'infinite'",
+        required: true,
+        description:
+          "false=once, true/'infinite'=repeat until stop, number=total iterations (1 = once).",
+      },
+    ],
+  },
+  {
+    method: "fb.getLoop()",
+    summary: "Read current default loop mode.",
+    signature: "fb.getLoop(): false | 'infinite' | number",
+    params: [],
   },
   {
     method: "fb.setFormantActive(index, on)",
@@ -384,6 +433,7 @@ export function ApiPage() {
           </li>
           <li>Set pitch + timing + duration on every event.</li>
           <li>Add vowel (and optional tilt) for articulation.</li>
+          <li>Keep loop off unless the user explicitly asks for looping.</li>
           <li>Use only supported IPA vowels: {SUPPORTED_IPA_VOWELS_TEXT}.</li>
           <li>When formants are needed, usually target one formant (F1/F2/F3) at a time.</li>
         </ol>
@@ -427,7 +477,7 @@ export function ApiPage() {
                 <td className="py-2">Default before fromJSON</td>
               </tr>
               <tr className={cn("border-b border-zinc-100")}>
-                <td className="py-2 pr-3 font-mono">fb.play(events)</td>
+                <td className="py-2 pr-3 font-mono">fb.play(events, options?)</td>
                 <td className="py-2 pr-3">Schedule tempo-accurate note events</td>
                 <td className="py-2">Default</td>
               </tr>
@@ -440,6 +490,16 @@ export function ApiPage() {
                 <td className="py-2 pr-3 font-mono">fb.setVoice(opts)</td>
                 <td className="py-2 pr-3">Set default vowel/volume/tilt</td>
                 <td className="py-2">Default</td>
+              </tr>
+              <tr className={cn("border-b border-zinc-100")}>
+                <td className="py-2 pr-3 font-mono">fb.setLoop(mode)</td>
+                <td className="py-2 pr-3">Set default loop mode (off / count / infinite)</td>
+                <td className="py-2">Only when user explicitly requests looping</td>
+              </tr>
+              <tr className={cn("border-b border-zinc-100")}>
+                <td className="py-2 pr-3 font-mono">fb.getLoop()</td>
+                <td className="py-2 pr-3">Read current default loop mode</td>
+                <td className="py-2">Inspection helper</td>
               </tr>
               <tr className={cn("border-b border-zinc-100")}>
                 <td className="py-2 pr-3 font-mono">fb.setFormantActive(index, on)</td>
@@ -586,7 +646,8 @@ export function ApiPage() {
           Start with the basic sample. Switch to advanced only when you need explicit formant edits.
         </p>
         <p className={cn("mb-0 mt-1 text-zinc-700")}>
-          Happy Birthday sample is melody-first with IPA applied after timing.
+          Happy Birthday sample is melody-first with IPA applied after timing. Loop sample
+          demonstrates count-based looping.
         </p>
         <div className={cn("mt-3 flex flex-wrap gap-2")}>
           <button
@@ -606,6 +667,15 @@ export function ApiPage() {
             onClick={() => setPayload(ADVANCED_SAMPLE)}
           >
             Load Advanced Sample
+          </button>
+          <button
+            className={cn(
+              "rounded border border-zinc-300 bg-zinc-50 px-3 py-1.5 text-zinc-800 hover:bg-zinc-100",
+            )}
+            type="button"
+            onClick={() => setPayload(LOOP_SAMPLE)}
+          >
+            Load Loop Sample
           </button>
           <button
             className={cn(

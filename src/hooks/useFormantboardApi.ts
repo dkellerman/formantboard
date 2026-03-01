@@ -5,6 +5,8 @@ import { useAppStore } from "@/store";
 import type {
   FormantOverride,
   FormantboardAPI,
+  FormantboardLoopSetting,
+  FormantboardPlayOptions,
   FormantboardPlayEvent,
   FormantboardVoiceOptions,
   IPAType,
@@ -27,6 +29,7 @@ const AVAILABLE_VOWELS = [...VOWELS] as IPAType[];
 const AVAILABLE_VOWELS_SET = new Set<IPAType>(AVAILABLE_VOWELS);
 const FB_BASIC_CAPABILITIES = [
   "tempo-accurate scheduled notes",
+  "opt-in loop playback (count or infinite)",
   "per-note vowel shaping",
   "per-note tilt control",
   "targeted per-formant enable/disable (F1/F2/F3)",
@@ -38,7 +41,7 @@ const FB_LIMITS = [
   "vowel list is constrained to declared VOWELS",
 ] as const;
 const FB_USAGE_GUIDANCE =
-  "Always validate input first (validatePlay / validateFromJSON), then schedule notes. Keep note/time/dur stable; if you need formant control, target one formant at a time (F1/F2/F3).";
+  "Always validate input first (validatePlay / validateFromJSON), then schedule notes. Keep note/time/dur stable; if you need formant control, target one formant at a time (F1/F2/F3). Keep looping off unless the user explicitly requests looping.";
 const FB_DISCOVERY = {
   docs: {
     ui: "/api",
@@ -50,6 +53,7 @@ const FB_DISCOVERY = {
     "Read /llms.txt (or /agents.txt).",
     "If method details are needed, read /api.md or /api.",
     "Use window.fb.validateFromJSON(payload) before window.fb.fromJSON(payload).",
+    "Keep loop off by default. Only set payload.loop or window.fb.setLoop(...) when requested.",
   ],
 } as const;
 const FB_POLICY = {
@@ -62,6 +66,7 @@ const FB_POLICY = {
     "you are matching known formant values",
     "the user explicitly asks for formant tweaking",
   ],
+  loopOnlyWhen: ["the user explicitly asks for looping"],
   avoidAdvancedWhen: [
     "you only need natural vowel articulation",
     "you are generating ordinary melodies/rhythms",
@@ -69,7 +74,7 @@ const FB_POLICY = {
 } as const;
 
 const FORMANTBOARD_AI_CONTRACT = {
-  version: 7,
+  version: 8,
   performance: {
     interaction: "press-release",
     timing: "audio-context",
@@ -129,6 +134,8 @@ const FORMANTBOARD_AI_GUIDE = {
       "press",
       "stop",
       "setVoice",
+      "setLoop",
+      "getLoop",
       "setVowel",
       "setFormantActive",
       "validatePlay",
@@ -215,15 +222,52 @@ function upsertFormantOverride(
   return source;
 }
 
+type NormalizedLoopMode =
+  | { kind: "off"; value: false }
+  | { kind: "count"; value: number }
+  | { kind: "infinite"; value: "infinite" };
+
+function normalizeLoopSetting(
+  loop: FormantboardLoopSetting | undefined,
+  label = "loop",
+): NormalizedLoopMode {
+  if (loop === undefined || loop === false) {
+    return { kind: "off", value: false };
+  }
+
+  if (loop === true || loop === "infinite") {
+    return { kind: "infinite", value: "infinite" };
+  }
+
+  if (!Number.isInteger(loop) || loop <= 0) {
+    throw new Error(
+      `Invalid ${label} value "${String(loop)}". Use false, true, "infinite", or a positive integer.`,
+    );
+  }
+
+  return { kind: "count", value: loop };
+}
+
 export function useFormantboardApi(player: PlayerState) {
   const validation = useAPIValidation();
   const playerRef = useRef(player);
   const apiRef = useRef<FormantboardAPI | undefined>(undefined);
   const schemaJsonRef = useRef(validation.schemaJson);
+  const loopModeRef = useRef<FormantboardLoopSetting>(false);
+  const loopTimerRef = useRef<number | undefined>(undefined);
+  const loopSequenceRef = useRef(0);
   const voiceRef = useRef<FormantboardVoiceOptions>({
     vowel: resolveVowel(useAppStore.getState().ipa),
     volume: 1,
   });
+
+  function stopLoopScheduler() {
+    loopSequenceRef.current += 1;
+    if (loopTimerRef.current !== undefined) {
+      window.clearTimeout(loopTimerRef.current);
+      loopTimerRef.current = undefined;
+    }
+  }
 
   function setVowel(vowel: IPAType) {
     const nextVowel = resolveVowel(vowel);
@@ -284,6 +328,11 @@ export function useFormantboardApi(player: PlayerState) {
     patchFormant(index, { on });
   }
 
+  function setLoop(loop: FormantboardLoopSetting) {
+    const normalized = normalizeLoopSetting(loop);
+    loopModeRef.current = normalized.kind === "off" ? false : normalized.value;
+  }
+
   useEffect(() => {
     playerRef.current = player;
   }, [player]);
@@ -329,6 +378,8 @@ export function useFormantboardApi(player: PlayerState) {
         return validation.validateFromJSON(input);
       },
       setVoice,
+      setLoop,
+      getLoop: () => loopModeRef.current,
       setFormantActive,
       now: () => playerRef.current.now(),
       press: (note, velocity, atTime = 0, duration = 0.25, options) => {
@@ -360,9 +411,10 @@ export function useFormantboardApi(player: PlayerState) {
         apiRef.current?.press(resolveNote(midi), velocity, atTime, duration);
       },
       stop: () => {
+        stopLoopScheduler();
         playerRef.current.stopApiPlayback();
       },
-      play: (events: FormantboardPlayEvent[]) => {
+      play: (events: FormantboardPlayEvent[], options?: FormantboardPlayOptions) => {
         const validation = apiRef.current?.validatePlay(events);
         if (!validation || !validation.ok) {
           throw new Error(
@@ -370,14 +422,62 @@ export function useFormantboardApi(player: PlayerState) {
           );
         }
 
-        for (const event of validation.value) {
-          apiRef.current?.press(event.note, event.velocity, event.time, event.dur, {
-            vowel: event.vowel,
-            volume: event.volume,
-            tilt: event.tilt,
-            formants: event.formants,
-          });
+        const loopInput = options?.loop === undefined ? loopModeRef.current : options.loop;
+        const loop = normalizeLoopSetting(loopInput);
+        const schedule = (atOffset = 0) => {
+          for (const event of validation.value) {
+            apiRef.current?.press(event.note, event.velocity, atOffset + event.time, event.dur, {
+              vowel: event.vowel,
+              volume: event.volume,
+              tilt: event.tilt,
+              formants: event.formants,
+            });
+          }
+        };
+
+        stopLoopScheduler();
+
+        if (validation.value.length === 0) {
+          return;
         }
+
+        if (loop.kind === "off") {
+          schedule(0);
+          return;
+        }
+
+        const cycleDuration = validation.value.reduce((maxEnd, event) => {
+          return Math.max(maxEnd, event.time + event.dur);
+        }, 0);
+        if (cycleDuration <= 0) {
+          throw new Error("Invalid loop payload: total cycle duration must be positive.");
+        }
+
+        const sequenceId = loopSequenceRef.current;
+        const initialCycleStart = playerRef.current.now();
+        const maxCycles = loop.kind === "count" ? loop.value : Number.POSITIVE_INFINITY;
+
+        const scheduleCycle = (cycleIndex: number, cycleStart: number) => {
+          if (sequenceId !== loopSequenceRef.current) {
+            return;
+          }
+
+          const offset = Math.max(0, cycleStart - playerRef.current.now());
+          schedule(offset);
+
+          if (cycleIndex + 1 >= maxCycles) {
+            loopTimerRef.current = undefined;
+            return;
+          }
+
+          const nextCycleStart = initialCycleStart + (cycleIndex + 1) * cycleDuration;
+          const waitMs = Math.max(0, (nextCycleStart - playerRef.current.now()) * 1000);
+          loopTimerRef.current = window.setTimeout(() => {
+            scheduleCycle(cycleIndex + 1, nextCycleStart);
+          }, waitMs);
+        };
+
+        scheduleCycle(0, initialCycleStart);
       },
       fromJSON: (input) => {
         const validation = apiRef.current?.validateFromJSON(input);
@@ -404,6 +504,7 @@ export function useFormantboardApi(player: PlayerState) {
               formants: entry.formants,
             };
           }),
+          { loop: parsed.loop },
         );
       },
     };
@@ -440,6 +541,11 @@ export function useFormantboardApi(player: PlayerState) {
 
     globalWindow.fb = api;
     return () => {
+      loopSequenceRef.current += 1;
+      if (loopTimerRef.current !== undefined) {
+        window.clearTimeout(loopTimerRef.current);
+        loopTimerRef.current = undefined;
+      }
       if (globalWindow.fb === api) {
         delete globalWindow.fb;
       }

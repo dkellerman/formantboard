@@ -10,6 +10,7 @@ Machine-readable guidance for autonomous agents.
 
 ## Required Workflow
 1. Build payload with canonical event fields: `note`, `time`, `dur`, optional `velocity`, `vowel`, `volume`, `tilt`, `formants`.
+   - Optional root `loop` is allowed: `false`, `true`, positive integer, or `"infinite"`.
 2. Validate first:
    - `window.fb.validatePlay(events)` for event arrays
    - `window.fb.validateFromJSON(payload)` for JSON/object payloads
@@ -19,6 +20,7 @@ Machine-readable guidance for autonomous agents.
 ## Constraints
 - Supported IPA vowels only: `ɑ, ɛ, ə, æ, ɔ, u, ʊ, ɪ, i`
 - Keep melody intact first: pitch + timing + duration are primary.
+- Keep looping off unless the user explicitly requests looping.
 - Formant controls are advanced. Use sparingly and only for a specific reason.
 - If using formants, target one index at a time (typically F1/F2/F3).
 

@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { z, type ZodError } from "zod";
 import { VOWELS } from "@/constants";
 import type {
+  FormantboardLoopSetting,
   FormantboardNormalizedPayload,
   FormantboardPlayEvent,
   FormantboardVoiceOptions,
@@ -31,6 +32,12 @@ const VOICE_OPTIONS_SCHEMA = z
     formants: z.array(FORMANT_OVERRIDE_SCHEMA).optional(),
   })
   .strict();
+
+const LOOP_SETTING_SCHEMA = z.union([
+  z.boolean(),
+  z.literal("infinite"),
+  z.number().int().positive(),
+]);
 
 const PLAY_EVENT_SCHEMA = z
   .object({
@@ -113,6 +120,7 @@ const JSON_NOTE_INPUT_SCHEMA = z
 const JSON_PAYLOAD_INPUT_SCHEMA = z
   .object({
     bpm: z.number().positive().finite().optional(),
+    loop: LOOP_SETTING_SCHEMA.optional(),
     voice: VOICE_OPTIONS_SCHEMA.optional(),
     notes: z.array(JSON_NOTE_INPUT_SCHEMA),
   })
@@ -147,6 +155,10 @@ const NORMALIZED_JSON_PAYLOAD_SCHEMA = JSON_PAYLOAD_INPUT_SCHEMA.transform((payl
     bpm: payload.bpm,
     notes: payload.notes.map((note) => normalizeJSONNote(note)),
   };
+
+  if (payload.loop !== undefined) {
+    normalized.loop = payload.loop as FormantboardLoopSetting;
+  }
 
   if (payload.voice) {
     normalized.voice = payload.voice as FormantboardVoiceOptions;

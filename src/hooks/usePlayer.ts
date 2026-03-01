@@ -448,8 +448,14 @@ export function usePlayer(): PlayerState {
     const stopVoice: (typeof runtime.playing)[number] = (opts) => {
       const stopAnalysis = opts?.stopAnalysis ?? false;
       const releaseAt = opts?.releaseAt ?? runtime.audioContext.currentTime + 0.05;
-      sourceGain.gain.setTargetAtTime(0, releaseAt, settings.f0.decayTime);
-      const stopAt = releaseAt + settings.f0.decayTime + 1;
+      const immediate = opts?.immediate ?? false;
+      if (immediate) {
+        sourceGain.gain.cancelScheduledValues(releaseAt);
+        sourceGain.gain.setValueAtTime(0, releaseAt);
+      } else {
+        sourceGain.gain.setTargetAtTime(0, releaseAt, settings.f0.decayTime);
+      }
+      const stopAt = immediate ? releaseAt + 0.005 : releaseAt + settings.f0.decayTime + 1;
       if (controlSource) {
         try {
           source.stop(stopAt);
@@ -501,21 +507,21 @@ export function usePlayer(): PlayerState {
     }));
   }
 
-  function stop(note: number | Note, stopAnalysis = false, atTime = 0) {
+  function stop(note: number | Note, stopAnalysis = false, atTime = 0, immediate = false) {
     const frequency = noteOrFreq2freq(note);
     const matchingVoices = Object.values(runtime.voices).filter(
       (voice) => Math.abs(voice.frequency - frequency) <= VOICE_MATCH_EPSILON && !voice.ended,
     );
     const time = runtime.audioContext.currentTime + Math.max(0, atTime);
     matchingVoices.forEach((voice, index) => {
-      voice.stopVoice({ stopAnalysis: stopAnalysis && index === 0, releaseAt: time });
+      voice.stopVoice({ stopAnalysis: stopAnalysis && index === 0, releaseAt: time, immediate });
       scheduleVoiceDeactivation(voice.id, atTime);
     });
 
     const stopVoice = runtime.playing[frequency];
     if (!stopVoice) return;
     if (matchingVoices.length === 0) {
-      stopVoice({ stopAnalysis, releaseAt: time });
+      stopVoice({ stopAnalysis, releaseAt: time, immediate });
     }
     if (atTime <= 0) {
       delete runtime.playing[frequency];

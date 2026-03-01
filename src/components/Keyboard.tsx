@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { useAppContext } from "@/store";
 import { cn } from "@/lib/cn";
 import { note2freq, note2midi, type Note } from "@/utils";
@@ -6,12 +6,149 @@ import { useKeyboardLayout } from "@/hooks/useKeyboardLayout";
 
 const TYPICAL_VOCAL_RANGE_MIN_MIDI = note2midi("E2");
 const TYPICAL_VOCAL_RANGE_MAX_MIDI = note2midi("C6");
+const LOWER_ROW_KEYS = "zxcvbnm,./";
+const MIDDLE_ROW_KEYS = "asdfghjkl;'";
+const UPPER_ROW_KEYS = "qwertyuiop[]\\";
+const LOWER_OVERFLOW_KEYS = "`12345";
+const UPPER_OVERFLOW_KEYS = "67890-=";
+const HOTKEY_BY_CODE: Record<string, string> = {
+  Backquote: "`",
+  Digit1: "1",
+  Digit2: "2",
+  Digit3: "3",
+  Digit4: "4",
+  Digit5: "5",
+  Digit6: "6",
+  Digit7: "7",
+  Digit8: "8",
+  Digit9: "9",
+  Digit0: "0",
+  Minus: "-",
+  Equal: "=",
+  KeyQ: "q",
+  KeyW: "w",
+  KeyE: "e",
+  KeyR: "r",
+  KeyT: "t",
+  KeyY: "y",
+  KeyU: "u",
+  KeyI: "i",
+  KeyO: "o",
+  KeyP: "p",
+  BracketLeft: "[",
+  BracketRight: "]",
+  Backslash: "\\",
+  KeyA: "a",
+  KeyS: "s",
+  KeyD: "d",
+  KeyF: "f",
+  KeyG: "g",
+  KeyH: "h",
+  KeyJ: "j",
+  KeyK: "k",
+  KeyL: "l",
+  Semicolon: ";",
+  Quote: "'",
+  KeyZ: "z",
+  KeyX: "x",
+  KeyC: "c",
+  KeyV: "v",
+  KeyB: "b",
+  KeyN: "n",
+  KeyM: "m",
+  Comma: ",",
+  Period: ".",
+  Slash: "/",
+};
+
+function buildHotkeyMap(noteIds: string[]) {
+  const noteByHotkey = new Map<string, string>();
+  const hotkeyByNote = new Map<string, string>();
+  if (noteIds.length === 0) {
+    return { noteByHotkey, hotkeyByNote };
+  }
+
+  const midiByIndex = noteIds.map((id) => note2midi(id.replace("s", "#") as Note));
+  const middleCount = Math.min(MIDDLE_ROW_KEYS.length, noteIds.length);
+  const centerIndex = Math.floor((noteIds.length - 1) / 2);
+  const inRangeIndices = midiByIndex
+    .map((midi, index) => ({ midi, index }))
+    .filter(
+      ({ midi }) =>
+        midi !== null &&
+        TYPICAL_VOCAL_RANGE_MIN_MIDI !== null &&
+        TYPICAL_VOCAL_RANGE_MAX_MIDI !== null &&
+        midi >= TYPICAL_VOCAL_RANGE_MIN_MIDI &&
+        midi <= TYPICAL_VOCAL_RANGE_MAX_MIDI,
+    )
+    .map(({ index }) => index);
+
+  // Prioritize the middle of the visible keyboard, but prefer a center note that stays in vocal range.
+  const anchorIndex =
+    inRangeIndices.length > 0
+      ? inRangeIndices.reduce((best, current) =>
+          Math.abs(current - centerIndex) < Math.abs(best - centerIndex) ? current : best,
+        )
+      : centerIndex;
+
+  const halfMiddle = Math.floor(middleCount / 2);
+  const maxMiddleStart = Math.max(0, noteIds.length - middleCount);
+  const middleStart = Math.max(0, Math.min(anchorIndex - halfMiddle, maxMiddleStart));
+  const middleEnd = middleStart + middleCount;
+  const lowerEnd = middleStart;
+  const lowerStart = Math.max(0, lowerEnd - LOWER_ROW_KEYS.length);
+  const upperStart = middleEnd;
+  const upperEnd = Math.min(noteIds.length, upperStart + UPPER_ROW_KEYS.length);
+  const lowerOverflowEnd = lowerStart;
+  const lowerOverflowStart = Math.max(0, lowerOverflowEnd - LOWER_OVERFLOW_KEYS.length);
+  const upperOverflowStart = upperEnd;
+  const upperOverflowEnd = Math.min(
+    noteIds.length,
+    upperOverflowStart + UPPER_OVERFLOW_KEYS.length,
+  );
+
+  function assign(keys: string, start: number, end: number) {
+    let keyIdx = 0;
+    for (let noteIdx = start; noteIdx < end && keyIdx < keys.length; noteIdx += 1, keyIdx += 1) {
+      const hotkey = keys[keyIdx];
+      const noteId = noteIds[noteIdx];
+      noteByHotkey.set(hotkey, noteId);
+      hotkeyByNote.set(noteId, hotkey);
+    }
+  }
+
+  assign(LOWER_OVERFLOW_KEYS, lowerOverflowStart, lowerOverflowEnd);
+  assign(LOWER_ROW_KEYS, lowerStart, lowerEnd);
+  assign(MIDDLE_ROW_KEYS, middleStart, middleEnd);
+  assign(UPPER_ROW_KEYS, upperStart, upperEnd);
+  assign(UPPER_OVERFLOW_KEYS, upperOverflowStart, upperOverflowEnd);
+
+  return { noteByHotkey, hotkeyByNote };
+}
+
+function normalizeHotkey(key: string) {
+  return key.length === 1 ? key.toLowerCase() : "";
+}
+
+function resolveHotkey(event: KeyboardEvent) {
+  return HOTKEY_BY_CODE[event.code] ?? normalizeHotkey(event.key);
+}
+
+function isEditableElement(target: EventTarget | null) {
+  if (!(target instanceof HTMLElement)) {
+    return false;
+  }
+  if (target.isContentEditable) {
+    return true;
+  }
+  return ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName);
+}
 
 export interface KeyboardProps {
   height?: number;
   activeNotes?: Set<string>;
   onKeyOn?: (note: Note, velocity: number) => void;
-  onKeyOff?: (note: Note) => void;
+  onKeyOff?: (note: Note, options?: { immediate?: boolean }) => void;
 }
 
 export function Keyboard({ height, activeNotes, onKeyOn, onKeyOff }: KeyboardProps) {
@@ -20,13 +157,27 @@ export function Keyboard({ height, activeNotes, onKeyOn, onKeyOff }: KeyboardPro
 
   const layout = keyboardLayout.layout;
   const keyboardWidth = keyboardLayout.keyboardWidth;
-  const noteIds = layout.notes.map((note: string) => note.replace("#", "s"));
+  const noteIds = useMemo(
+    () => layout.notes.map((note: string) => note.replace("#", "s")),
+    [layout.notes],
+  );
+  const hotkeyMap = useMemo(() => buildHotkeyMap(noteIds), [noteIds]);
+  const hotkeyLegend = useMemo(
+    () => noteIds.map((id) => hotkeyMap.hotkeyByNote.get(id) ?? ""),
+    [hotkeyMap.hotkeyByNote, noteIds],
+  );
   const playerActiveNotes = new Set(player.activeNoteIds);
 
   const [dragging, setDragging] = useState(false);
   const [activeNote, setActiveNote] = useState<string | null>(null);
   const activeNoteRef = useRef<string | null>(null);
   const [detectedNotes, setDetectedNotes] = useState<Set<string>>(new Set());
+  const [showHotkeyHints, setShowHotkeyHints] = useState(false);
+  const [activeHotkeyNotes, setActiveHotkeyNotes] = useState<Set<string>>(new Set());
+  const pressedHotkeysRef = useRef(new Map<string, string>());
+  const hotkeyMapRef = useRef(hotkeyMap);
+  const onKeyOnRef = useRef(onKeyOn);
+  const onKeyOffRef = useRef(onKeyOff);
 
   const keyboardHeight = height ?? keyboardWidth / 10.0;
   const whiteKeyWidth = keyboardWidth / layout.whiteKeys.length;
@@ -47,7 +198,12 @@ export function Keyboard({ height, activeNotes, onKeyOn, onKeyOff }: KeyboardPro
   }
 
   function isActive(id: string) {
-    return activeNote === id || activeNotes?.has(id) === true || playerActiveNotes.has(id);
+    return (
+      activeNote === id ||
+      activeHotkeyNotes.has(id) ||
+      activeNotes?.has(id) === true ||
+      playerActiveNotes.has(id)
+    );
   }
 
   function isDetected(id: string) {
@@ -145,81 +301,190 @@ export function Keyboard({ height, activeNotes, onKeyOn, onKeyOff }: KeyboardPro
     setActiveNote(null);
   }
 
-  return (
-    <div
-      className={cn("w-full overflow-hidden border border-zinc-300 border-t-0")}
-      onMouseLeave={() => {
-        stopActiveNote();
-        setDragging(false);
-      }}
-    >
-      <ul
-        className={cn("m-0 flex flex-row items-start p-0")}
-        style={{ height: `${keyboardHeight}px`, width: `${keyboardWidth}px` }}
-      >
-        {noteIds.map((id: string) => {
-          const note = id.replace("s", "#") as Note;
-          const frequency = note2freq(note);
-          const midi = note2midi(note);
-          const keyId = midi !== null ? `k${midi}` : `k-${id}`;
+  useEffect(() => {
+    hotkeyMapRef.current = hotkeyMap;
+  }, [hotkeyMap]);
 
-          return (
-            <li
-              id={id}
-              key={id}
-              data-key-id={keyId}
-              data-note={note}
-              data-frequency={frequency.toFixed(2)}
-              data-midi={midi ?? undefined}
-              className={cn(
-                getKeyClass(id, midi),
-                "outline-none ring-0 focus:outline-none focus-visible:outline-none",
-                "focus:ring-0 focus-visible:ring-0 [-webkit-tap-highlight-color:transparent]",
-              )}
-              style={getKeyStyle(id)}
-              tabIndex={-1}
-              onMouseDown={(event) => {
-                event.preventDefault();
-                setDragging(true);
-                play(id);
-              }}
-              onMouseUp={() => {
-                setDragging(false);
-                stop(id);
-              }}
-              onMouseEnter={() => {
-                if (dragging) play(id);
-              }}
-              onMouseOut={() => {
-                if (dragging) stop(id);
-              }}
-              onTouchStart={(event) => {
-                event.preventDefault();
-                setDragging(true);
-                play(id);
-              }}
-              onTouchEnd={() => {
-                setDragging(false);
-                stop(id);
-              }}
-            >
-              <label
+  useEffect(() => {
+    onKeyOnRef.current = onKeyOn;
+    onKeyOffRef.current = onKeyOff;
+  }, [onKeyOff, onKeyOn]);
+
+  useEffect(() => {
+    function releaseHotkey(code: string) {
+      const noteId = pressedHotkeysRef.current.get(code);
+      if (!noteId) return;
+      pressedHotkeysRef.current.delete(code);
+      onKeyOffRef.current?.(noteId.replace("s", "#") as Note, { immediate: true });
+      setActiveHotkeyNotes((prev) => {
+        const next = new Set(prev);
+        next.delete(noteId);
+        return next;
+      });
+    }
+
+    function releaseAllHotkeys() {
+      const pressed = [...pressedHotkeysRef.current.entries()];
+      pressedHotkeysRef.current.clear();
+      if (pressed.length === 0) return;
+
+      setActiveHotkeyNotes(new Set());
+      for (const [, noteId] of pressed) {
+        onKeyOffRef.current?.(noteId.replace("s", "#") as Note, { immediate: true });
+      }
+    }
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.repeat || event.metaKey || event.ctrlKey || event.altKey) {
+        return;
+      }
+      if (isEditableElement(event.target)) {
+        return;
+      }
+
+      const hotkey = resolveHotkey(event);
+      if (!hotkey) return;
+      const noteId = hotkeyMapRef.current.noteByHotkey.get(hotkey);
+      if (!noteId) return;
+      if (pressedHotkeysRef.current.has(event.code)) return;
+
+      pressedHotkeysRef.current.set(event.code, noteId);
+      onKeyOnRef.current?.(noteId.replace("s", "#") as Note, 1);
+      setActiveHotkeyNotes((prev) => {
+        const next = new Set(prev);
+        next.add(noteId);
+        return next;
+      });
+      event.preventDefault();
+    }
+
+    function onKeyUp(event: KeyboardEvent) {
+      releaseHotkey(event.code);
+    }
+
+    function onBlur() {
+      releaseAllHotkeys();
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
+    window.addEventListener("blur", onBlur);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keyup", onKeyUp);
+      window.removeEventListener("blur", onBlur);
+      releaseAllHotkeys();
+    };
+  }, []);
+
+  return (
+    <div className={cn("w-full")}>
+      <div
+        className={cn("w-full overflow-hidden border border-zinc-300 border-t-0")}
+        onMouseLeave={() => {
+          stopActiveNote();
+          setDragging(false);
+        }}
+      >
+        <ul
+          className={cn("m-0 flex flex-row items-start p-0")}
+          style={{ height: `${keyboardHeight}px`, width: `${keyboardWidth}px` }}
+        >
+          {noteIds.map((id: string) => {
+            const note = id.replace("s", "#") as Note;
+            const frequency = note2freq(note);
+            const midi = note2midi(note);
+            const keyId = midi !== null ? `k${midi}` : `k-${id}`;
+
+            return (
+              <li
+                id={id}
+                key={id}
+                data-key-id={keyId}
+                data-note={note}
+                data-frequency={frequency.toFixed(2)}
+                data-midi={midi ?? undefined}
                 className={cn(
-                  "pointer-events-none absolute top-[calc(100%-30px)] bg-transparent",
-                  "px-0.5 text-center text-[10px] text-zinc-400",
-                  isBlack(id)
-                    ? "w-auto border border-zinc-400 bg-white px-1 py-0.5 text-zinc-500"
-                    : "w-full",
-                  shouldShowLabel(id) ? "block" : "hidden group-hover:block",
+                  getKeyClass(id, midi),
+                  "outline-none ring-0 focus:outline-none focus-visible:outline-none",
+                  "focus:ring-0 focus-visible:ring-0 [-webkit-tap-highlight-color:transparent]",
                 )}
+                style={getKeyStyle(id)}
+                tabIndex={-1}
+                onMouseDown={(event) => {
+                  event.preventDefault();
+                  setDragging(true);
+                  play(id);
+                }}
+                onMouseUp={() => {
+                  setDragging(false);
+                  stop(id);
+                }}
+                onMouseEnter={() => {
+                  if (dragging) play(id);
+                }}
+                onMouseOut={() => {
+                  if (dragging) stop(id);
+                }}
+                onTouchStart={(event) => {
+                  event.preventDefault();
+                  setDragging(true);
+                  play(id);
+                }}
+                onTouchEnd={() => {
+                  setDragging(false);
+                  stop(id);
+                }}
               >
-                <div>{note}</div>
-                <div>{frequency.toFixed(0)}</div>
-              </label>
-            </li>
-          );
-        })}
-      </ul>
+                <label
+                  className={cn(
+                    "pointer-events-none absolute top-[calc(100%-30px)] bg-transparent",
+                    "px-0.5 text-center text-[10px] text-zinc-400",
+                    isBlack(id)
+                      ? "w-auto border border-zinc-400 bg-white px-1 py-0.5 text-zinc-500"
+                      : "w-full",
+                    shouldShowLabel(id) ? "block" : "hidden group-hover:block",
+                  )}
+                >
+                  <div>{note}</div>
+                  <div>{frequency.toFixed(0)}</div>
+                </label>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+      <div className={cn("mt-1 flex items-center gap-2")}>
+        <div
+          className={cn(
+            "min-w-0 flex-1 overflow-x-auto whitespace-nowrap",
+            "font-mono text-[14px] leading-none text-zinc-900",
+            showHotkeyHints ? "opacity-100" : "opacity-0",
+          )}
+          aria-hidden={!showHotkeyHints}
+        >
+          {hotkeyLegend.map((hotkey, index) => (
+            <span
+              key={`${noteIds[index]}-${hotkey}`}
+              className={cn("inline-block min-w-[12px] px-0.5 text-center")}
+            >
+              {hotkey}
+            </span>
+          ))}
+        </div>
+        <button
+          type="button"
+          className={cn(
+            "rounded border border-transparent bg-transparent px-1 py-0",
+            "font-mono text-[11px] text-zinc-500 underline decoration-dotted",
+            "hover:text-zinc-700 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-400",
+          )}
+          onClick={() => setShowHotkeyHints((current) => !current)}
+          aria-pressed={showHotkeyHints}
+        >
+          {showHotkeyHints ? "Hide hotkeys" : "Show hotkeys"}
+        </button>
+      </div>
     </div>
   );
 }

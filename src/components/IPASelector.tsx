@@ -1,12 +1,7 @@
 import { useMemo, useState } from "react";
 import { SquareArrowOutUpRight, X } from "lucide-react";
 import { useAppContext } from "@/store";
-import {
-  COMMON_IPA,
-  COMMON_IPA_DETAILS,
-  type CommonIPAPlacement,
-  IPA_WORDS,
-} from "@/constants";
+import { COMMON_IPA, COMMON_IPA_DETAILS, type CommonIPAPlacement, IPA_WORDS } from "@/constants";
 import { cn } from "@/lib/cn";
 import type { IPAType } from "@/types";
 import { Label } from "@/components/ui/label";

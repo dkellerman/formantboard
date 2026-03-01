@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { VOWELS } from "@/constants";
-import type { FormantboardAPI, FormantboardJSONPayload } from "@/types";
+import type { FormantboardAPI, FormantboardJSONPayload, FormantboardLoopSetting } from "@/types";
 
 type ChatCompletionsResponse = {
   output?: Array<{
@@ -24,12 +24,20 @@ const SYSTEM_PROMPT = `
   Search authoritative notation sources when needed.
   Every note must include note, time, dur, and vowel.
   Use only supported IPA vowels.
+  Include root "loop" only when looping is requested.
 `.trim();
 
 const RESPONSE_PAYLOAD_SCHEMA = {
   type: "object",
   additionalProperties: false,
   properties: {
+    loop: {
+      anyOf: [
+        { type: "boolean" },
+        { type: "integer", minimum: 1 },
+        { type: "string", enum: ["infinite"] },
+      ],
+    },
     notes: {
       type: "array",
       items: {
@@ -55,6 +63,8 @@ function buildUserPrompt(prompt: string) {
 
     Output format:
     - Return JSON matching this shape exactly: {"notes":[{"note":60,"time":0,"dur":1,"vowel":"ɑ"}]}
+    - Optional root field: "loop" (false/true, positive integer, or "infinite").
+    - Only include "loop" if looping is explicitly requested.
     - Use MIDI note numbers for note.
     - Use beat units for time and dur.
     - Start the first note at time 0.
@@ -67,6 +77,38 @@ function buildUserPrompt(prompt: string) {
     3. Do not improvise unless the prompt explicitly asks for variation.
     4. Do not substitute scales or exercises for named songs.
   `.trim();
+}
+
+export function deriveLoopFromPrompt(prompt: string): FormantboardLoopSetting | undefined {
+  const normalized = prompt.toLowerCase();
+  const hasLoopWord = /\bloop(?:ing|ed|s)?\b/.test(normalized);
+  if (!hasLoopWord) return undefined;
+
+  if (
+    /\b(?:don't|do not|dont|without|no)\s+loop(?:ing|ed|s)?\b/.test(normalized) ||
+    /\bno\s+loop\b/.test(normalized)
+  ) {
+    return false;
+  }
+
+  const countPatterns = [
+    /\bloop(?:\s+\w+){0,6}\s+(\d+)\s*(?:x|times?)\b/,
+    /\bloop\s+(\d+)\b/,
+    /\b(\d+)\s*(?:x|times?)\s*(?:in\s+)?(?:a\s+)?loop\b/,
+    /\brepeat\s+(\d+)\s*(?:x|times?)\b/,
+  ];
+  for (const pattern of countPatterns) {
+    const match = normalized.match(pattern);
+    const parsed = Number(match?.[1] ?? NaN);
+    if (Number.isInteger(parsed) && parsed > 0) return parsed;
+  }
+
+  if (/\bonce\b/.test(normalized)) return 1;
+  if (/\b(?:forever|infinite(?:ly)?|endless(?:ly)?|indefinite(?:ly)?)\b/.test(normalized)) {
+    return "infinite";
+  }
+
+  return "infinite";
 }
 
 function extractOutputText(data: ChatCompletionsResponse) {
@@ -105,7 +147,7 @@ async function requestPayloadFromModel(params: {
           type: "json_schema",
           name: "formantboard_payload",
           schema: RESPONSE_PAYLOAD_SCHEMA,
-          strict: true,
+          strict: false,
         },
       },
       input: [
@@ -166,6 +208,9 @@ export function usePromptToPayload({ onPayloadReady, onStatusChange }: UsePrompt
           user,
           temperature: 0,
         });
+
+        const inferredLoop = deriveLoopFromPrompt(prompt);
+        parsed.loop = inferredLoop ?? false;
 
         const validation = fb.validateFromJSON(parsed);
         if (!validation.ok) {

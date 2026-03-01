@@ -59,6 +59,7 @@ describe("formantboard API validation", () => {
   it("normalizes canonical fromJSON payload into play events", () => {
     const result = validateJSONPayloadInput({
       bpm: 100,
+      loop: 3,
       voice: { vowel: "ə", volume: 0.8 },
       notes: [
         {
@@ -74,6 +75,7 @@ describe("formantboard API validation", () => {
     expect(result.ok).toBe(true);
     if (!result.ok) throw new Error(result.error);
     expect(result.value.bpm).toBe(100);
+    expect(result.value.loop).toBe(3);
     expect(result.value.voice?.vowel).toBe("ə");
     expect(result.value.notes[0]).toEqual(
       expect.objectContaining({
@@ -115,6 +117,28 @@ describe("formantboard API validation", () => {
         formants: [{ index: 2, gain: 12 }],
       }),
     );
+  });
+
+  it("accepts infinite loop modes in fromJSON payloads", () => {
+    const result = validateJSONPayloadInput({
+      loop: "infinite",
+      notes: [{ note: 60, time: 0, dur: 0.5 }],
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error(result.error);
+    expect(result.value.loop).toBe("infinite");
+  });
+
+  it("rejects invalid loop values in fromJSON payloads", () => {
+    const result = validateJSONPayloadInput({
+      loop: 0,
+      notes: [{ note: 60, time: 0, dur: 0.5 }],
+    });
+
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error("Expected validation to fail");
+    expect(result.error).toContain("payload.loop");
   });
 
   it("rejects conflicting canonical and legacy alias values", () => {
