@@ -48,7 +48,7 @@ export function HomePage() {
   const handlePromptStatusChange = useCallback((status: string) => {
     setAiPasteStatus(status);
   }, []);
-  const { llmGenerating, generateAndPlayFromPrompt } = usePromptToPayload({
+  const { llmGenerating, generateAndPlayFromPrompt, cancelPromptGeneration } = usePromptToPayload({
     onPayloadReady: handlePromptPayloadReady,
     onStatusChange: handlePromptStatusChange,
   });
@@ -131,7 +131,13 @@ export function HomePage() {
           variant={showAIPrompt || aiStopMode ? "secondary" : "outline"}
           onClick={() => {
             if (aiStopMode) {
-              player.stopApiPlayback();
+              cancelPromptGeneration();
+              const fb = (window as Window & { fb?: FormantboardAPI }).fb;
+              if (fb) {
+                fb.stop();
+              } else {
+                player.stopApiPlayback();
+              }
               setAiPasteStatus("Stopped API playback.");
               return;
             }
@@ -154,7 +160,10 @@ export function HomePage() {
         <AIPromptInput
           isLoading={llmGenerating}
           onSubmitPrompt={generateAndPlayFromPrompt}
-          onRequestClose={() => setShowAIPrompt(false)}
+          onRequestClose={() => {
+            cancelPromptGeneration();
+            setShowAIPrompt(false);
+          }}
         />
       ) : null}
 

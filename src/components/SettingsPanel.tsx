@@ -672,7 +672,7 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
       </div>
 
       <label className={cn("flex w-[130px] max-w-full min-w-0 flex-col gap-1")}>
-        <Label className={cn("text-xs font-normal text-muted-foreground")}>Visualzation</Label>
+        <Label className={cn("text-xs font-normal text-muted-foreground")}>Visualization</Label>
         <Select
           value={String(visType)}
           onValueChange={(value) => {

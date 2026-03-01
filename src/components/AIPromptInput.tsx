@@ -77,7 +77,10 @@ export function AIPromptInput({
             autoFocus
             value={prompt}
             onChange={(event) => setPrompt(event.target.value)}
-            placeholder="Play a C major scale alternating between ee and ah sounds"
+            placeholder={
+              "Loop a C major scale up and down quickly, " +
+              "alternating between ee and ah sounds"
+            }
           />
           <div className={cn("mt-3 flex justify-end gap-2 border-t border-border pt-3")}>
             <Button type="button" variant="outline" onClick={onRequestClose}>

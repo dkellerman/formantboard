@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { VOWELS } from "@/constants";
 import type { FormantboardAPI, FormantboardJSONPayload, FormantboardLoopSetting } from "@/types";
 
@@ -131,9 +131,11 @@ async function requestPayloadFromModel(params: {
   system: string;
   user: string;
   temperature: number;
+  signal?: AbortSignal;
 }): Promise<FormantboardJSONPayload> {
   const response = await fetch("https://api.openai.com/v1/responses", {
     method: "POST",
+    signal: params.signal,
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${params.apiKey}`,
@@ -173,6 +175,17 @@ async function requestPayloadFromModel(params: {
 
 export function usePromptToPayload({ onPayloadReady, onStatusChange }: UsePromptToPayloadOptions) {
   const [llmGenerating, setLlmGenerating] = useState(false);
+  const activeRequestIdRef = useRef(0);
+  const abortControllerRef = useRef<AbortController | undefined>(undefined);
+
+  const cancelPromptGeneration = useCallback(() => {
+    activeRequestIdRef.current += 1;
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = undefined;
+    }
+    setLlmGenerating(false);
+  }, []);
 
   const generateAndPlayFromPrompt = useCallback(
     async (rawPrompt: string) => {
@@ -194,7 +207,12 @@ export function usePromptToPayload({ onPayloadReady, onStatusChange }: UsePrompt
         return;
       }
 
+      cancelPromptGeneration();
       setLlmGenerating(true);
+      const requestId = activeRequestIdRef.current + 1;
+      activeRequestIdRef.current = requestId;
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
 
       try {
         const model =
@@ -207,7 +225,12 @@ export function usePromptToPayload({ onPayloadReady, onStatusChange }: UsePrompt
           system: SYSTEM_PROMPT,
           user,
           temperature: 0,
+          signal: controller.signal,
         });
+
+        if (requestId !== activeRequestIdRef.current) {
+          return;
+        }
 
         const inferredLoop = deriveLoopFromPrompt(prompt);
         parsed.loop = inferredLoop ?? false;
@@ -222,18 +245,29 @@ export function usePromptToPayload({ onPayloadReady, onStatusChange }: UsePrompt
         onPayloadReady(pretty);
         onStatusChange(`Scheduled ${parsed.notes.length} note event(s).`);
       } catch (error) {
+        if (requestId !== activeRequestIdRef.current) {
+          return;
+        }
+        if (error instanceof Error && error.name === "AbortError") {
+          onStatusChange("Prompt canceled.");
+          return;
+        }
         const message = error instanceof Error ? error.message : "Unknown LLM error.";
         onStatusChange(`LLM error: ${message}`);
         console.error(error);
       } finally {
-        setLlmGenerating(false);
+        if (requestId === activeRequestIdRef.current) {
+          setLlmGenerating(false);
+          abortControllerRef.current = undefined;
+        }
       }
     },
-    [onPayloadReady, onStatusChange],
+    [cancelPromptGeneration, onPayloadReady, onStatusChange],
   );
 
   return {
     llmGenerating,
     generateAndPlayFromPrompt,
+    cancelPromptGeneration,
   };
 }

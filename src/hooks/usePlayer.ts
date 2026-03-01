@@ -532,11 +532,20 @@ export function usePlayer(): PlayerState {
 
   function stopApiPlayback() {
     const releaseAt = runtime.audioContext.currentTime + RELEASE_RETRIGGER_SECONDS;
-    Object.keys(runtime.playing).forEach((key) => {
-      runtime.playing[Number(key)]?.({ releaseAt });
+    const apiVoices = Object.values(runtime.voices).filter((voice) => voice.source === "api");
+    const apiStops = new Set(apiVoices.map((voice) => voice.stopVoice));
+
+    apiVoices.forEach((voice) => {
+      voice.stopVoice({ releaseAt, immediate: true });
+      scheduleVoiceDeactivation(voice.id, 0);
     });
-    Object.values(runtime.voices).forEach((voice) => {
-      scheduleVoiceDeactivation(voice.id, RELEASE_RETRIGGER_SECONDS);
+
+    Object.keys(runtime.playing).forEach((key) => {
+      const frequency = Number(key);
+      const stopVoice = runtime.playing[frequency];
+      if (stopVoice && apiStops.has(stopVoice)) {
+        delete runtime.playing[frequency];
+      }
     });
   }
 
