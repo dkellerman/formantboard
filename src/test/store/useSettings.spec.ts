@@ -16,6 +16,9 @@ describe("useAppStore core slices", () => {
     expect(settings.defaultVisType).toBe(VisType.POWER);
     expect(settings.audioContextConfig.sampleRate).toBe(44100);
     expect(settings.formants.ipa[IPA.ɑ]).toHaveLength(3);
+    expect(settings.formants.cascadePctDefault).toBeCloseTo(0.5);
+    expect(settings.formants.cascadePctByIPA[IPA.ɑ]).toBeUndefined();
+    expect(settings.formants.compensation.on).toBe(true);
     expect(metrics.sampleRate).toBe(44100);
     expect(metrics.freqData).toBeInstanceOf(Uint8Array);
     expect(metrics.timeData).toBeInstanceOf(Uint8Array);

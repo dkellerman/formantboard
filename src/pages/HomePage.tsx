@@ -38,6 +38,7 @@ export function HomePage() {
   const [apiPayload, setApiPayload] = useState("");
   const [apiPayloadSeeded, setApiPayloadSeeded] = useState(false);
   const [aiPasteStatus, setAiPasteStatus] = useState("Ready.");
+  const [showAIPrompt, setShowAIPrompt] = useState(false);
 
   const handlePromptPayloadReady = useCallback((prettyPayload: string) => {
     setApiPayload(prettyPayload);
@@ -124,17 +125,26 @@ export function HomePage() {
         >
           API
         </Button>
+        <Button
+          variant={showAIPrompt ? "secondary" : "outline"}
+          onClick={() => setShowAIPrompt((current) => !current)}
+          aria-pressed={showAIPrompt}
+        >
+          AI Prompt
+        </Button>
       </div>
       <Readout />
-      <AIPromptInput
-        isLoading={llmGenerating}
-        isPlaying={playerState.isApiPlaying}
-        onSubmitPrompt={generateAndPlayFromPrompt}
-        onStopPlayback={() => {
-          player.stopApiPlayback();
-          setAiPasteStatus("Stopped API playback.");
-        }}
-      />
+      {showAIPrompt ? (
+        <AIPromptInput
+          isLoading={llmGenerating}
+          isPlaying={playerState.isApiPlaying}
+          onSubmitPrompt={generateAndPlayFromPrompt}
+          onStopPlayback={() => {
+            player.stopApiPlayback();
+            setAiPasteStatus("Stopped API playback.");
+          }}
+        />
+      ) : null}
 
       {apiModalOpen ? (
         <div className={cn("fixed inset-0 z-[70] flex items-center justify-center")}>

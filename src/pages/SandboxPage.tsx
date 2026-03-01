@@ -4,6 +4,7 @@ import {
   ALL_IPA,
   COMMON_IPA,
   CONSONANTS,
+  DEFAULT_FORMANT_CASCADE_PCT,
   F0_OSC_SOURCE_TYPES,
   F0_SOURCE_OSC,
   F0_SOURCES,
@@ -191,7 +192,20 @@ export function SandboxPage() {
   const sourceTypes: SelectControlItem[] =
     settings.f0.source === F0_SOURCE_OSC ? [...F0_OSC_SOURCE_TYPES] : [];
 
-  const { flutter, harmonics, compression, vibrato, f0 } = settings;
+  const { flutter, harmonics, compression, vibrato, f0, formants } = settings;
+  const cascadePctDefault = Math.max(
+    0,
+    Math.min(1, formants.cascadePctDefault ?? DEFAULT_FORMANT_CASCADE_PCT),
+  );
+  const cascadePctForIPA = Math.max(
+    0,
+    Math.min(1, formants.cascadePctByIPA?.[ipa] ?? cascadePctDefault),
+  );
+
+  function normalizeCascadePct(value: number) {
+    const next = Number.isFinite(value) ? value : 0;
+    return Math.max(0, Math.min(1, next));
+  }
 
   function restartF0() {
     setRestartSignal((current) => current + 1);
@@ -320,6 +334,36 @@ export function SandboxPage() {
           [ipa]: current.formants.ipa[ipa].map((formant, i) =>
             i === idx ? { ...formant, gain: value } : formant,
           ),
+        },
+      },
+    }));
+  }
+  function setFormantCompensationOn(value: boolean) {
+    setSettings((current) => ({
+      ...current,
+      formants: {
+        ...current.formants,
+        compensation: { ...current.formants.compensation, on: value },
+      },
+    }));
+  }
+  function setFormantCascadePctDefault(value: number) {
+    setSettings((current) => ({
+      ...current,
+      formants: {
+        ...current.formants,
+        cascadePctDefault: normalizeCascadePct(value),
+      },
+    }));
+  }
+  function setFormantCascadePctForIPA(value: number) {
+    setSettings((current) => ({
+      ...current,
+      formants: {
+        ...current.formants,
+        cascadePctByIPA: {
+          ...(current.formants.cascadePctByIPA ?? {}),
+          [ipa]: normalizeCascadePct(value),
         },
       },
     }));
@@ -707,12 +751,49 @@ export function SandboxPage() {
       >
         <div className={cn("min-w-[170px] pt-1 font-medium text-zinc-900")}>Formants</div>
         <div className={cn("flex flex-wrap gap-3")}>
+          <div className={cn("flex h-11 items-center pt-4")}>
+            <SwitchControl
+              label="Compensation"
+              modelValue={formants.compensation.on}
+              onUpdateModelValue={(value) => {
+                setFormantCompensationOn(value);
+              }}
+              onChange={restartF0}
+            />
+          </div>
+          <NumberControl
+            className="w-[170px]"
+            label="Cascade % default"
+            modelValue={Math.round(cascadePctDefault * 100)}
+            min={0}
+            max={100}
+            step={1}
+            suffix="%"
+            onUpdateModelValue={(v) => {
+              setFormantCascadePctDefault(Number(v) / 100);
+            }}
+            onChange={restartF0}
+          />
+          <NumberControl
+            className="w-[170px]"
+            label="Cascade % this IPA"
+            modelValue={Math.round(cascadePctForIPA * 100)}
+            min={0}
+            max={100}
+            step={1}
+            suffix="%"
+            onUpdateModelValue={(v) => {
+              setFormantCascadePctForIPA(Number(v) / 100);
+            }}
+            onChange={restartF0}
+          />
           <IPASelector
             className="w-[200px]"
             onChange={restartF0}
             ipaSet={ALL_IPA}
             value={ipa}
             onSelect={setIPA}
+            showPopout={false}
           />
           <IPASelector
             className="w-[200px]"
@@ -721,6 +802,7 @@ export function SandboxPage() {
             title="Common"
             value={ipa}
             onSelect={setIPA}
+            showPopout={false}
           />
           <IPASelector
             className="w-[200px]"
@@ -729,6 +811,7 @@ export function SandboxPage() {
             title="Vowels"
             value={ipa}
             onSelect={setIPA}
+            showPopout={false}
           />
           <IPASelector
             className="w-[200px]"
@@ -737,6 +820,7 @@ export function SandboxPage() {
             title="Consonants"
             value={ipa}
             onSelect={setIPA}
+            showPopout={false}
           />
           <IPASelector
             className="w-[200px]"
@@ -745,6 +829,7 @@ export function SandboxPage() {
             title="Fricatives"
             value={ipa}
             onSelect={setIPA}
+            showPopout={false}
           />
         </div>
       </fieldset>

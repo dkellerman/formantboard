@@ -148,6 +148,14 @@ export const F0_OSC_SOURCE_TYPES = [
   { title: "Square", value: OSC_TYPE_SQUARE },
 ] as const;
 
+export const FORMANT_TOPOLOGY_PARALLEL = "parallel";
+export const FORMANT_TOPOLOGY_CASCADE = "cascade";
+export const FORMANT_TOPOLOGIES = [
+  { title: "Parallel", value: FORMANT_TOPOLOGY_PARALLEL },
+  { title: "Cascade", value: FORMANT_TOPOLOGY_CASCADE },
+] as const;
+export const DEFAULT_FORMANT_CASCADE_PCT = 0.5;
+
 const compressorDefaults = new DynamicsCompressorNode(new AudioContext());
 const formantDefaults = { on: true, Q: 10, gain: 20 };
 
@@ -191,10 +199,10 @@ export function createDefaultSettings() {
     },
     vibrato: {
       on: true,
-      rate: 5,
-      extent: 2.0,
-      jitter: 0.0,
-      onsetTime: 0.5,
+      rate: 3,
+      extent: 1.0,
+      jitter: 0.2,
+      onsetTime: 0.2,
     },
     compression: {
       on: false,
@@ -213,6 +221,13 @@ export function createDefaultSettings() {
     },
     formants: {
       on: true,
+      cascadePctDefault: DEFAULT_FORMANT_CASCADE_PCT,
+      cascadePctByIPA: {} as Partial<Record<(typeof IPA)[keyof typeof IPA], number>>,
+      compensation: {
+        on: true,
+        maxBoostDb: 18,
+        maxCutDb: 18,
+      },
       ipa: {
         [IPA.ɑ]: [
           { ...formantDefaults, frequency: 800 },

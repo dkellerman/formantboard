@@ -1,10 +1,9 @@
 import regression from "regression";
 import { useAppContext } from "@/store";
-import { F0_SOURCE_NOISE } from "@/constants";
+import { DEFAULT_FORMANT_CASCADE_PCT, F0_SOURCE_NOISE } from "@/constants";
 import {
   CAP_FREQ,
   clamp,
-  createFormants,
   createHarmonics,
   createWhiteNoise,
   db2gain,
@@ -15,6 +14,224 @@ import {
   type Note,
 } from "@/utils";
 import type { HarmonicFrame, MetricsData, PlayerNoteOptions, PlayerState } from "@/types";
+
+type FormantTopology = "parallel" | "cascade";
+type FormantLike = {
+  on: boolean;
+  frequency: number;
+  Q: number;
+  gain: number;
+};
+
+const COMPENSATION_SAMPLE_COUNT = 96;
+const COMPENSATION_MIN_HZ = 80;
+const COMPENSATION_MAX_HZ = 8000;
+const COMPENSATION_BODY_MIN_HZ = 120;
+const COMPENSATION_BODY_MAX_HZ = 1400;
+const COMPENSATION_AIR_MIN_HZ = 1600;
+const COMPENSATION_AIR_MAX_HZ = 6000;
+const COMPENSATION_BODY_SHELF_HZ = 320;
+const COMPENSATION_BODY_SHELF_MAX_DB = 8;
+
+function toBiquadQ(formantQ: number) {
+  return Math.max(0.0001, formantQ / 10);
+}
+
+function complexMultiply(ar: number, ai: number, br: number, bi: number): [number, number] {
+  return [ar * br - ai * bi, ar * bi + ai * br];
+}
+
+function computeCombinedResponseRms(
+  mags: Float32Array[],
+  phases: Float32Array[],
+  topology: FormantTopology,
+  cascadePct = 1,
+  frequencies?: Float32Array,
+  minHz = Number.NEGATIVE_INFINITY,
+  maxHz = Number.POSITIVE_INFINITY,
+) {
+  if (mags.length === 0) return 1;
+  const bins = mags[0]?.length ?? 0;
+  if (bins === 0) return 1;
+
+  let sumSquares = 0;
+  let includedBins = 0;
+  const mix = clamp(cascadePct, 0, 1);
+  for (let i = 0; i < bins; i += 1) {
+    const hz = frequencies?.[i];
+    if (hz !== undefined && (hz < minHz || hz > maxHz)) continue;
+    let parallelRe = 0;
+    let parallelIm = 0;
+    let cascadeRe = 1;
+    let cascadeIm = 0;
+    for (let j = 0; j < mags.length; j += 1) {
+      const mag = mags[j][i];
+      const phase = phases[j][i];
+      const fr = mag * Math.cos(phase);
+      const fi = mag * Math.sin(phase);
+      parallelRe += fr;
+      parallelIm += fi;
+      [cascadeRe, cascadeIm] = complexMultiply(cascadeRe, cascadeIm, fr, fi);
+    }
+    let re = parallelRe;
+    let im = parallelIm;
+    if (topology === "cascade") {
+      re = cascadeRe * mix + parallelRe * (1 - mix);
+      im = cascadeIm * mix + parallelIm * (1 - mix);
+    }
+    const magnitude = Math.max(1e-6, Math.hypot(re, im));
+    sumSquares += magnitude * magnitude;
+    includedBins += 1;
+  }
+  if (includedBins === 0) return 1;
+  return Math.sqrt(sumSquares / includedBins);
+}
+
+function createLogFrequencyGrid(sampleRate: number, count = COMPENSATION_SAMPLE_COUNT) {
+  const maxNyquist = Math.max(COMPENSATION_MIN_HZ + 1, sampleRate / 2 - 100);
+  const maxHz = Math.min(COMPENSATION_MAX_HZ, maxNyquist);
+  const points = new Float32Array(count);
+  const minLog = Math.log10(COMPENSATION_MIN_HZ);
+  const maxLog = Math.log10(maxHz);
+  for (let i = 0; i < count; i += 1) {
+    const pct = count <= 1 ? 0 : i / (count - 1);
+    points[i] = Math.pow(10, minLog + (maxLog - minLog) * pct);
+  }
+  return points;
+}
+
+function connectFormantNodes(
+  input: AudioNode,
+  formants: BiquadFilterNode[],
+  output: AudioNode,
+  topology: FormantTopology,
+) {
+  if (formants.length === 0) {
+    input.connect(output);
+    return;
+  }
+
+  if (topology === "parallel") {
+    formants.forEach((formant) => {
+      input.connect(formant);
+      formant.connect(output);
+    });
+    return;
+  }
+
+  let cursor: AudioNode = input;
+  formants.forEach((formant) => {
+    cursor.connect(formant);
+    cursor = formant;
+  });
+  cursor.connect(output);
+}
+
+function computeDynamicCompensationGain(
+  ctx: AudioContext,
+  formants: FormantLike[],
+  cascadePct: number,
+  enabled: boolean,
+  maxBoostDb = 18,
+  maxCutDb = 18,
+) {
+  if (!enabled) {
+    return { gain: 1, bodyBoostDb: 0 };
+  }
+  const active = formants.filter((formant) => formant.on && formant.frequency > 0);
+  if (active.length === 0) {
+    return { gain: 1, bodyBoostDb: 0 };
+  }
+
+  const frequencies = createLogFrequencyGrid(ctx.sampleRate);
+  const probes = active.map(
+    (formant) =>
+      new BiquadFilterNode(ctx, {
+        type: "peaking",
+        frequency: formant.frequency,
+        Q: toBiquadQ(formant.Q),
+        gain: formant.gain,
+      }),
+  );
+  if (probes.some((probe) => typeof probe.getFrequencyResponse !== "function")) {
+    return { gain: 1, bodyBoostDb: 0 };
+  }
+  const mags = probes.map(() => new Float32Array(frequencies.length));
+  const phases = probes.map(() => new Float32Array(frequencies.length));
+  probes.forEach((probe, idx) => {
+    probe.getFrequencyResponse(frequencies, mags[idx], phases[idx]);
+  });
+
+  const legacyParallelRms = computeCombinedResponseRms(mags, phases, "parallel", 0);
+  const currentTopologyRms = computeCombinedResponseRms(mags, phases, "cascade", cascadePct);
+  const legacyBodyRms = computeCombinedResponseRms(
+    mags,
+    phases,
+    "parallel",
+    0,
+    frequencies,
+    COMPENSATION_BODY_MIN_HZ,
+    COMPENSATION_BODY_MAX_HZ,
+  );
+  const currentBodyRms = computeCombinedResponseRms(
+    mags,
+    phases,
+    "cascade",
+    cascadePct,
+    frequencies,
+    COMPENSATION_BODY_MIN_HZ,
+    COMPENSATION_BODY_MAX_HZ,
+  );
+  const legacyAirRms = computeCombinedResponseRms(
+    mags,
+    phases,
+    "parallel",
+    0,
+    frequencies,
+    COMPENSATION_AIR_MIN_HZ,
+    COMPENSATION_AIR_MAX_HZ,
+  );
+  const currentAirRms = computeCombinedResponseRms(
+    mags,
+    phases,
+    "cascade",
+    cascadePct,
+    frequencies,
+    COMPENSATION_AIR_MIN_HZ,
+    COMPENSATION_AIR_MAX_HZ,
+  );
+  if (
+    !Number.isFinite(legacyParallelRms) ||
+    !Number.isFinite(currentTopologyRms) ||
+    !Number.isFinite(legacyBodyRms) ||
+    !Number.isFinite(currentBodyRms) ||
+    !Number.isFinite(legacyAirRms) ||
+    !Number.isFinite(currentAirRms) ||
+    legacyParallelRms <= 0 ||
+    currentTopologyRms <= 0 ||
+    legacyBodyRms <= 0 ||
+    currentBodyRms <= 0 ||
+    legacyAirRms <= 0 ||
+    currentAirRms <= 0
+  ) {
+    return { gain: 1, bodyBoostDb: 0 };
+  }
+
+  const fullBandDb = 20 * Math.log10(legacyParallelRms / currentTopologyRms);
+  const bodyBandDb = 20 * Math.log10(legacyBodyRms / currentBodyRms);
+
+  // Makeup mode: preserve old loudness/body, avoid attenuation that can sound thin.
+  const targetDb = Math.max(0, fullBandDb, bodyBandDb);
+  const clampedDb = clamp(targetDb, -Math.abs(maxCutDb), Math.abs(maxBoostDb));
+  const gain = db2gain(clampedDb);
+
+  // Restore low-mid body if cascade tilts too bright relative to legacy parallel.
+  const legacyBodyRatioDb = 20 * Math.log10(legacyBodyRms / legacyAirRms);
+  const currentBodyRatioDb = 20 * Math.log10(currentBodyRms / currentAirRms);
+  const bodyDeltaDb = legacyBodyRatioDb - currentBodyRatioDb;
+  const bodyBoostDb = clamp(bodyDeltaDb * 0.8, 0, COMPENSATION_BODY_SHELF_MAX_DB);
+  return { gain, bodyBoostDb };
+}
 
 export function usePlayer(): PlayerState {
   const { settings, ipa, setMetrics, player, setPlayer, playerRuntimeRef } = useAppContext();
@@ -111,7 +328,7 @@ export function usePlayer(): PlayerState {
     const { sourceType, source, sourceGain, controlSource } = createSource(frequency);
     applyHarmonics(source, sourceType, frequency, harmonicTilt);
     applyFlutter(source);
-    const vibratoOsc = createVibrato(source);
+    const vibratoOsc = createVibrato(source, startTime);
     const formantsGain = connectFormants(sourceGain, activeIpa, formantOverrides);
     connectOutput(formantsGain);
 
@@ -361,13 +578,23 @@ export function usePlayer(): PlayerState {
     }
   }
 
-  function createVibrato(source: AudioScheduledSourceNode) {
+  function createVibrato(source: AudioScheduledSourceNode, startTime: number) {
     let vibratoOsc: OscillatorNode | null = null;
     if (settings.vibrato.on && source instanceof OscillatorNode) {
       vibratoOsc = new OscillatorNode(runtime.audioContext, { frequency: settings.vibrato.rate });
       const vibratoGain = new GainNode(runtime.audioContext, { gain: 0 });
       vibratoOsc.connect(vibratoGain);
       vibratoGain.connect(source.frequency);
+      const extentHz = Math.max(0, settings.vibrato.extent);
+      const onsetSec = Math.max(0, settings.vibrato.onsetTime);
+      vibratoGain.gain.cancelScheduledValues(startTime);
+      vibratoGain.gain.setValueAtTime(0, startTime);
+      if (onsetSec > 0) {
+        vibratoGain.gain.linearRampToValueAtTime(extentHz, startTime + onsetSec);
+      } else {
+        vibratoGain.gain.setValueAtTime(extentHz, startTime);
+      }
+      vibratoOsc.start(startTime);
       if (settings.vibrato.jitter) {
         const vibratoJitter = new GainNode(runtime.audioContext, { gain: settings.vibrato.jitter });
         runtime.noise.connect(vibratoJitter);
@@ -382,7 +609,7 @@ export function usePlayer(): PlayerState {
     sourceGain: GainNode,
     activeIpa: typeof ipa,
     formantOverrides: PlayerNoteOptions["formants"],
-  ) {
+  ): AudioNode {
     const formantsGain = new GainNode(runtime.audioContext, { gain: 1 });
     const activeFormantSpec =
       formantOverrides && formantOverrides.length > 0
@@ -394,21 +621,68 @@ export function usePlayer(): PlayerState {
             return { ...formant, ...next };
           })
         : settings.formants.ipa[activeIpa];
-    const formants = createFormants(runtime.audioContext, activeFormantSpec);
-    if (formants.length > 0) {
-      formants.forEach((formant) => {
-        sourceGain.connect(formant);
-        formant.connect(formantsGain);
-      });
-    } else {
+    const activeFormants = activeFormantSpec.filter(
+      (formant) => formant.on && formant.frequency > 0,
+    ) as FormantLike[];
+    const cascadePctDefault = settings.formants.cascadePctDefault ?? DEFAULT_FORMANT_CASCADE_PCT;
+    const cascadePct = clamp(
+      settings.formants.cascadePctByIPA?.[activeIpa] ?? cascadePctDefault,
+      0,
+      1,
+    );
+
+    if (activeFormants.length === 0) {
       sourceGain.connect(formantsGain);
+    } else {
+      const createNodes = () =>
+        activeFormants.map(
+          (formant) =>
+            new BiquadFilterNode(runtime.audioContext, {
+              type: "peaking",
+              frequency: formant.frequency,
+              Q: toBiquadQ(formant.Q),
+              gain: formant.gain,
+            }),
+        );
+      const cascadeWeight = cascadePct;
+      const parallelWeight = 1 - cascadeWeight;
+      if (cascadeWeight > 0) {
+        const cascadeMixGain = new GainNode(runtime.audioContext, { gain: cascadeWeight });
+        const cascade = createNodes();
+        connectFormantNodes(sourceGain, cascade, cascadeMixGain, "cascade");
+        cascadeMixGain.connect(formantsGain);
+      }
+      if (parallelWeight > 0) {
+        const parallelMixGain = new GainNode(runtime.audioContext, { gain: parallelWeight });
+        const parallel = createNodes();
+        connectFormantNodes(sourceGain, parallel, parallelMixGain, "parallel");
+        parallelMixGain.connect(formantsGain);
+      }
     }
-    return formantsGain;
+
+    const compensation = computeDynamicCompensationGain(
+      runtime.audioContext,
+      activeFormants,
+      cascadePct,
+      settings.formants.compensation.on,
+      settings.formants.compensation.maxBoostDb,
+      settings.formants.compensation.maxCutDb,
+    );
+    formantsGain.gain.value = compensation.gain;
+    if (compensation.bodyBoostDb <= 0) return formantsGain;
+
+    const bodyShelf = new BiquadFilterNode(runtime.audioContext, {
+      type: "lowshelf",
+      frequency: COMPENSATION_BODY_SHELF_HZ,
+      gain: compensation.bodyBoostDb,
+    });
+    formantsGain.connect(bodyShelf);
+    return bodyShelf;
   }
 
-  function connectOutput(formantsGain: GainNode) {
+  function connectOutput(formantsOutput: AudioNode) {
     if (settings.compression.on) {
-      formantsGain.connect(compressor);
+      formantsOutput.connect(compressor);
       if (!runtime.compressorConnectedToOutput) {
         compressor.connect(output);
         runtime.compressorConnectedToOutput = true;
@@ -422,7 +696,7 @@ export function usePlayer(): PlayerState {
         }
         runtime.compressorConnectedToOutput = false;
       }
-      formantsGain.connect(output);
+      formantsOutput.connect(output);
     }
 
     if (settings.analyzer.on) {
