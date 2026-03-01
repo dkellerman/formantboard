@@ -36,7 +36,15 @@ describe("useAppStore core slices", () => {
       rms: -18,
       compression: 3,
     }));
-    useAppStore.getState().setPlayer({ volume: 72, rafId: 9 });
+    useAppStore
+      .getState()
+      .setPlayer({
+        volume: 72,
+        rafId: 9,
+        activeNoteIds: [],
+        isPlaying: false,
+        isApiPlaying: false,
+      });
 
     expect(useAppStore.getState().settings.f0.on).toBe(false);
     expect(useAppStore.getState().settings.harmonics.max).toBe(12);
@@ -62,7 +70,13 @@ describe("useAppStore core slices", () => {
     useAppStore.setState({
       ipa: IPA.i,
       playerRuntimeRef: { current: runtime },
-      player: { volume: 30, rafId: 42 },
+      player: {
+        volume: 30,
+        rafId: 42,
+        activeNoteIds: ["C4"],
+        isPlaying: true,
+        isApiPlaying: true,
+      },
     });
 
     resetAppStore();
@@ -72,6 +86,9 @@ describe("useAppStore core slices", () => {
     expect(useAppStore.getState().ipa).toBe(IPA.ɑ);
     expect(useAppStore.getState().player.volume).toBe(100);
     expect(useAppStore.getState().player.rafId).toBeUndefined();
+    expect(useAppStore.getState().player.activeNoteIds).toEqual([]);
+    expect(useAppStore.getState().player.isPlaying).toBe(false);
+    expect(useAppStore.getState().player.isApiPlaying).toBe(false);
     expect(useAppStore.getState().playerRuntimeRef.current).toBeNull();
   });
 });

@@ -13,11 +13,12 @@ export interface KeyboardProps {
 
 export function Keyboard({ height, activeNotes, onKeyOn, onKeyOff }: KeyboardProps) {
   const keyboardLayout = useKeyboardLayout();
-  const { metrics } = useAppContext();
+  const { metrics, player } = useAppContext();
 
   const layout = keyboardLayout.layout;
   const keyboardWidth = keyboardLayout.keyboardWidth;
   const noteIds = layout.notes.map((note: string) => note.replace("#", "s"));
+  const playerActiveNotes = new Set(player.activeNoteIds);
 
   const [dragging, setDragging] = useState(false);
   const [activeNote, setActiveNote] = useState<string | null>(null);
@@ -55,7 +56,7 @@ export function Keyboard({ height, activeNotes, onKeyOn, onKeyOff }: KeyboardPro
   }
 
   function isActive(id: string) {
-    return activeNote === id || activeNotes?.has(id) === true;
+    return activeNote === id || activeNotes?.has(id) === true || playerActiveNotes.has(id);
   }
 
   function isDetected(id: string) {
@@ -76,7 +77,8 @@ export function Keyboard({ height, activeNotes, onKeyOn, onKeyOff }: KeyboardPro
         "group relative z-20 list-none border border-black text-white",
         "rounded-b-sm bg-gradient-to-r from-zinc-800 to-zinc-600",
         blackShadow,
-        active && `bg-gradient-to-r from-zinc-600 to-zinc-800 ${blackShadowActive}`,
+        active && "bg-gradient-to-r from-zinc-600 to-zinc-800",
+        active && blackShadowActive,
         detected && "border-sky-700",
       );
     }
@@ -85,7 +87,8 @@ export function Keyboard({ height, activeNotes, onKeyOn, onKeyOff }: KeyboardPro
       "group relative h-full list-none border border-l-zinc-300 border-b-zinc-300 text-black",
       "rounded-b-md bg-gradient-to-b from-zinc-100 to-white",
       whiteShadow,
-      active && `border-zinc-400 bg-gradient-to-b from-white to-zinc-200 ${whiteShadowActive}`,
+      active && "border-zinc-400 bg-gradient-to-b from-white to-zinc-200",
+      active && whiteShadowActive,
       detected && "border-sky-700",
     );
   }
@@ -122,14 +125,14 @@ export function Keyboard({ height, activeNotes, onKeyOn, onKeyOff }: KeyboardPro
 
   return (
     <div
-      className="w-full overflow-hidden border border-zinc-300 border-t-0"
+      className={cn("w-full overflow-hidden border border-zinc-300 border-t-0")}
       onMouseLeave={() => {
         setActiveNote(null);
         setDragging(false);
       }}
     >
       <ul
-        className="m-0 flex flex-row items-start p-0"
+        className={cn("m-0 flex flex-row items-start p-0")}
         style={{ height: `${keyboardHeight}px`, width: `${keyboardWidth}px` }}
       >
         {noteIds.map((id: string) => {

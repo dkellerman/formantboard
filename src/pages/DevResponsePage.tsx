@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import * as PIXI from "pixi.js";
+import { cn } from "@/lib/cn";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -32,8 +33,8 @@ function NumberControl({
   onCommit,
 }: NumberControlProps) {
   return (
-    <label className={["flex min-w-0 flex-col gap-1", className ?? ""].join(" ")}>
-      <Label className="text-xs font-normal text-zinc-500">{label}</Label>
+    <label className={cn("flex min-w-0 flex-col gap-1", className)}>
+      <Label className={cn("text-xs font-normal text-zinc-500")}>{label}</Label>
       <Input
         type="number"
         value={value}
@@ -140,12 +141,12 @@ export function DevResponsePage() {
   }, [filtersOn, filterVals]);
 
   return (
-    <section className="flex h-[70vh] flex-col items-center justify-center">
-      <h2 className="text-2xl font-semibold">Frequency Response</h2>
+    <section className={cn("flex h-[70vh] flex-col items-center justify-center")}>
+      <h2 className={cn("text-2xl font-semibold")}>Frequency Response</h2>
       <canvas ref={canvasRef} className="my-10" />
 
       {filterVals.map((config, idx) => (
-        <fieldset key={idx} className="flex flex-row gap-2 border-0">
+        <fieldset key={idx} className={cn("flex flex-row gap-2 border-0")}>
           <label>
             <input
               type="checkbox"

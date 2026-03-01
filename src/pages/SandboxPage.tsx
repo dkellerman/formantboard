@@ -60,10 +60,10 @@ function NumberControl({
 }: NumberControlProps) {
   return (
     <label className={cn("flex min-w-0 flex-col gap-1", className)}>
-      {label ? <Label className="text-xs font-normal text-zinc-500">{label}</Label> : null}
-      <div className="flex h-11 items-center gap-2 rounded-md border border-zinc-300 px-1">
+      {label ? <Label className={cn("text-xs font-normal text-zinc-500")}>{label}</Label> : null}
+      <div className={cn("flex h-11 items-center gap-2 rounded-md border border-zinc-300 px-1")}>
         <Input
-          className="h-full border-0 text-base shadow-none ring-0 focus-visible:ring-0"
+          className={cn("h-full border-0 text-base shadow-none ring-0 focus-visible:ring-0")}
           type="number"
           min={min}
           max={max}
@@ -81,7 +81,7 @@ function NumberControl({
             onChange?.(next);
           }}
         />
-        {suffix ? <span className="text-sm text-zinc-700">{suffix}</span> : null}
+        {suffix ? <span className={cn("text-sm text-zinc-700")}>{suffix}</span> : null}
       </div>
     </label>
   );
@@ -111,7 +111,7 @@ function SwitchControl({
           onChange?.(checked);
         }}
       />
-      <Label className="text-sm font-normal leading-none text-zinc-900">{label}</Label>
+      <Label className={cn("text-sm font-normal leading-none text-zinc-900")}>{label}</Label>
     </label>
   );
 }
@@ -139,7 +139,7 @@ function SelectControl({
   const selectedIndex = items.findIndex((item) => Object.is(item.value, modelValue));
   return (
     <label className={cn("flex min-w-0 flex-col gap-1", className)}>
-      {label ? <Label className="text-xs font-normal text-zinc-500">{label}</Label> : null}
+      {label ? <Label className={cn("text-xs font-normal text-zinc-500")}>{label}</Label> : null}
       <Select
         value={selectedIndex >= 0 ? String(selectedIndex) : undefined}
         onValueChange={(value) => onUpdateModelValue?.(items[Number(value)]?.value)}
@@ -167,12 +167,12 @@ interface CheckboxControlProps {
 
 function CheckboxControl({ label, modelValue, onUpdateModelValue }: CheckboxControlProps) {
   return (
-    <label className="inline-flex h-11 items-center gap-2">
+    <label className={cn("inline-flex h-11 items-center gap-2")}>
       <Checkbox
         checked={modelValue}
         onCheckedChange={(value) => onUpdateModelValue?.(value === true)}
       />
-      <Label className="text-sm font-normal leading-none text-zinc-900">{label}</Label>
+      <Label className={cn("text-sm font-normal leading-none text-zinc-900")}>{label}</Label>
     </label>
   );
 }
@@ -381,7 +381,7 @@ export function SandboxPage() {
       )}
     >
       <fieldset className="border-0 pb-2">
-        <div className="flex items-center gap-3 pr-8">
+        <div className={cn("flex items-center gap-3 pr-8")}>
           <MidiButton
             text="MIDI"
             onNoteOn={(note, velocity) => {
@@ -399,7 +399,7 @@ export function SandboxPage() {
           />
           <MicButton />
           {metrics.pitch ? (
-            <div className="ml-5 font-mono text-sm">
+            <div className={cn("ml-5 font-mono text-sm")}>
               Pitch: {metrics.pitch.freq.toFixed(1)}hz [{metrics.pitch.note}{" "}
               {metrics.pitch.cents > 0 ? "+" : ""}
               {metrics.pitch.cents}c]
@@ -434,7 +434,7 @@ export function SandboxPage() {
             }}
           />
         </label>
-        <div className="flex flex-wrap gap-3">
+        <div className={cn("flex flex-wrap gap-3")}>
           <F0Selector
             className="w-[150px]"
             restartSignal={restartSignal}
@@ -544,7 +544,7 @@ export function SandboxPage() {
             onChange={restartF0}
           />
         </label>
-        <div className="flex flex-wrap gap-3">
+        <div className={cn("flex flex-wrap gap-3")}>
           <NumberControl
             className="w-[150px]"
             label="Max num"
@@ -566,7 +566,7 @@ export function SandboxPage() {
             onChange={restartF0}
           />
           <NumberControl
-            className="w-[150px] [&_.vui-suffix]:text-zinc-500"
+            className={cn("w-[150px] [&_.vui-suffix]:text-zinc-500")}
             label="Tilt"
             modelValue={harmonics.tilt}
             min="-40"
@@ -584,7 +584,7 @@ export function SandboxPage() {
             modelValue={metrics.harmonics.length}
             readonly
           />
-          <div className="flex h-11 items-center pt-4">
+          <div className={cn("flex h-11 items-center pt-4")}>
             <CheckboxControl
               label="Show gains"
               modelValue={showHGains}
@@ -592,7 +592,7 @@ export function SandboxPage() {
             />
           </div>
           {showHGains ? (
-            <div className="basis-full overflow-auto bg-white pb-3 font-mono text-xs">
+            <div className={cn("basis-full overflow-auto bg-white pb-3 font-mono text-xs")}>
               {metrics.harmonics
                 .slice(0, 40)
                 .map(([, g]: [number, number, number], idx: number) => (
@@ -622,7 +622,7 @@ export function SandboxPage() {
             onChange={restartF0}
           />
         </label>
-        <div className="flex flex-wrap gap-3">
+        <div className={cn("flex flex-wrap gap-3")}>
           <NumberControl
             className="w-[150px]"
             label="Amount"
@@ -652,7 +652,7 @@ export function SandboxPage() {
             onChange={restartF0}
           />
         </label>
-        <div className="flex flex-wrap gap-3">
+        <div className={cn("flex flex-wrap gap-3")}>
           <NumberControl
             className="w-[150px]"
             label="Rate"
@@ -705,8 +705,8 @@ export function SandboxPage() {
           "py-3",
         )}
       >
-        <div className="min-w-[170px] pt-1 font-medium text-zinc-900">Formants</div>
-        <div className="flex flex-wrap gap-3">
+        <div className={cn("min-w-[170px] pt-1 font-medium text-zinc-900")}>Formants</div>
+        <div className={cn("flex flex-wrap gap-3")}>
           <IPASelector
             className="w-[200px]"
             onChange={restartF0}
@@ -767,7 +767,7 @@ export function SandboxPage() {
                 onChange={restartF0}
               />
             </label>
-            <div className="flex flex-wrap gap-3">
+            <div className={cn("flex flex-wrap gap-3")}>
               <NumberControl
                 className="w-[150px]"
                 label="Freq"
@@ -821,7 +821,7 @@ export function SandboxPage() {
             onChange={restartF0}
           />
         </label>
-        <div className="flex flex-wrap gap-3">
+        <div className={cn("flex flex-wrap gap-3")}>
           <NumberControl
             className="w-[150px]"
             label="Treshold"

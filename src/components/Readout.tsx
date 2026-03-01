@@ -1,4 +1,5 @@
 import { useAppContext } from "@/store";
+import { cn } from "@/lib/cn";
 
 export function Readout() {
   const { metrics } = useAppContext();
@@ -6,7 +7,7 @@ export function Readout() {
   return (
     <section className="mt-2">
       {metrics.pitch ? (
-        <fieldset className="w-fit border-0 font-mono text-sm text-zinc-700">
+        <fieldset className={cn("w-fit border-0 font-mono text-sm text-zinc-700")}>
           {metrics.pitch.freq.toFixed(1)}hz [{metrics.pitch.note}]
           {metrics.pitch.cents ? (
             <span>

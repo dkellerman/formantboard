@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as PIXI from "pixi.js";
+import { cn } from "@/lib/cn";
 import { arr2rms, createWhiteNoise, gain2db } from "@/utils";
 import { OSC_TYPE_SAWTOOTH, OSC_TYPE_SINE, OSC_TYPE_SQUARE } from "@/constants";
 import { F0Selector } from "@/components/F0Selector";
@@ -69,8 +70,8 @@ interface NumberControlProps {
 
 function NumberControl({ label, value, min, max, step, className, onValue }: NumberControlProps) {
   return (
-    <label className={["flex min-w-0 flex-col gap-1", className ?? ""].join(" ")}>
-      <Label className="text-xs font-normal text-zinc-500">{label}</Label>
+    <label className={cn("flex min-w-0 flex-col gap-1", className)}>
+      <Label className={cn("text-xs font-normal text-zinc-500")}>{label}</Label>
       <Input
         type="number"
         min={min}
@@ -335,7 +336,6 @@ export function VowelsPage() {
       void ctxRef.current?.close();
       ctxRef.current = null;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -360,26 +360,28 @@ export function VowelsPage() {
   }, [noiseGain]);
 
   return (
-    <section className="mt-[-10px] flex w-full flex-col items-center justify-center gap-5 pb-24">
-      <fieldset className="flex flex-row flex-wrap justify-center gap-5 border-0 pl-2.5">
+    <section
+      className={cn("mt-[-10px] flex w-full flex-col items-center justify-center gap-5 pb-24")}
+    >
+      <fieldset className={cn("flex flex-row flex-wrap justify-center gap-5 border-0 pl-2.5")}>
         <canvas ref={canvasRef} />
       </fieldset>
 
-      <fieldset className="flex flex-row flex-wrap justify-center gap-5 border-0 pl-2.5">
+      <fieldset className={cn("flex flex-row flex-wrap justify-center gap-5 border-0 pl-2.5")}>
         <label className="self-center text-sm">
           Power: {power.toFixed(2)} / {gain2db(power).toFixed(2)}dB
         </label>
       </fieldset>
 
-      <fieldset className="flex flex-row flex-wrap justify-center gap-5 border-0 pl-2.5">
+      <fieldset className={cn("flex flex-row flex-wrap justify-center gap-5 border-0 pl-2.5")}>
         <h3>Source {started ? "(Playing)" : ""}</h3>
       </fieldset>
 
-      <fieldset className="flex flex-row flex-wrap justify-center gap-5 border-0 pl-2.5">
+      <fieldset className={cn("flex flex-row flex-wrap justify-center gap-5 border-0 pl-2.5")}>
         <F0Selector className="w-[120px]" play={play} stop={stop} toggleSignal={toggleSignal} />
       </fieldset>
 
-      <fieldset className="flex flex-row flex-wrap justify-center gap-5 border-0 pl-2.5">
+      <fieldset className={cn("flex flex-row flex-wrap justify-center gap-5 border-0 pl-2.5")}>
         <NumberControl
           className="w-[110px]"
           label="Saw"
@@ -410,7 +412,9 @@ export function VowelsPage() {
         />
       </fieldset>
 
-      <fieldset className="mb-2.5 flex flex-row flex-wrap justify-center gap-5 border-0 pl-2.5">
+      <fieldset
+        className={cn("mb-2.5 flex flex-row flex-wrap justify-center gap-5 border-0 pl-2.5")}
+      >
         {vowelKeys.map((key) => (
           <Button
             key={key}
@@ -425,7 +429,7 @@ export function VowelsPage() {
       {formantVals[vowel].map((triple, idx) => (
         <fieldset
           key={`${vowel}-${idx}`}
-          className="flex flex-row flex-wrap justify-center gap-5 border-0 pl-2.5"
+          className={cn("flex flex-row flex-wrap justify-center gap-5 border-0 pl-2.5")}
         >
           <label className="self-center text-sm">F{idx + 1}</label>
 

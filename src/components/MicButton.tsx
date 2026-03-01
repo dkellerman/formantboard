@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Mic, Square } from "lucide-react";
 import { useAppContext } from "@/store";
+import { cn } from "@/lib/cn";
 import { createMicSource, createPitchDetectionNode, freq2noteCents, getHarmonics } from "@/utils";
 import { usePlayer } from "@/hooks/usePlayer";
 import { Button } from "@/components/ui/button";
@@ -20,7 +21,6 @@ export function MicButton({
   const { settings, setMetrics, player, playerRuntimeRef } = useAppContext();
 
   const micRef = useRef<MediaStreamAudioSourceNode | null>(null);
-  const micRafIdRef = useRef<number | null>(null);
   const [listening, setListening] = useState(false);
 
   async function enableMic() {
@@ -31,11 +31,11 @@ export function MicButton({
     const ctx = analyzer.context as AudioContext;
     if (ctx.state === "suspended") await ctx.resume();
 
-    if (player.rafId) {
+    if (runtime.outputConnectedToAnalyzer) {
       output.disconnect(analyzer);
-    } else {
-      micRafIdRef.current = requestAnimationFrame(playerActions.analyze);
+      runtime.outputConnectedToAnalyzer = false;
     }
+    playerActions.setMicAnalyzing(true);
 
     const mic = await createMicSource(ctx);
     mic.connect(analyzer);
@@ -61,14 +61,16 @@ export function MicButton({
   }
 
   function disableMic() {
-    if (micRafIdRef.current !== null) cancelAnimationFrame(micRafIdRef.current);
-    micRafIdRef.current = null;
     micRef.current?.disconnect();
     micRef.current = null;
-    if (player.rafId) {
+    if (player.isPlaying && settings.analyzer.on) {
       const runtime = playerRuntimeRef.current;
-      if (runtime) runtime.output.connect(runtime.analyzer);
+      if (runtime && !runtime.outputConnectedToAnalyzer) {
+        runtime.output.connect(runtime.analyzer);
+        runtime.outputConnectedToAnalyzer = true;
+      }
     }
+    playerActions.setMicAnalyzing(false);
     setListening(false);
   }
 
@@ -94,9 +96,9 @@ export function MicButton({
         }}
       >
         {listening ? (
-          <Square className="h-4 w-4 fill-current text-red-600" />
+          <Square className={cn("h-4 w-4 fill-current text-red-600")} />
         ) : (
-          <Mic className="h-4 w-4 text-red-600" />
+          <Mic className={cn("h-4 w-4 text-red-600")} />
         )}
         {listening ? stopText : startText}
       </Button>

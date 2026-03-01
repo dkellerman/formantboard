@@ -38,11 +38,15 @@ export interface PlayerNoteOptions {
   vowel?: IPAType;
   tilt?: number;
   formants?: FormantOverride[];
+  source?: PlayerPlaybackSource;
 }
+
+export type PlayerPlaybackSource = "ui" | "api";
 
 export interface PlayerState {
   setVolume: (next: number) => void;
   setRafId: (next: number | undefined) => void;
+  setMicAnalyzing: (next: boolean) => void;
   now: () => number;
   play: (
     note: number | Note,
@@ -52,6 +56,7 @@ export interface PlayerState {
     options?: PlayerNoteOptions,
   ) => void;
   stop: (note: number | Note, stopAnalysis?: boolean, atTime?: number) => void;
+  stopApiPlayback: () => void;
   addAnalyzerListener: (id: string, listener: AnalyzerListener) => void;
   removeAnalyzerListener: (id: string) => void;
   analyze: () => void;
@@ -75,6 +80,25 @@ export interface MetricsData {
 export interface PlayerData {
   volume: number;
   rafId: number | undefined;
+  activeNoteIds: string[];
+  isPlaying: boolean;
+  isApiPlaying: boolean;
+}
+
+export interface PlayerRuntimeVoice {
+  id: string;
+  frequency: number;
+  noteId: string;
+  vowel: IPAType;
+  source: PlayerPlaybackSource;
+  started: boolean;
+  ended: boolean;
+  releaseAt?: number;
+  startOrder: number;
+  startTimerId?: number;
+  deactivateTimerId?: number;
+  cleanupTimerId?: number;
+  stopVoice: (opts?: { stopAnalysis?: boolean; releaseAt?: number }) => void;
 }
 
 export interface PlayerRuntime {
@@ -83,7 +107,15 @@ export interface PlayerRuntime {
   compressor: DynamicsCompressorNode;
   analyzer: AnalyserNode;
   output: GainNode;
+  outputConnectedToDestination: boolean;
+  outputConnectedToAnalyzer: boolean;
+  compressorConnectedToOutput: boolean;
+  analyzeRafId: number | undefined;
+  micAnalyzing: boolean;
   playing: Record<number, (opts?: { stopAnalysis?: boolean; releaseAt?: number }) => void>;
+  voices: Record<string, PlayerRuntimeVoice>;
+  nextVoiceId: number;
+  nextStartOrder: number;
   analyzerListeners: Record<string, AnalyzerListener>;
 }
 
@@ -198,6 +230,7 @@ export interface FormantboardAPI {
     options?: FormantboardVoiceOptions,
   ) => void;
   clickKey: (midi: number, atTime?: number, duration?: number, velocity?: number) => void;
+  stop: () => void;
   play: (events: FormantboardPlayEvent[]) => void;
   fromJSON: (input: string | FormantboardJSONPayload) => void;
 }

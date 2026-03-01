@@ -127,6 +127,7 @@ const FORMANTBOARD_AI_GUIDE = {
     basicControls: [
       "play",
       "press",
+      "stop",
       "setVoice",
       "setVowel",
       "setFormantActive",
@@ -346,6 +347,7 @@ export function useFormantboardApi(player: PlayerState) {
             vowel: requestedVowel,
             tilt: normalizeTilt(options?.tilt ?? voiceRef.current.tilt),
             formants,
+            source: "api",
           },
         );
       },
@@ -356,6 +358,9 @@ export function useFormantboardApi(player: PlayerState) {
           return;
         }
         apiRef.current?.press(resolveNote(midi), velocity, atTime, duration);
+      },
+      stop: () => {
+        playerRef.current.stopApiPlayback();
       },
       play: (events: FormantboardPlayEvent[]) => {
         const validation = apiRef.current?.validatePlay(events);

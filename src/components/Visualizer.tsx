@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import * as PIXI from "pixi.js";
 import { useAppContext } from "@/store";
+import { cn } from "@/lib/cn";
 import { VisType } from "@/constants";
 import { fillRect, hsl, str2hexColor } from "@/utils";
 import { useKeyboardLayout } from "@/hooks/useKeyboardLayout";
@@ -254,10 +255,10 @@ export function Visualizer({
   }, [id]);
 
   return (
-    <section className={`visualizer vtype-${vtype} m-0 p-0`}>
+    <section className={cn("visualizer m-0 p-0", `vtype-${vtype}`)}>
       <canvas
         ref={canvasRef}
-        className="m-0 block w-full border border-zinc-400 p-0"
+        className={cn("m-0 block w-full border border-zinc-400 p-0")}
         width={width}
         height={height}
       />

@@ -1,5 +1,6 @@
 import { useAppContext } from "@/store";
 import { COMMON_IPA, IPA_WORDS } from "@/constants";
+import { cn } from "@/lib/cn";
 import type { IPAType } from "@/types";
 import { Label } from "@/components/ui/label";
 import {
@@ -35,9 +36,9 @@ export function IPASelector({
   }));
 
   return (
-    <section className={["flex flex-row items-center", className ?? ""].join(" ")}>
-      <label className="flex w-full min-w-0 flex-col gap-1">
-        <Label className="text-xs font-normal text-zinc-500">{title ?? "Sound"}</Label>
+    <section className={cn("flex flex-row items-center", className)}>
+      <label className={cn("flex w-full min-w-0 flex-col gap-1")}>
+        <Label className={cn("text-xs font-normal text-zinc-500")}>{title ?? "Sound"}</Label>
         <Select
           value={value ? String(value) : undefined}
           onValueChange={(value) => {

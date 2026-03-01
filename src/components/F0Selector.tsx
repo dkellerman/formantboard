@@ -90,7 +90,7 @@ export function F0Selector({
 
   return (
     <label className={cn("flex min-w-0 flex-col gap-1", className)}>
-      <Label className="text-xs font-normal text-zinc-500">Fundamental</Label>
+      <Label className={cn("text-xs font-normal text-zinc-500")}>Fundamental</Label>
       <div
         className={cn(
           "flex h-11 items-center gap-1 rounded-md border border-zinc-300",
@@ -136,9 +136,9 @@ export function F0Selector({
           onClick={toggleF0}
         >
           {playingF0 ? (
-            <Square className="h-4 w-4 fill-current" />
+            <Square className={cn("h-4 w-4 fill-current")} />
           ) : (
-            <Play className="h-4 w-4 fill-current" />
+            <Play className={cn("h-4 w-4 fill-current")} />
           )}
         </Button>
       </div>

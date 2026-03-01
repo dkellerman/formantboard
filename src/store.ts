@@ -28,6 +28,9 @@ function createInitialState() {
     player: {
       volume: 100,
       rafId: undefined,
+      activeNoteIds: [],
+      isPlaying: false,
+      isApiPlaying: false,
     } as PlayerData,
     playerRuntimeRef: { current: null } as { current: PlayerRuntime | null },
   };

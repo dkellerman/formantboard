@@ -68,10 +68,10 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
         className,
       )}
     >
-      <F0Selector className="w-[140px] sm:w-[150px]" restartSignal={restartSignal} />
+      <F0Selector className={cn("w-[140px] sm:w-[150px]")} restartSignal={restartSignal} />
 
-      <div className="inline-flex min-w-0 flex-col gap-1">
-        <Label className="text-xs font-normal text-zinc-500">Formants</Label>
+      <div className={cn("inline-flex min-w-0 flex-col gap-1")}>
+        <Label className={cn("text-xs font-normal text-zinc-500")}>Formants</Label>
         <ToggleGroup
           className={cn(
             "h-11 w-[140px] gap-0 rounded-md border border-zinc-300",
@@ -83,7 +83,7 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
         >
           {ipaSpec.map((formant: Formant, idx: number) => {
             return (
-              <div key={idx} className="group relative flex h-full flex-1">
+              <div key={idx} className={cn("group relative flex h-full flex-1")}>
                 <ToggleGroupItem
                   value={String(idx)}
                   variant="outline"
@@ -137,17 +137,17 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
       </div>
 
       <IPASelector
-        className="w-[200px] max-w-full sm:w-[220px]"
+        className={cn("w-[200px] max-w-full sm:w-[220px]")}
         value={ipa}
         onSelect={setIPA}
         onChange={restartF0}
       />
 
-      <label className="flex w-[136px] max-w-full min-w-0 flex-col gap-1">
-        <Label className="text-xs font-normal text-zinc-500">Tilt</Label>
-        <div className="flex h-11 items-center gap-2 rounded-md border border-zinc-300 px-1">
+      <label className={cn("flex w-[136px] max-w-full min-w-0 flex-col gap-1")}>
+        <Label className={cn("text-xs font-normal text-zinc-500")}>Tilt</Label>
+        <div className={cn("flex h-11 items-center gap-2 rounded-md border border-zinc-300 px-1")}>
           <Input
-            className="h-full border-0 shadow-none ring-0 focus-visible:ring-0"
+            className={cn("h-full border-0 shadow-none ring-0 focus-visible:ring-0")}
             type="number"
             min={-20.0}
             max={0.0}
@@ -161,12 +161,12 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
             }}
             onChange={restartF0}
           />
-          <span className="px-1 text-sm text-zinc-500">dB/oct</span>
+          <span className={cn("px-1 text-sm text-zinc-500")}>dB/oct</span>
         </div>
       </label>
 
-      <label className="flex w-[130px] max-w-full min-w-0 flex-col gap-1">
-        <Label className="text-xs font-normal text-zinc-500">Visualzation</Label>
+      <label className={cn("flex w-[130px] max-w-full min-w-0 flex-col gap-1")}>
+        <Label className={cn("text-xs font-normal text-zinc-500")}>Visualzation</Label>
         <Select
           value={String(visType)}
           onValueChange={(value) => {

@@ -34,8 +34,8 @@ export function App() {
         >
           <Menu className="h-5 w-5" />
         </button>
-        <h1 className="m-0 text-xl font-medium tracking-tight">
-          <Link to="/" className="text-zinc-900 no-underline hover:underline">
+        <h1 className={cn("m-0 text-xl font-medium tracking-tight")}>
+          <Link to="/" className={cn("text-zinc-900 no-underline hover:underline")}>
             FormantBoard
           </Link>
         </h1>
@@ -48,23 +48,26 @@ export function App() {
             "bg-sky-50 p-5 shadow-lg",
           )}
         >
-          <nav className="mt-14 flex flex-col gap-4 text-xl">
-            <Link to="/" className="text-zinc-900 no-underline hover:underline">
+          <nav className={cn("mt-14 flex flex-col gap-4 text-xl")}>
+            <Link to="/" className={cn("text-zinc-900 no-underline hover:underline")}>
               Home
             </Link>
-            <Link to="/sandbox" className="text-zinc-900 no-underline hover:underline">
+            <Link to="/sandbox" className={cn("text-zinc-900 no-underline hover:underline")}>
               Sandbox
             </Link>
-            <Link to="/api" className="text-zinc-900 no-underline hover:underline">
+            <Link to="/api" className={cn("text-zinc-900 no-underline hover:underline")}>
               API / AI Instructions
             </Link>
             <a
               href="https://github.com/dkellerman/formantboard"
-              className="text-zinc-900 no-underline hover:underline"
+              className={cn("text-zinc-900 no-underline hover:underline")}
             >
               Github
             </a>
-            <a href="https://bipium.com" className="text-zinc-900 no-underline hover:underline">
+            <a
+              href="https://bipium.com"
+              className={cn("text-zinc-900 no-underline hover:underline")}
+            >
               Metronome
             </a>
           </nav>
@@ -73,7 +76,7 @@ export function App() {
 
       {drawer ? (
         <button
-          className="fixed inset-0 z-[35] h-screen w-screen border-0 bg-transparent"
+          className={cn("fixed inset-0 z-[35] h-screen w-screen border-0 bg-transparent")}
           type="button"
           aria-label="Close menu"
           onClick={() => setDrawer(false)}

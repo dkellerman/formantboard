@@ -34,12 +34,20 @@ export function usePlayer(): PlayerState {
       compressor,
       analyzer,
       output,
+      outputConnectedToDestination: false,
+      outputConnectedToAnalyzer: false,
+      compressorConnectedToOutput: false,
+      analyzeRafId: undefined,
+      micAnalyzing: false,
       playing: {},
+      voices: {},
+      nextVoiceId: 1,
+      nextStartOrder: 1,
       analyzerListeners: {},
     };
   }
 
-  const runtime = playerRuntimeRef.current;
+  const runtime = playerRuntimeRef.current!;
   const analyzer = runtime.analyzer;
   const output = runtime.output;
   const compressor = runtime.compressor;
@@ -50,24 +58,106 @@ export function usePlayer(): PlayerState {
   }
 
   function setRafId(next: number | undefined) {
+    runtime.analyzeRafId = next;
     setPlayer((current) => ({ ...current, rafId: next }));
+  }
+
+  function setMicAnalyzing(next: boolean) {
+    runtime.micAnalyzing = next;
+    if (!settings.analyzer.on) return;
+
+    if (next) {
+      if (runtime.analyzeRafId === undefined) {
+        setRafId(requestAnimationFrame(analyze));
+      }
+      return;
+    }
+
+    if (Object.keys(runtime.playing).length === 0 && runtime.analyzeRafId !== undefined) {
+      cancelAnimationFrame(runtime.analyzeRafId);
+      setRafId(undefined);
+    }
   }
 
   function now() {
     return runtime.audioContext.currentTime;
   }
 
-  function scheduleStopCleanup(
-    frequency: number,
-    stopVoice: NonNullable<(typeof runtime.playing)[number]>,
-    afterSeconds: number,
+  function play(
+    note: number | Note,
+    velocity = 1,
+    atTime = 0,
+    duration?: number,
+    options?: PlayerNoteOptions,
   ) {
-    const cleanupMs = Math.max(0, afterSeconds + settings.f0.decayTime + 1.1) * 1000;
-    window.setTimeout(() => {
-      if (runtime.playing[frequency] === stopVoice) {
-        delete runtime.playing[frequency];
+    const perfStartTime = runtime.audioContext.currentTime;
+    const frequency = noteOrFreq2freq(note);
+    if (frequency > CAP_FREQ) return;
+    const timeOffset = Math.max(0, atTime);
+    const startTime = runtime.audioContext.currentTime + timeOffset + 0.002;
+    const harmonicTilt = options?.tilt ?? settings.harmonics.tilt;
+    const activeIpa = options?.vowel ?? ipa;
+    const formantOverrides = options?.formants;
+
+    // Only pre-stop for immediate retriggers. Scheduled sequences may include repeated
+    // pitches, and canceling by frequency here drops future notes.
+    if (timeOffset <= 0.01) {
+      runtime.playing[frequency]?.({
+        releaseAt: runtime.audioContext.currentTime + 0.01,
+      });
+      delete runtime.playing[frequency];
+    }
+
+    const { sourceType, source, sourceGain, controlSource } = createSource(frequency);
+    applyHarmonics(source, sourceType, frequency, harmonicTilt);
+    applyFlutter(source);
+    const vibratoOsc = createVibrato(source);
+    const formantsGain = connectFormants(sourceGain, activeIpa, formantOverrides);
+    connectOutput(formantsGain);
+
+    if (controlSource) source.start(startTime);
+    sourceGain.gain.setValueAtTime(0, startTime);
+    sourceGain.gain.linearRampToValueAtTime(
+      velocity * settings.f0.keyGain,
+      startTime + settings.f0.onsetTime,
+    );
+
+    const stopVoice: (typeof runtime.playing)[number] = (opts) => {
+      const stopAnalysis = opts?.stopAnalysis ?? false;
+      const releaseAt = opts?.releaseAt ?? runtime.audioContext.currentTime + 0.05;
+      sourceGain.gain.setTargetAtTime(0, releaseAt, settings.f0.decayTime);
+      const stopAt = releaseAt + settings.f0.decayTime + 1;
+      if (controlSource) {
+        try {
+          source.stop(stopAt);
+        } catch {
+          // Source may already be stopped when external callers overlap stop schedules.
+        }
       }
-    }, cleanupMs);
+      if (vibratoOsc) {
+        try {
+          vibratoOsc.stop(stopAt);
+        } catch {
+          // Vibrato may already be stopped for the same reason.
+        }
+      }
+      if (stopAnalysis && runtime.analyzeRafId !== undefined) {
+        cancelAnimationFrame(runtime.analyzeRafId);
+        setRafId(undefined);
+      }
+    };
+    runtime.playing[frequency] = stopVoice;
+
+    if (duration !== undefined) {
+      const holdDuration = Math.max(0, duration);
+      stopVoice({ releaseAt: startTime + holdDuration });
+      scheduleStopCleanup(frequency, stopVoice, timeOffset + holdDuration);
+    }
+
+    setMetrics((current) => ({
+      ...current,
+      latency: runtime.audioContext.currentTime - perfStartTime,
+    }));
   }
 
   function stop(note: number | Note, stopAnalysis = false, atTime = 0) {
@@ -81,6 +171,13 @@ export function usePlayer(): PlayerState {
     } else {
       scheduleStopCleanup(frequency, stopVoice, atTime);
     }
+  }
+
+  function stopApiPlayback() {
+    const releaseAt = runtime.audioContext.currentTime + 0.01;
+    Object.keys(runtime.playing).forEach((key) => {
+      runtime.playing[Number(key)]?.({ releaseAt });
+    });
   }
 
   function analyze() {
@@ -164,36 +261,48 @@ export function usePlayer(): PlayerState {
     setRafId(requestAnimationFrame(analyze));
   }
 
-  function play(
-    note: number | Note,
-    velocity = 1,
-    atTime = 0,
-    duration?: number,
-    options?: PlayerNoteOptions,
-  ) {
-    const perfStartTime = runtime.audioContext.currentTime;
-    const frequency = noteOrFreq2freq(note);
-    if (frequency > CAP_FREQ) return;
-    const timeOffset = Math.max(0, atTime);
-    const startTime = runtime.audioContext.currentTime + timeOffset + 0.002;
-    const harmonicTilt = options?.tilt ?? settings.harmonics.tilt;
-    const activeIpa = options?.vowel ?? ipa;
-    const formantOverrides = options?.formants;
-
-    // Only pre-stop for immediate retriggers. Scheduled sequences may include repeated
-    // pitches, and canceling by frequency here drops future notes.
-    if (timeOffset <= 0.01) {
-      runtime.playing[frequency]?.({
-        releaseAt: runtime.audioContext.currentTime + 0.01,
-      });
+  function reset() {
+    Object.keys(runtime.playing).forEach((key) => {
+      const frequency = Number(key);
+      runtime.playing[frequency]?.({ stopAnalysis: true });
       delete runtime.playing[frequency];
+    });
+    Object.keys(runtime.analyzerListeners).forEach((key) => {
+      delete runtime.analyzerListeners[key];
+    });
+    setVolume(100);
+    if (runtime.analyzeRafId !== undefined) {
+      cancelAnimationFrame(runtime.analyzeRafId);
+      setRafId(undefined);
     }
+  }
 
+  function addAnalyzerListener(id: string, listener: (typeof runtime.analyzerListeners)[string]) {
+    runtime.analyzerListeners[id] = listener;
+  }
+
+  function removeAnalyzerListener(id: string) {
+    delete runtime.analyzerListeners[id];
+  }
+
+  function scheduleStopCleanup(
+    frequency: number,
+    stopVoice: NonNullable<(typeof runtime.playing)[number]>,
+    afterSeconds: number,
+  ) {
+    const cleanupMs = Math.max(0, afterSeconds + settings.f0.decayTime + 1.1) * 1000;
+    window.setTimeout(() => {
+      if (runtime.playing[frequency] === stopVoice) {
+        delete runtime.playing[frequency];
+      }
+    }, cleanupMs);
+  }
+
+  function createSource(frequency: number) {
     const sourceType = settings.f0.sourceType;
     const oscillator = new OscillatorNode(runtime.audioContext, { frequency, type: sourceType });
     const oscGain = new GainNode(runtime.audioContext, { gain: 0 });
     const noiseGain = new GainNode(runtime.audioContext, { gain: 0 });
-
     let source: AudioScheduledSourceNode = oscillator;
     let sourceGain: GainNode = oscGain;
     let controlSource = true;
@@ -210,6 +319,15 @@ export function usePlayer(): PlayerState {
       source.frequency.value = 0;
     }
 
+    return { sourceType, source, sourceGain, controlSource };
+  }
+
+  function applyHarmonics(
+    source: AudioScheduledSourceNode,
+    sourceType: OscillatorType,
+    frequency: number,
+    harmonicTilt: number,
+  ) {
     if (settings.harmonics.on && source instanceof OscillatorNode) {
       const [harmonics, periodicWave] = createHarmonics(
         runtime.audioContext,
@@ -233,13 +351,17 @@ export function usePlayer(): PlayerState {
         harmonics: [[frequency, 1, 0]],
       }));
     }
+  }
 
+  function applyFlutter(source: AudioScheduledSourceNode) {
     if (settings.flutter.on && source instanceof OscillatorNode) {
       const flutterGain = new GainNode(runtime.audioContext, { gain: settings.flutter.amount });
       runtime.noise.connect(flutterGain);
       flutterGain.connect(source.frequency);
     }
+  }
 
+  function createVibrato(source: AudioScheduledSourceNode) {
     let vibratoOsc: OscillatorNode | null = null;
     if (settings.vibrato.on && source instanceof OscillatorNode) {
       vibratoOsc = new OscillatorNode(runtime.audioContext, { frequency: settings.vibrato.rate });
@@ -253,13 +375,22 @@ export function usePlayer(): PlayerState {
       }
     }
 
+    return vibratoOsc;
+  }
+
+  function connectFormants(
+    sourceGain: GainNode,
+    activeIpa: typeof ipa,
+    formantOverrides: PlayerNoteOptions["formants"],
+  ) {
     const formantsGain = new GainNode(runtime.audioContext, { gain: 1 });
     const activeFormantSpec =
       formantOverrides && formantOverrides.length > 0
         ? settings.formants.ipa[activeIpa].map((formant, index) => {
             const patch = formantOverrides.find((item) => item.index === index);
             if (!patch) return formant;
-            const { index: _idx, ...next } = patch;
+            const next = { ...patch };
+            delete (next as { index?: number }).index;
             return { ...formant, ...next };
           })
         : settings.formants.ipa[activeIpa];
@@ -272,96 +403,57 @@ export function usePlayer(): PlayerState {
     } else {
       sourceGain.connect(formantsGain);
     }
+    return formantsGain;
+  }
 
+  function connectOutput(formantsGain: GainNode) {
     if (settings.compression.on) {
       formantsGain.connect(compressor);
-      compressor.connect(output);
+      if (!runtime.compressorConnectedToOutput) {
+        compressor.connect(output);
+        runtime.compressorConnectedToOutput = true;
+      }
     } else {
+      if (runtime.compressorConnectedToOutput) {
+        try {
+          compressor.disconnect(output);
+        } catch {
+          // Disconnect may throw when the edge is already absent.
+        }
+        runtime.compressorConnectedToOutput = false;
+      }
       formantsGain.connect(output);
     }
 
     if (settings.analyzer.on) {
-      output.connect(analyzer);
-      if (!player.rafId) setRafId(requestAnimationFrame(analyze));
+      if (!runtime.outputConnectedToAnalyzer) {
+        output.connect(analyzer);
+        runtime.outputConnectedToAnalyzer = true;
+      }
+      if (runtime.analyzeRafId === undefined) setRafId(requestAnimationFrame(analyze));
+    } else if (runtime.outputConnectedToAnalyzer && !runtime.micAnalyzing) {
+      try {
+        output.disconnect(analyzer);
+      } catch {
+        // Disconnect may throw when the edge is already absent.
+      }
+      runtime.outputConnectedToAnalyzer = false;
     }
 
-    output.connect(runtime.audioContext.destination);
-
-    if (controlSource) source.start(startTime);
-    sourceGain.gain.setValueAtTime(0, startTime);
-    sourceGain.gain.linearRampToValueAtTime(
-      velocity * settings.f0.keyGain,
-      startTime + settings.f0.onsetTime,
-    );
-
-    const stopVoice: (typeof runtime.playing)[number] = (opts) => {
-      const stopAnalysis = opts?.stopAnalysis ?? false;
-      const releaseAt = opts?.releaseAt ?? runtime.audioContext.currentTime + 0.05;
-      sourceGain.gain.setTargetAtTime(0, releaseAt, settings.f0.decayTime);
-      const stopAt = releaseAt + settings.f0.decayTime + 1;
-      if (controlSource) {
-        try {
-          source.stop(stopAt);
-        } catch {
-          // Source may already be stopped when external callers overlap stop schedules.
-        }
-      }
-      if (vibratoOsc) {
-        try {
-          vibratoOsc.stop(stopAt);
-        } catch {
-          // Vibrato may already be stopped for the same reason.
-        }
-      }
-      if (stopAnalysis && player.rafId) {
-        cancelAnimationFrame(player.rafId);
-        setRafId(undefined);
-      }
-    };
-    runtime.playing[frequency] = stopVoice;
-
-    if (duration !== undefined) {
-      const holdDuration = Math.max(0, duration);
-      stopVoice({ releaseAt: startTime + holdDuration });
-      scheduleStopCleanup(frequency, stopVoice, timeOffset + holdDuration);
-    }
-
-    setMetrics((current) => ({
-      ...current,
-      latency: runtime.audioContext.currentTime - perfStartTime,
-    }));
-  }
-
-  function addAnalyzerListener(id: string, listener: (typeof runtime.analyzerListeners)[string]) {
-    runtime.analyzerListeners[id] = listener;
-  }
-
-  function removeAnalyzerListener(id: string) {
-    delete runtime.analyzerListeners[id];
-  }
-
-  function reset() {
-    Object.keys(runtime.playing).forEach((key) => {
-      const frequency = Number(key);
-      runtime.playing[frequency]?.({ stopAnalysis: true });
-      delete runtime.playing[frequency];
-    });
-    Object.keys(runtime.analyzerListeners).forEach((key) => {
-      delete runtime.analyzerListeners[key];
-    });
-    setVolume(100);
-    if (player.rafId) {
-      cancelAnimationFrame(player.rafId);
-      setRafId(undefined);
+    if (!runtime.outputConnectedToDestination) {
+      output.connect(runtime.audioContext.destination);
+      runtime.outputConnectedToDestination = true;
     }
   }
 
   return {
     setVolume,
     setRafId,
+    setMicAnalyzing,
     now,
     play,
     stop,
+    stopApiPlayback,
     addAnalyzerListener,
     removeAnalyzerListener,
     analyze,
