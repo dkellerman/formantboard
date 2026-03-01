@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { Square } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAppContext } from "@/store";
 import { cn } from "@/lib/cn";
@@ -39,6 +40,7 @@ export function HomePage() {
   const [apiPayloadSeeded, setApiPayloadSeeded] = useState(false);
   const [aiPasteStatus, setAiPasteStatus] = useState("Ready.");
   const [showAIPrompt, setShowAIPrompt] = useState(false);
+  const aiStopMode = playerState.isApiPlaying;
 
   const handlePromptPayloadReady = useCallback((prettyPayload: string) => {
     setApiPayload(prettyPayload);
@@ -93,8 +95,8 @@ export function HomePage() {
 
   return (
     <section className={cn("flex flex-col items-center gap-0")}>
-      <div className="w-[95vw]">
-        <SettingsPanel className="mb-3" visType={visType} onVisTypeChange={setVisType} />
+      <div className={cn("w-[95vw]")}>
+        <SettingsPanel className={cn("mb-3")} visType={visType} onVisTypeChange={setVisType} />
         {settings.viz.on ? <Visualizer vtype={visType} height={150} /> : null}
         <Keyboard
           onKeyOn={(note, velocity) => player.play(note, velocity)}
@@ -126,23 +128,33 @@ export function HomePage() {
           API
         </Button>
         <Button
-          variant={showAIPrompt ? "secondary" : "outline"}
-          onClick={() => setShowAIPrompt((current) => !current)}
-          aria-pressed={showAIPrompt}
+          variant={showAIPrompt || aiStopMode ? "secondary" : "outline"}
+          onClick={() => {
+            if (aiStopMode) {
+              player.stopApiPlayback();
+              setAiPasteStatus("Stopped API playback.");
+              return;
+            }
+            setShowAIPrompt((current) => !current);
+          }}
+          aria-pressed={showAIPrompt || aiStopMode}
         >
-          AI Prompt
+          {aiStopMode ? (
+            <span className={cn("inline-flex items-center gap-2")}>
+              <Square className={cn("h-4 w-4")} aria-hidden="true" />
+              Stop
+            </span>
+          ) : (
+            "AI Prompt"
+          )}
         </Button>
       </div>
       <Readout />
       {showAIPrompt ? (
         <AIPromptInput
           isLoading={llmGenerating}
-          isPlaying={playerState.isApiPlaying}
           onSubmitPrompt={generateAndPlayFromPrompt}
-          onStopPlayback={() => {
-            player.stopApiPlayback();
-            setAiPasteStatus("Stopped API playback.");
-          }}
+          onRequestClose={() => setShowAIPrompt(false)}
         />
       ) : null}
 
@@ -151,21 +163,23 @@ export function HomePage() {
           <button
             type="button"
             aria-label="Close API modal"
-            className={cn("absolute inset-0 border-0 bg-zinc-950/45")}
+            className={cn("absolute inset-0 border-0 bg-background/70")}
             onClick={() => setApiModalOpen(false)}
           />
           <section
             className={cn(
-              "relative z-[71] w-[min(92vw,700px)] rounded-md border border-zinc-300",
-              "bg-white p-4 shadow-xl",
+              "relative z-[71] w-[min(92vw,700px)] rounded-md border border-border",
+              "bg-popover p-4 text-popover-foreground shadow-xl",
             )}
           >
             <div className={cn("mb-2 flex items-start justify-between gap-3")}>
-              <h2 className={cn("m-0 text-lg font-medium text-zinc-900")}>Run JSON API Payload</h2>
+              <h2 className={cn("m-0 text-lg font-medium text-popover-foreground")}>
+                Run JSON API Payload
+              </h2>
               <button
                 type="button"
                 className={cn(
-                  "h-8 w-8 rounded border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100",
+                  "h-8 w-8 rounded border border-input bg-background text-foreground hover:bg-accent",
                 )}
                 aria-label="Close API modal"
                 onClick={() => setApiModalOpen(false)}
@@ -173,9 +187,9 @@ export function HomePage() {
                 ×
               </button>
             </div>
-            <p className={cn("mb-2 mt-0 text-sm text-zinc-700")}>
+            <p className={cn("mb-2 mt-0 text-sm text-popover-foreground")}>
               Paste payload JSON for <code>window.fb.fromJSON</code>. See{" "}
-              <Link to="/api" className={cn("text-zinc-900 underline")}>
+              <Link to="/api" className={cn("text-foreground underline")}>
                 /api instructions
               </Link>
               .
@@ -186,8 +200,8 @@ export function HomePage() {
               data-testid="fb-api-modal-json"
               data-ai-json-input="true"
               className={cn(
-                "h-60 w-full resize-y rounded-md border border-zinc-300 p-3 font-mono",
-                "text-xs text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900",
+                "h-60 w-full resize-y rounded-md border border-input bg-background p-3 font-mono",
+                "text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring",
               )}
               placeholder='{"notes":[{"note":60,"time":0,"dur":0.5}]}'
               spellCheck={false}
@@ -199,7 +213,7 @@ export function HomePage() {
               data-testid="fb-ai-json-status"
               data-ai-json-status="true"
               aria-live="polite"
-              className={cn("mt-2 block min-h-5 text-sm text-zinc-700")}
+              className={cn("mt-2 block min-h-5 text-sm text-popover-foreground")}
             >
               {aiPasteStatus}
             </output>

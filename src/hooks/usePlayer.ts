@@ -268,6 +268,8 @@ export function usePlayer(): PlayerState {
   const analyzer = runtime.analyzer;
   const output = runtime.output;
   const compressor = runtime.compressor;
+  const RELEASE_RETRIGGER_SECONDS = 0.01;
+  const VOICE_MATCH_EPSILON = 1e-6;
 
   function setVolume(next: number) {
     output.gain.value = clamp(next, 0.0, 100.0) / 100.0;
@@ -277,6 +279,104 @@ export function usePlayer(): PlayerState {
   function setRafId(next: number | undefined) {
     runtime.analyzeRafId = next;
     setPlayer((current) => ({ ...current, rafId: next }));
+  }
+
+  function toNoteId(frequency: number) {
+    return freq2note(frequency).replace("#", "s");
+  }
+
+  function arraysEqual(a: string[], b: string[]) {
+    if (a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i += 1) {
+      if (a[i] !== b[i]) return false;
+    }
+    return true;
+  }
+
+  function syncPlayerActivity() {
+    const activeVoices = Object.values(runtime.voices)
+      .filter((voice) => voice.started && !voice.ended)
+      .sort((a, b) => a.startOrder - b.startOrder);
+    const activeNoteIds = [...new Set(activeVoices.map((voice) => voice.noteId))];
+    const isPlaying = activeVoices.length > 0;
+    const isApiPlaying = activeVoices.some((voice) => voice.source === "api");
+
+    setPlayer((current) => {
+      if (
+        arraysEqual(current.activeNoteIds, activeNoteIds) &&
+        current.isPlaying === isPlaying &&
+        current.isApiPlaying === isApiPlaying
+      ) {
+        return current;
+      }
+      return { ...current, activeNoteIds, isPlaying, isApiPlaying };
+    });
+  }
+
+  function clearVoiceTimers(voice: (typeof runtime.voices)[string]) {
+    if (voice.startTimerId !== undefined) {
+      window.clearTimeout(voice.startTimerId);
+      voice.startTimerId = undefined;
+    }
+    if (voice.deactivateTimerId !== undefined) {
+      window.clearTimeout(voice.deactivateTimerId);
+      voice.deactivateTimerId = undefined;
+    }
+    if (voice.cleanupTimerId !== undefined) {
+      window.clearTimeout(voice.cleanupTimerId);
+      voice.cleanupTimerId = undefined;
+    }
+  }
+
+  function activateVoice(id: string) {
+    const voice = runtime.voices[id];
+    if (!voice || voice.ended || voice.started) return;
+    voice.started = true;
+    voice.startTimerId = undefined;
+    syncPlayerActivity();
+  }
+
+  function scheduleVoiceActivation(id: string, afterSeconds: number) {
+    const voice = runtime.voices[id];
+    if (!voice || voice.ended) return;
+    if (voice.startTimerId !== undefined) {
+      window.clearTimeout(voice.startTimerId);
+      voice.startTimerId = undefined;
+    }
+    const waitSeconds = Math.max(0, afterSeconds);
+    if (waitSeconds <= 0.001) {
+      activateVoice(id);
+      return;
+    }
+    voice.startTimerId = window.setTimeout(() => {
+      activateVoice(id);
+    }, waitSeconds * 1000);
+  }
+
+  function deactivateVoice(id: string) {
+    const voice = runtime.voices[id];
+    if (!voice) return;
+    clearVoiceTimers(voice);
+    voice.ended = true;
+    delete runtime.voices[id];
+    syncPlayerActivity();
+  }
+
+  function scheduleVoiceDeactivation(id: string, afterSeconds: number) {
+    const voice = runtime.voices[id];
+    if (!voice || voice.ended) return;
+    if (voice.deactivateTimerId !== undefined) {
+      window.clearTimeout(voice.deactivateTimerId);
+      voice.deactivateTimerId = undefined;
+    }
+    const waitSeconds = Math.max(0, afterSeconds);
+    if (waitSeconds <= 0.001) {
+      deactivateVoice(id);
+      return;
+    }
+    voice.deactivateTimerId = window.setTimeout(() => {
+      deactivateVoice(id);
+    }, waitSeconds * 1000);
   }
 
   function setMicAnalyzing(next: boolean) {
@@ -319,11 +419,16 @@ export function usePlayer(): PlayerState {
 
     // API-triggered immediate retriggers should replace the current voice.
     // UI playback (keyboard/F0/MIDI) should not pre-stop by frequency.
-    if (playbackSource === "api" && timeOffset <= 0.01) {
+    if (playbackSource === "api" && timeOffset <= RELEASE_RETRIGGER_SECONDS) {
       runtime.playing[frequency]?.({
-        releaseAt: runtime.audioContext.currentTime + 0.01,
+        releaseAt: runtime.audioContext.currentTime + RELEASE_RETRIGGER_SECONDS,
       });
       delete runtime.playing[frequency];
+      Object.values(runtime.voices).forEach((voice) => {
+        if (Math.abs(voice.frequency - frequency) <= VOICE_MATCH_EPSILON && !voice.ended) {
+          scheduleVoiceDeactivation(voice.id, RELEASE_RETRIGGER_SECONDS);
+        }
+      });
     }
 
     const { sourceType, source, sourceGain, controlSource } = createSource(frequency);
@@ -365,11 +470,29 @@ export function usePlayer(): PlayerState {
       }
     };
     runtime.playing[frequency] = stopVoice;
+    const voiceId = `voice-${runtime.nextVoiceId++}`;
+    runtime.voices[voiceId] = {
+      id: voiceId,
+      frequency,
+      noteId: toNoteId(frequency),
+      vowel: activeIpa,
+      source: playbackSource,
+      started: false,
+      ended: false,
+      releaseAt: undefined,
+      startOrder: runtime.nextStartOrder++,
+      stopVoice,
+      startTimerId: undefined,
+      deactivateTimerId: undefined,
+      cleanupTimerId: undefined,
+    };
+    scheduleVoiceActivation(voiceId, timeOffset);
 
     if (duration !== undefined) {
       const holdDuration = Math.max(0, duration);
       stopVoice({ releaseAt: startTime + holdDuration });
       scheduleStopCleanup(frequency, stopVoice, timeOffset + holdDuration);
+      scheduleVoiceDeactivation(voiceId, timeOffset + holdDuration);
     }
 
     setMetrics((current) => ({
@@ -380,10 +503,20 @@ export function usePlayer(): PlayerState {
 
   function stop(note: number | Note, stopAnalysis = false, atTime = 0) {
     const frequency = noteOrFreq2freq(note);
+    const matchingVoices = Object.values(runtime.voices).filter(
+      (voice) => Math.abs(voice.frequency - frequency) <= VOICE_MATCH_EPSILON && !voice.ended,
+    );
+    const time = runtime.audioContext.currentTime + Math.max(0, atTime);
+    matchingVoices.forEach((voice, index) => {
+      voice.stopVoice({ stopAnalysis: stopAnalysis && index === 0, releaseAt: time });
+      scheduleVoiceDeactivation(voice.id, atTime);
+    });
+
     const stopVoice = runtime.playing[frequency];
     if (!stopVoice) return;
-    const time = runtime.audioContext.currentTime + Math.max(0, atTime);
-    stopVoice({ stopAnalysis, releaseAt: time });
+    if (matchingVoices.length === 0) {
+      stopVoice({ stopAnalysis, releaseAt: time });
+    }
     if (atTime <= 0) {
       delete runtime.playing[frequency];
     } else {
@@ -392,9 +525,12 @@ export function usePlayer(): PlayerState {
   }
 
   function stopApiPlayback() {
-    const releaseAt = runtime.audioContext.currentTime + 0.01;
+    const releaseAt = runtime.audioContext.currentTime + RELEASE_RETRIGGER_SECONDS;
     Object.keys(runtime.playing).forEach((key) => {
       runtime.playing[Number(key)]?.({ releaseAt });
+    });
+    Object.values(runtime.voices).forEach((voice) => {
+      scheduleVoiceDeactivation(voice.id, RELEASE_RETRIGGER_SECONDS);
     });
   }
 
@@ -485,6 +621,11 @@ export function usePlayer(): PlayerState {
       runtime.playing[frequency]?.({ stopAnalysis: true });
       delete runtime.playing[frequency];
     });
+    Object.values(runtime.voices).forEach((voice) => {
+      clearVoiceTimers(voice);
+      delete runtime.voices[voice.id];
+    });
+    syncPlayerActivity();
     Object.keys(runtime.analyzerListeners).forEach((key) => {
       delete runtime.analyzerListeners[key];
     });

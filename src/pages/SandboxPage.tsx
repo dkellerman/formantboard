@@ -21,6 +21,7 @@ import { MidiButton } from "@/components/MidiButton";
 import { Visualizer } from "@/components/Visualizer";
 import { cn } from "@/lib/cn";
 import type { Formant } from "@/types";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -61,10 +62,13 @@ function NumberControl({
 }: NumberControlProps) {
   return (
     <label className={cn("flex min-w-0 flex-col gap-1", className)}>
-      {label ? <Label className={cn("text-xs font-normal text-zinc-500")}>{label}</Label> : null}
-      <div className={cn("flex h-11 items-center gap-2 rounded-md border border-zinc-300 px-1")}>
+      {label ? <Label className={cn("text-xs font-normal text-foreground")}>{label}</Label> : null}
+      <div className={cn("flex h-11 items-center gap-2 rounded-md border border-input px-1")}>
         <Input
-          className={cn("h-full border-0 text-base shadow-none ring-0 focus-visible:ring-0")}
+          className={cn(
+            "h-8 min-w-0 flex-1 border-0 bg-transparent px-2 text-base text-foreground",
+            "shadow-none ring-0 focus-visible:ring-0",
+          )}
           type="number"
           min={min}
           max={max}
@@ -82,7 +86,7 @@ function NumberControl({
             onChange?.(next);
           }}
         />
-        {suffix ? <span className={cn("text-sm text-zinc-700")}>{suffix}</span> : null}
+        {suffix ? <span className={cn("text-sm text-foreground")}>{suffix}</span> : null}
       </div>
     </label>
   );
@@ -112,7 +116,7 @@ function SwitchControl({
           onChange?.(checked);
         }}
       />
-      <Label className={cn("text-sm font-normal leading-none text-zinc-900")}>{label}</Label>
+      <Label className={cn("text-sm font-normal leading-none text-foreground")}>{label}</Label>
     </label>
   );
 }
@@ -140,12 +144,12 @@ function SelectControl({
   const selectedIndex = items.findIndex((item) => Object.is(item.value, modelValue));
   return (
     <label className={cn("flex min-w-0 flex-col gap-1", className)}>
-      {label ? <Label className={cn("text-xs font-normal text-zinc-500")}>{label}</Label> : null}
+      {label ? <Label className={cn("text-xs font-normal text-foreground")}>{label}</Label> : null}
       <Select
         value={selectedIndex >= 0 ? String(selectedIndex) : undefined}
         onValueChange={(value) => onUpdateModelValue?.(items[Number(value)]?.value)}
       >
-        <SelectTrigger className="h-11 text-base">
+        <SelectTrigger className={cn("h-11 text-base")}>
           <SelectValue placeholder="Select..." />
         </SelectTrigger>
         <SelectContent>
@@ -173,7 +177,7 @@ function CheckboxControl({ label, modelValue, onUpdateModelValue }: CheckboxCont
         checked={modelValue}
         onCheckedChange={(value) => onUpdateModelValue?.(value === true)}
       />
-      <Label className={cn("text-sm font-normal leading-none text-zinc-900")}>{label}</Label>
+      <Label className={cn("text-sm font-normal leading-none text-foreground")}>{label}</Label>
     </label>
   );
 }
@@ -419,6 +423,25 @@ export function SandboxPage() {
     }));
   }
 
+  function exportConfigAsJson() {
+    const payload = {
+      ipa,
+      settings,
+    };
+    const content = JSON.stringify(payload, null, 2);
+    const blob = new Blob([content], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+
+    anchor.href = url;
+    anchor.download = `formantboard-sandbox-config-${stamp}.json`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    URL.revokeObjectURL(url);
+  }
+
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === " ") {
@@ -436,12 +459,12 @@ export function SandboxPage() {
   return (
     <section
       className={cn(
-        "px-5 pb-8 text-xs",
+        "px-5 pb-8 text-xs text-foreground",
         "[&_.vui-input]:text-sm [&_.vui-select]:text-sm [&_.vui-field-label]:text-[11px]",
         "[&_.vui-switch-label]:text-xs [&_.vui-checkbox-label]:text-xs",
       )}
     >
-      <fieldset className="border-0 pb-2">
+      <fieldset className={cn("border-0 pb-2")}>
         <div className={cn("flex items-center gap-3 pr-8")}>
           <MidiButton
             text="MIDI"
@@ -459,17 +482,23 @@ export function SandboxPage() {
             }}
           />
           <MicButton />
+          <Button type="button" variant="outline" size="sm" onClick={exportConfigAsJson}>
+            Export Config JSON
+          </Button>
           {metrics.pitch ? (
             <div className={cn("ml-5 font-mono text-sm")}>
               Pitch: {metrics.pitch.freq.toFixed(1)}hz [{metrics.pitch.note}{" "}
               {metrics.pitch.cents > 0 ? "+" : ""}
-              {metrics.pitch.cents}c]
+              {metrics.pitch.cents}c]{" "}
+              {Number.isFinite(metrics.rms) ? (
+                <span className={cn("text-foreground")}>{metrics.rms.toFixed(1)}dB</span>
+              ) : null}
             </div>
           ) : null}
         </div>
       </fieldset>
 
-      <div className="mb-6 w-[95vw]">
+      <div className={cn("mb-6 w-[95vw]")}>
         <Visualizer vtype={VisType.POWER} height={80} combined />
         <Keyboard
           activeNotes={midiNotes}
@@ -485,7 +514,7 @@ export function SandboxPage() {
           "py-3",
         )}
       >
-        <label className="min-w-[170px]">
+        <label className={cn("min-w-[170px]")}>
           <SwitchControl
             label="F0"
             modelValue={f0.on}
@@ -497,12 +526,12 @@ export function SandboxPage() {
         </label>
         <div className={cn("flex flex-wrap gap-3")}>
           <F0Selector
-            className="w-[150px]"
+            className={cn("w-[150px]")}
             restartSignal={restartSignal}
             toggleSignal={toggleSignal}
           />
           <NumberControl
-            className="w-[150px]"
+            className={cn("w-[150px]")}
             label="Volume"
             modelValue={playerState.volume}
             max="100"
@@ -511,7 +540,7 @@ export function SandboxPage() {
             }}
           />
           <NumberControl
-            className="w-[150px]"
+            className={cn("w-[150px]")}
             label="Key Gain"
             modelValue={f0.keyGain}
             max="1"
@@ -522,7 +551,7 @@ export function SandboxPage() {
             onChange={restartF0}
           />
           <NumberControl
-            className="w-[150px]"
+            className={cn("w-[150px]")}
             label="Onset time"
             modelValue={f0.onsetTime}
             suffix="s"
@@ -533,7 +562,7 @@ export function SandboxPage() {
             onChange={restartF0}
           />
           <NumberControl
-            className="w-[150px]"
+            className={cn("w-[150px]")}
             label="Decay time"
             modelValue={f0.decayTime}
             suffix="s"
@@ -544,7 +573,7 @@ export function SandboxPage() {
             onChange={restartF0}
           />
           <SelectControl
-            className="w-[150px]"
+            className={cn("w-[150px]")}
             label="Source"
             modelValue={f0.source}
             items={[...F0_SOURCES]}
@@ -554,7 +583,7 @@ export function SandboxPage() {
             }}
           />
           <SelectControl
-            className="w-[150px]"
+            className={cn("w-[150px]")}
             label="Source Type"
             modelValue={f0.sourceType}
             items={sourceTypes}
@@ -564,14 +593,14 @@ export function SandboxPage() {
             }}
           />
           <NumberControl
-            className="w-[150px]"
+            className={cn("w-[150px]")}
             label="Latency"
             modelValue={metrics.latency}
             readonly
             suffix="s"
           />
           <NumberControl
-            className="w-[150px] font-mono"
+            className={cn("w-[150px] font-mono")}
             label="RMS Vol"
             modelValue={metrics.rms}
             readonly
@@ -580,7 +609,7 @@ export function SandboxPage() {
         </div>
       </fieldset>
 
-      <fieldset className="border-0 p-0">
+      <fieldset className={cn("border-0 p-0")}>
         <SwitchControl
           label="All effects"
           modelValue={allEffects}
@@ -595,7 +624,7 @@ export function SandboxPage() {
           "py-3",
         )}
       >
-        <label className="min-w-[170px]">
+        <label className={cn("min-w-[170px]")}>
           <SwitchControl
             label="Harmonics"
             modelValue={harmonics.on}
@@ -607,7 +636,7 @@ export function SandboxPage() {
         </label>
         <div className={cn("flex flex-wrap gap-3")}>
           <NumberControl
-            className="w-[150px]"
+            className={cn("w-[150px]")}
             label="Max num"
             modelValue={harmonics.max}
             onUpdateModelValue={(v) => {
@@ -616,7 +645,7 @@ export function SandboxPage() {
             onChange={restartF0}
           />
           <NumberControl
-            className="w-[150px]"
+            className={cn("w-[150px]")}
             label="Max freq"
             modelValue={harmonics.maxFreq}
             suffix="hz"
@@ -627,7 +656,7 @@ export function SandboxPage() {
             onChange={restartF0}
           />
           <NumberControl
-            className={cn("w-[150px] [&_.vui-suffix]:text-zinc-500")}
+            className={cn("w-[150px] [&_.vui-suffix]:text-foreground")}
             label="Tilt"
             modelValue={harmonics.tilt}
             min="-40"
@@ -640,7 +669,7 @@ export function SandboxPage() {
             onChange={restartF0}
           />
           <NumberControl
-            className="w-[150px]"
+            className={cn("w-[150px]")}
             label="Actual"
             modelValue={metrics.harmonics.length}
             readonly
@@ -653,7 +682,7 @@ export function SandboxPage() {
             />
           </div>
           {showHGains ? (
-            <div className={cn("basis-full overflow-auto bg-white pb-3 font-mono text-xs")}>
+            <div className={cn("basis-full overflow-auto bg-background pb-3 font-mono text-xs")}>
               {metrics.harmonics
                 .slice(0, 40)
                 .map(([, g]: [number, number, number], idx: number) => (
@@ -673,7 +702,7 @@ export function SandboxPage() {
           "py-3",
         )}
       >
-        <label className="min-w-[170px]">
+        <label className={cn("min-w-[170px]")}>
           <SwitchControl
             label="Flutter"
             modelValue={flutter.on}
@@ -685,7 +714,7 @@ export function SandboxPage() {
         </label>
         <div className={cn("flex flex-wrap gap-3")}>
           <NumberControl
-            className="w-[150px]"
+            className={cn("w-[150px]")}
             label="Amount"
             modelValue={flutter.amount}
             step=".5"
@@ -703,7 +732,7 @@ export function SandboxPage() {
           "py-3",
         )}
       >
-        <label className="min-w-[170px]">
+        <label className={cn("min-w-[170px]")}>
           <SwitchControl
             label="Vibrato"
             modelValue={vibrato.on}
@@ -715,7 +744,7 @@ export function SandboxPage() {
         </label>
         <div className={cn("flex flex-wrap gap-3")}>
           <NumberControl
-            className="w-[150px]"
+            className={cn("w-[150px]")}
             label="Rate"
             modelValue={vibrato.rate}
             suffix="hz"
@@ -726,7 +755,7 @@ export function SandboxPage() {
             onChange={restartF0}
           />
           <NumberControl
-            className="w-[150px]"
+            className={cn("w-[150px]")}
             label="Extent"
             modelValue={vibrato.extent}
             suffix="hz"
@@ -737,7 +766,7 @@ export function SandboxPage() {
             onChange={restartF0}
           />
           <NumberControl
-            className="w-[150px]"
+            className={cn("w-[150px]")}
             label="Jitter"
             modelValue={vibrato.jitter}
             step=".5"
@@ -747,7 +776,7 @@ export function SandboxPage() {
             onChange={restartF0}
           />
           <NumberControl
-            className="w-[150px]"
+            className={cn("w-[150px]")}
             label="Onset time"
             modelValue={vibrato.onsetTime}
             suffix="s"
@@ -766,7 +795,7 @@ export function SandboxPage() {
           "py-3",
         )}
       >
-        <div className={cn("min-w-[170px] pt-1 font-medium text-zinc-900")}>Formants</div>
+        <div className={cn("min-w-[170px] pt-1 font-medium text-foreground")}>Formants</div>
         <div className={cn("flex flex-wrap gap-3")}>
           <div className={cn("flex h-11 items-center pt-4")}>
             <SwitchControl
@@ -779,7 +808,7 @@ export function SandboxPage() {
             />
           </div>
           <NumberControl
-            className="w-[170px]"
+            className={cn("w-[170px]")}
             label="Cascade % default"
             modelValue={Math.round(cascadePctDefault * 100)}
             min={0}
@@ -792,7 +821,7 @@ export function SandboxPage() {
             onChange={restartF0}
           />
           <NumberControl
-            className="w-[170px]"
+            className={cn("w-[170px]")}
             label="Cascade % this IPA"
             modelValue={Math.round(cascadePctForIPA * 100)}
             min={0}
@@ -805,7 +834,7 @@ export function SandboxPage() {
             onChange={restartF0}
           />
           <IPASelector
-            className="w-[200px]"
+            className={cn("w-[200px]")}
             onChange={restartF0}
             ipaSet={ALL_IPA}
             value={ipa}
@@ -813,7 +842,7 @@ export function SandboxPage() {
             showPopout={false}
           />
           <IPASelector
-            className="w-[200px]"
+            className={cn("w-[200px]")}
             onChange={restartF0}
             ipaSet={COMMON_IPA}
             title="Common"
@@ -822,7 +851,7 @@ export function SandboxPage() {
             showPopout={false}
           />
           <IPASelector
-            className="w-[200px]"
+            className={cn("w-[200px]")}
             onChange={restartF0}
             ipaSet={VOWELS}
             title="Vowels"
@@ -831,7 +860,7 @@ export function SandboxPage() {
             showPopout={false}
           />
           <IPASelector
-            className="w-[200px]"
+            className={cn("w-[200px]")}
             onChange={restartF0}
             ipaSet={CONSONANTS}
             title="Consonants"
@@ -840,7 +869,7 @@ export function SandboxPage() {
             showPopout={false}
           />
           <IPASelector
-            className="w-[200px]"
+            className={cn("w-[200px]")}
             onChange={restartF0}
             ipaSet={FRICATIVES}
             title="Fricatives"
@@ -859,7 +888,7 @@ export function SandboxPage() {
               "py-3",
             )}
           >
-            <label className="min-w-[170px]">
+            <label className={cn("min-w-[170px]")}>
               <SwitchControl
                 label={`F${idx + 1}`}
                 modelValue={formantSpec.on}
@@ -871,7 +900,7 @@ export function SandboxPage() {
             </label>
             <div className={cn("flex flex-wrap gap-3")}>
               <NumberControl
-                className="w-[150px]"
+                className={cn("w-[150px]")}
                 label="Freq"
                 modelValue={formantSpec.frequency}
                 suffix="hz"
@@ -882,7 +911,7 @@ export function SandboxPage() {
                 onChange={restartF0}
               />
               <NumberControl
-                className="w-[150px]"
+                className={cn("w-[150px]")}
                 label="Q"
                 modelValue={formantSpec.Q}
                 max="1"
@@ -893,7 +922,7 @@ export function SandboxPage() {
                 onChange={restartF0}
               />
               <NumberControl
-                className="w-[150px]"
+                className={cn("w-[150px]")}
                 label="Gain"
                 modelValue={formantSpec.gain}
                 step=".1"
@@ -913,7 +942,7 @@ export function SandboxPage() {
           "py-3",
         )}
       >
-        <label className="min-w-[170px]">
+        <label className={cn("min-w-[170px]")}>
           <SwitchControl
             label="Compression"
             modelValue={compression.on}
@@ -925,7 +954,7 @@ export function SandboxPage() {
         </label>
         <div className={cn("flex flex-wrap gap-3")}>
           <NumberControl
-            className="w-[150px]"
+            className={cn("w-[150px]")}
             label="Treshold"
             modelValue={compression.threshold}
             onUpdateModelValue={(v) => {
@@ -934,7 +963,7 @@ export function SandboxPage() {
             onChange={restartF0}
           />
           <NumberControl
-            className="w-[150px]"
+            className={cn("w-[150px]")}
             label="Knee"
             modelValue={compression.knee}
             onUpdateModelValue={(v) => {
@@ -943,7 +972,7 @@ export function SandboxPage() {
             onChange={restartF0}
           />
           <NumberControl
-            className="w-[150px]"
+            className={cn("w-[150px]")}
             label="Ratio"
             modelValue={compression.ratio}
             onUpdateModelValue={(v) => {
@@ -952,7 +981,7 @@ export function SandboxPage() {
             onChange={restartF0}
           />
           <NumberControl
-            className="w-[150px]"
+            className={cn("w-[150px]")}
             label="Attack"
             modelValue={compression.attack}
             onUpdateModelValue={(v) => {
@@ -961,7 +990,7 @@ export function SandboxPage() {
             onChange={restartF0}
           />
           <NumberControl
-            className="w-[150px]"
+            className={cn("w-[150px]")}
             label="Release"
             modelValue={compression.release}
             onUpdateModelValue={(v) => {
@@ -970,14 +999,14 @@ export function SandboxPage() {
             onChange={restartF0}
           />
           <NumberControl
-            className="w-[150px]"
+            className={cn("w-[150px]")}
             label="Reduction"
             modelValue={metrics.compression}
             readonly
             suffix="dB"
           />
           <meter
-            className="mt-2"
+            className={cn("mt-2")}
             max={20}
             optimum={0}
             low={0}

@@ -34,7 +34,7 @@ export function Visualizer({
   vtype = VisType.POWER,
   combined = false,
 }: VisualizerProps) {
-  const { settings, ipa, player: playerState, playerRuntimeRef } = useAppContext();
+  const { settings, ipa, playerRuntimeRef } = useAppContext();
   const player = usePlayer();
   const keyboardLayout = useKeyboardLayout();
   const ipaSpec = settings.formants.ipa[ipa];
@@ -178,9 +178,6 @@ export function Visualizer({
     overlayRef.current?.removeChildren();
     appRef.current?.stage.removeChildren();
 
-    if (playerState.rafId) cancelAnimationFrame(playerState.rafId);
-    player.setRafId(undefined);
-
     appRef.current = null;
     waveRef.current = null;
     powerRef.current = null;
@@ -215,7 +212,7 @@ export function Visualizer({
     powerRef.current = power;
     overlayRef.current = overlay;
 
-    if (latestRef.current.vtype === VisType.POWER) {
+    if (latestRef.current.vtype === VisType.POWER || latestRef.current.vtype === VisType.MIXED) {
       renderOverlay();
     }
   }
@@ -235,9 +232,14 @@ export function Visualizer({
       onFrame: (data: AnalyzerFrameData, analyzer: AnalyserNode) => {
         if (!appRef.current) init();
 
-        if (latestRef.current.vtype === VisType.POWER) {
+        if (
+          latestRef.current.vtype === VisType.POWER ||
+          latestRef.current.vtype === VisType.MIXED
+        ) {
           renderPower(data, analyzer);
-          if (latestRef.current.combined) renderWave(data);
+          if (latestRef.current.vtype === VisType.MIXED || latestRef.current.combined) {
+            renderWave(data);
+          }
           return;
         }
 
@@ -258,7 +260,7 @@ export function Visualizer({
     <section className={cn("visualizer m-0 p-0", `vtype-${vtype}`)}>
       <canvas
         ref={canvasRef}
-        className={cn("m-0 block w-full border border-zinc-400 p-0")}
+        className={cn("m-0 block w-full border border-border p-0")}
         width={width}
         height={height}
       />

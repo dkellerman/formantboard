@@ -90,16 +90,16 @@ export function F0Selector({
 
   return (
     <label className={cn("flex min-w-0 flex-col gap-1", className)}>
-      <Label className={cn("text-xs font-normal text-zinc-500")}>Fundamental</Label>
+      <Label className={cn("text-xs font-normal text-foreground")}>Fundamental</Label>
       <div
         className={cn(
-          "flex h-11 items-center gap-1 rounded-md border border-zinc-300",
+          "flex h-11 items-center gap-1 rounded-md border border-input",
           "bg-transparent px-1",
         )}
       >
         <Input
           className={cn(
-            "h-full min-w-0 flex-1 border-0 bg-transparent px-3 text-base",
+            "h-8 min-w-0 flex-1 border-0 bg-transparent px-2 text-base text-foreground",
             "shadow-none ring-0 focus-visible:ring-0",
           )}
           value={f0}
@@ -127,8 +127,8 @@ export function F0Selector({
           className={cn(
             "inline-flex h-8 min-w-[34px] items-center justify-center px-2 text-sm shadow-none",
             playingF0
-              ? "text-red-600 hover:bg-red-100 hover:text-red-700"
-              : "text-green-700 hover:bg-green-100 hover:text-green-800",
+              ? "text-destructive hover:bg-destructive/10 hover:text-destructive"
+              : "text-emerald-600 hover:bg-emerald-500/10 hover:text-emerald-600",
           )}
           type="button"
           variant="ghost"

@@ -40,9 +40,9 @@ const ToggleGroupItem = React.forwardRef<
           variant: context.variant || variant || "outline",
           size: context.size || size || "sm",
         }),
-        "min-w-9 bg-zinc-200 text-zinc-900 hover:bg-zinc-300",
-        "data-[state=on]:bg-white data-[state=on]:text-zinc-900",
-        "data-[state=on]:hover:bg-white",
+        "min-w-9 bg-muted text-foreground hover:bg-accent",
+        "data-[state=on]:bg-background data-[state=on]:text-foreground",
+        "data-[state=on]:hover:bg-background",
         className,
       )}
       {...props}

@@ -124,11 +124,13 @@ export enum MidiStatus {
 export enum VisType {
   POWER,
   WAVE,
+  MIXED,
 }
 
 export const VIS_TYPES = [
   { title: "Spectrum", value: VisType.POWER },
   { title: "Wave", value: VisType.WAVE },
+  { title: "Mixed", value: VisType.MIXED },
 ];
 
 export const F0_SOURCE_OSC = "osc";

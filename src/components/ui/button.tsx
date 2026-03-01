@@ -6,17 +6,19 @@ import { cn } from "@/lib/cn";
 const buttonVariants = cva(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm " +
     "font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 " +
-    "focus-visible:ring-zinc-950 disabled:pointer-events-none disabled:opacity-50 " +
+    "motion-safe:transition-transform motion-safe:hover:scale-[1.04] " +
+    "focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 " +
     "[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        default: "bg-zinc-900 text-zinc-50 shadow hover:bg-zinc-900/90",
-        destructive: "bg-red-500 text-zinc-50 shadow-sm hover:bg-red-500/90",
-        outline: "border border-zinc-200 bg-white shadow-sm hover:bg-zinc-100 hover:text-zinc-900",
-        secondary: "bg-zinc-100 text-zinc-900 shadow-sm hover:bg-zinc-100/80",
-        ghost: "hover:bg-zinc-100 hover:text-zinc-900",
-        link: "text-zinc-900 underline-offset-4 hover:underline",
+        default: "bg-primary text-primary-foreground shadow-xs hover:bg-primary/90",
+        destructive: "bg-destructive text-white shadow-xs hover:bg-destructive/90",
+        outline:
+          "border border-input bg-background shadow-xs hover:bg-accent hover:text-accent-foreground",
+        secondary: "bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80",
+        ghost: "hover:bg-accent hover:text-accent-foreground",
+        link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
         default: "h-9 px-4 py-2",

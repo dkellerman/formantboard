@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const VOWEL_LAYOUT = [
   {
@@ -98,60 +98,65 @@ export function IPASelector({
   return (
     <section className={cn("flex flex-row items-center", className)}>
       <div className={cn("flex w-full min-w-0 flex-col gap-1")}>
-        <div className="flex min-h-4 items-center gap-1">
+        <div className={cn("flex min-h-4 items-center gap-1")}>
           {showPopout ? (
             <Popover modal={false} open={pickerOpen} onOpenChange={setPickerOpen}>
-              <Label className={cn("text-xs font-normal text-zinc-500")}>{title ?? "Vowel"}</Label>
+              <Label className={cn("text-xs font-normal text-foreground")}>
+                {title ?? "Vowel"}
+              </Label>
               <PopoverTrigger asChild>
                 <button
                   type="button"
                   className={cn(
                     "inline-flex h-4 w-4 items-center justify-center rounded",
-                    "text-zinc-500 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-1",
-                    "focus-visible:ring-zinc-950",
+                    "text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-1",
+                    "focus-visible:ring-ring",
                   )}
                   aria-label="Open vowel picker"
                   title="Open vowel picker"
                 >
-                  <SquareArrowOutUpRight className="size-3.5" />
+                  <SquareArrowOutUpRight className={cn("size-3.5")} />
                 </button>
               </PopoverTrigger>
-              <PopoverAnchor asChild>
-                <div className="pointer-events-none fixed right-3 top-3 h-0 w-0" />
-              </PopoverAnchor>
-
               <PopoverContent
-                side="bottom"
-                align="end"
-                className="w-[min(92vw,520px)] p-2"
+                align="start"
+                className={cn("w-[min(92vw,520px)] p-2")}
                 avoidCollisions={true}
                 onInteractOutside={(event) => event.preventDefault()}
               >
-                <header className="mb-2 flex items-center justify-between gap-1.5 border-b border-zinc-200 pb-1.5">
-                  <h3 className="text-xs font-semibold text-zinc-900">Vowel Picker</h3>
+                <header
+                  className={cn(
+                    "mb-2 flex items-center justify-between gap-1.5 border-b border-border pb-1.5",
+                  )}
+                >
+                  <h3 className={cn("text-xs font-semibold text-foreground")}>Vowel Picker</h3>
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6 text-zinc-500"
+                    className={cn("h-6 w-6 text-muted-foreground")}
                     onClick={() => setPickerOpen(false)}
                     aria-label="Close vowel picker"
                   >
-                    <X className="size-3.5" />
+                    <X className={cn("size-3.5")} />
                   </Button>
                 </header>
 
                 {groupedVowels.length > 0 ? (
-                  <div className="grid gap-2 sm:grid-cols-3">
+                  <div className={cn("grid gap-2 sm:grid-cols-3")}>
                     {groupedVowels.map((group) => (
                       <section
                         key={group.title}
-                        className="rounded-md border border-zinc-200 p-1.5"
+                        className={cn("rounded-md border border-border p-1.5")}
                       >
-                        <h4 className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-zinc-500">
+                        <h4
+                          className={cn(
+                            "mb-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground",
+                          )}
+                        >
                           {group.title}
                         </h4>
-                        <div className="grid gap-1.5">
+                        <div className={cn("grid gap-1.5")}>
                           {group.items.map((item) => {
                             const selected = item.value === value;
                             return (
@@ -161,16 +166,18 @@ export function IPASelector({
                                 className={cn(
                                   "flex items-center justify-between rounded-md border px-2 py-1.5 text-left",
                                   selected
-                                    ? "border-zinc-900 bg-zinc-900 text-white"
-                                    : "border-zinc-300 bg-white text-zinc-900 hover:bg-zinc-100",
+                                    ? "border-primary bg-primary text-primary-foreground"
+                                    : "border-input bg-background text-foreground hover:bg-accent",
                                 )}
                                 onClick={() => handleSelect(item.value as IPAType)}
                               >
-                                <span className="text-base leading-none">{item.value}</span>
+                                <span className={cn("text-base leading-none")}>{item.value}</span>
                                 <span
                                   className={cn(
                                     "text-xs",
-                                    selected ? "text-zinc-200" : "text-zinc-500",
+                                    selected
+                                      ? "text-primary-foreground/80"
+                                      : "text-muted-foreground",
                                   )}
                                 >
                                   {IPA_WORDS[item.value as IPAType]}
@@ -187,11 +194,15 @@ export function IPASelector({
                 {fallbackItems.length > 0 ? (
                   <section className={cn(groupedVowels.length > 0 ? "mt-2" : "")}>
                     {groupedVowels.length > 0 ? (
-                      <h4 className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-zinc-500">
+                      <h4
+                        className={cn(
+                          "mb-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground",
+                        )}
+                      >
                         Other
                       </h4>
                     ) : null}
-                    <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 md:grid-cols-4">
+                    <div className={cn("grid grid-cols-2 gap-1.5 sm:grid-cols-3 md:grid-cols-4")}>
                       {fallbackItems.map((item) => {
                         const selected = item.value === value;
                         return (
@@ -201,16 +212,16 @@ export function IPASelector({
                             className={cn(
                               "rounded-md border px-2 py-1.5 text-left",
                               selected
-                                ? "border-zinc-900 bg-zinc-900 text-white"
-                                : "border-zinc-300 bg-white text-zinc-900 hover:bg-zinc-100",
+                                ? "border-primary bg-primary text-primary-foreground"
+                                : "border-input bg-background text-foreground hover:bg-accent",
                             )}
                             onClick={() => handleSelect(item.value as IPAType)}
                           >
-                            <div className="text-base leading-none">{item.value}</div>
+                            <div className={cn("text-base leading-none")}>{item.value}</div>
                             <div
                               className={cn(
                                 "text-xs",
-                                selected ? "text-zinc-200" : "text-zinc-500",
+                                selected ? "text-primary-foreground/80" : "text-muted-foreground",
                               )}
                             >
                               {IPA_WORDS[item.value as IPAType]}
@@ -224,7 +235,7 @@ export function IPASelector({
               </PopoverContent>
             </Popover>
           ) : (
-            <Label className={cn("text-xs font-normal text-zinc-500")}>{title ?? "Vowel"}</Label>
+            <Label className={cn("text-xs font-normal text-foreground")}>{title ?? "Vowel"}</Label>
           )}
         </div>
 
@@ -234,7 +245,7 @@ export function IPASelector({
             handleSelect(nextValue as IPAType);
           }}
         >
-          <SelectTrigger className="h-11 text-base">
+          <SelectTrigger className={cn("h-11 text-base")}>
             <SelectValue placeholder="Select..." />
           </SelectTrigger>
           <SelectContent>

@@ -39,10 +39,6 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
   );
   const cascadePctMultiplierForIPA = Math.max(0, settings.formants.cascadePctByIPA?.[ipa] ?? 1);
   const cascadePctForIPA = Math.max(0, Math.min(1, cascadePctDefault * cascadePctMultiplierForIPA));
-  const hasCascadePctOverride = Object.prototype.hasOwnProperty.call(
-    settings.formants.cascadePctByIPA ?? {},
-    ipa,
-  );
   const vibrato = settings.vibrato;
 
   function restartF0() {
@@ -144,6 +140,25 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
     restartF0();
   }
 
+  const rangeInputClass = cn(
+    "h-2 w-full appearance-none bg-transparent",
+    "[&::-webkit-slider-runnable-track]:h-1.5 [&::-webkit-slider-runnable-track]:rounded-full",
+    "[&::-webkit-slider-runnable-track]:border [&::-webkit-slider-runnable-track]:border-border",
+    "[&::-webkit-slider-runnable-track]:bg-secondary",
+    "[&::-moz-range-track]:h-1.5 [&::-moz-range-track]:rounded-full",
+    "[&::-moz-range-track]:border [&::-moz-range-track]:border-border",
+    "[&::-moz-range-track]:bg-secondary",
+    "[&::-webkit-slider-thumb]:-mt-1 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:w-3.5",
+    "[&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full",
+    "[&::-webkit-slider-thumb]:border [&::-webkit-slider-thumb]:border-primary",
+    "[&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:shadow-sm",
+    "[&::-webkit-slider-thumb]:ring-2 [&::-webkit-slider-thumb]:ring-background",
+    "[&::-moz-range-thumb]:h-3.5 [&::-moz-range-thumb]:w-3.5 [&::-moz-range-thumb]:rounded-full",
+    "[&::-moz-range-thumb]:border [&::-moz-range-thumb]:border-primary",
+    "[&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:shadow-sm",
+    "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+  );
+
   return (
     <section
       className={cn(
@@ -156,68 +171,94 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
     >
       <F0Selector className={cn("w-[140px] sm:w-[150px]")} restartSignal={restartSignal} />
 
+      <IPASelector
+        className={cn("w-[200px] max-w-full sm:w-[220px]")}
+        value={ipa}
+        onSelect={setIPA}
+        onChange={restartF0}
+      />
+
       <div className={cn("inline-flex min-w-0 flex-col gap-1")}>
-        <div className="flex items-center gap-1">
-          <Label className={cn("text-xs font-normal text-zinc-500")}>Formants</Label>
+        <div className={cn("flex items-center gap-1")}>
+          <Label className={cn("text-xs font-normal text-muted-foreground")}>Formants</Label>
           <Popover modal={false} open={formantPopoverOpen} onOpenChange={setFormantPopoverOpen}>
             <PopoverTrigger asChild>
               <button
                 type="button"
                 className={cn(
                   "inline-flex h-4 w-4 items-center justify-center rounded",
-                  "text-zinc-500 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-1",
-                  "focus-visible:ring-zinc-950",
+                  "text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-1",
+                  "focus-visible:ring-ring",
                 )}
                 aria-label="Open formant controls"
                 title="Open formant controls"
               >
-                <SquareArrowOutUpRight className="size-3.5" />
+                <SquareArrowOutUpRight className={cn("size-3.5")} />
               </button>
             </PopoverTrigger>
             <PopoverContent
               align="start"
-              className="w-[220px] p-1.5"
+              className={cn("w-[260px] p-1.5")}
               onInteractOutside={(event) => event.preventDefault()}
             >
-              <header className="mb-1.5 flex items-center justify-between gap-1 border-b border-zinc-200 pb-1">
-                <h3 className="text-xs font-semibold text-zinc-900">Formants</h3>
+              <header
+                className={cn(
+                  "mb-1.5 flex items-center justify-between gap-1 border-b border-border pb-1",
+                )}
+              >
+                <h3 className={cn("text-xs font-semibold text-foreground")}>Formants</h3>
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="h-5 w-5 text-zinc-500"
+                  className={cn("h-5 w-5 text-muted-foreground")}
                   onClick={() => setFormantPopoverOpen(false)}
                   aria-label="Close formant controls"
                 >
-                  <X className="size-3" />
+                  <X className={cn("size-3")} />
                 </Button>
               </header>
 
-              <div className="grid gap-1">
+              <div className={cn("grid gap-1")}>
+                <div
+                  className={cn(
+                    "grid grid-cols-[20px_30px_repeat(3,minmax(0,1fr))] items-center gap-1 px-1 text-[9px] uppercase tracking-wide text-muted-foreground",
+                  )}
+                >
+                  <span />
+                  <span />
+                  <span className={cn("text-center")}>Freq</span>
+                  <span className={cn("text-center")}>Q</span>
+                  <span className={cn("text-center")}>Gain</span>
+                </div>
+
                 {ipaSpec.map((formant, idx) => (
                   <div
                     key={idx}
-                    className="grid grid-cols-[24px_40px_minmax(0,1fr)_16px] items-center gap-1 rounded border border-zinc-200 px-1 py-1"
+                    className={cn(
+                      "grid grid-cols-[20px_30px_repeat(3,minmax(0,1fr))] items-center gap-1 rounded border border-border px-1 py-1",
+                    )}
                   >
-                    <div className="text-[11px] font-medium text-zinc-900">F{idx + 1}</div>
+                    <div className={cn("text-[10px] font-medium text-foreground")}>F{idx + 1}</div>
                     <button
                       type="button"
                       className={cn(
-                        "rounded border px-1 py-0.5 text-[10px] leading-none",
+                        "rounded border px-0 py-0.5 text-[9px] leading-none",
                         formant.on
-                          ? "border-zinc-900 bg-zinc-900 text-white"
-                          : "border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100",
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-input bg-background text-foreground hover:bg-accent",
                       )}
                       onClick={() => updateTemporaryFormant(idx, { on: !formant.on })}
                     >
                       {formant.on ? "On" : "Off"}
                     </button>
                     <Input
-                      className="h-6 px-1 text-xs"
+                      aria-label={`Formant F${idx + 1} frequency`}
+                      className={cn("h-6 px-1 text-[11px]")}
                       type="number"
                       step={10}
-                      min={50}
-                      max={5000}
+                      min={0}
+                      max={12000}
                       value={Number.isFinite(formant.frequency) ? formant.frequency : 0}
                       onInput={(event) => {
                         const next = Number((event.target as HTMLInputElement).value);
@@ -225,19 +266,47 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
                         updateTemporaryFormant(idx, { frequency: next });
                       }}
                     />
-                    <div className="text-[10px] text-zinc-500">Hz</div>
+                    <Input
+                      aria-label={`Formant F${idx + 1} Q`}
+                      className={cn("h-6 px-1 text-[11px]")}
+                      type="number"
+                      step={0.1}
+                      min={0.1}
+                      max={40}
+                      value={Number.isFinite(formant.Q) ? formant.Q : 0}
+                      onInput={(event) => {
+                        const next = Number((event.target as HTMLInputElement).value);
+                        if (!Number.isFinite(next)) return;
+                        updateTemporaryFormant(idx, { Q: next });
+                      }}
+                    />
+                    <Input
+                      aria-label={`Formant F${idx + 1} gain`}
+                      className={cn("h-6 px-1 text-[11px]")}
+                      type="number"
+                      step={0.1}
+                      min={-40}
+                      max={60}
+                      value={Number.isFinite(formant.gain) ? formant.gain : 0}
+                      onInput={(event) => {
+                        const next = Number((event.target as HTMLInputElement).value);
+                        if (!Number.isFinite(next)) return;
+                        updateTemporaryFormant(idx, { gain: next });
+                      }}
+                    />
                   </div>
                 ))}
 
-                <label className="grid grid-cols-[52px_minmax(0,1fr)_42px_12px] items-center gap-1 rounded border border-zinc-200 px-1 py-1">
-                  <span className="flex flex-col leading-none">
-                    <span className="text-[11px] text-zinc-500">Cascade</span>
-                    <span className="text-[9px] text-zinc-400">
-                      {hasCascadePctOverride ? "IPA" : "Default"}
-                    </span>
+                <label
+                  className={cn(
+                    "grid grid-cols-[52px_minmax(0,1fr)_42px_12px] items-center gap-1 rounded border border-border px-1 py-1",
+                  )}
+                >
+                  <span className={cn("flex flex-col leading-none")}>
+                    <span className={cn("text-[11px] text-muted-foreground")}>Cascade</span>
                   </span>
                   <input
-                    className="h-2 w-full accent-zinc-900"
+                    className={rangeInputClass}
                     type="range"
                     step={1}
                     min={0}
@@ -250,7 +319,7 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
                     }}
                   />
                   <Input
-                    className="h-6 px-1 text-right text-xs"
+                    className={cn("h-6 px-1 text-right text-xs")}
                     type="number"
                     step={1}
                     min={0}
@@ -262,7 +331,7 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
                       updateFormantCascadePct(next / 100);
                     }}
                   />
-                  <span className="text-[10px] text-zinc-500">%</span>
+                  <span className={cn("text-[10px] text-muted-foreground")}>%</span>
                 </label>
               </div>
             </PopoverContent>
@@ -270,8 +339,8 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
         </div>
         <ToggleGroup
           className={cn(
-            "h-11 w-[140px] gap-0 rounded-md border border-zinc-300",
-            "bg-zinc-200 sm:w-[150px]",
+            "h-11 w-[140px] gap-0 rounded-md border border-input",
+            "bg-muted sm:w-[150px]",
           )}
           type="multiple"
           value={formantButtons}
@@ -304,11 +373,13 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
                   }
                   className={cn(
                     "h-full w-full rounded-none border-0",
-                    idx === 0 ? "border-l-0" : "border-l border-zinc-300",
+                    idx === 0 ? "border-l-0" : "border-l border-border",
                     "px-0 py-0 text-base font-normal leading-none",
-                    "bg-zinc-200 text-zinc-900 hover:bg-zinc-300",
-                    "data-[state=on]:bg-white data-[state=on]:text-zinc-900",
-                    "data-[state=on]:hover:bg-white",
+                    "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+                    "data-[state=on]:bg-background data-[state=on]:text-foreground",
+                    "data-[state=on]:hover:bg-background",
+                    "dark:data-[state=on]:bg-black dark:data-[state=on]:text-white",
+                    "dark:data-[state=on]:hover:bg-black",
                   )}
                 >
                   F{idx + 1}
@@ -317,7 +388,8 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
                   className={cn(
                     "pointer-events-none absolute left-1/2 top-full z-[70]",
                     "mt-1 hidden -translate-x-1/2",
-                    "whitespace-nowrap rounded bg-zinc-900 px-2 py-1 text-xs text-white shadow-lg",
+                    "whitespace-nowrap rounded border border-border bg-popover px-2 py-1",
+                    "text-xs text-popover-foreground shadow-lg",
                     "group-hover:block",
                   )}
                 >
@@ -332,18 +404,14 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
         </ToggleGroup>
       </div>
 
-      <IPASelector
-        className={cn("w-[200px] max-w-full sm:w-[220px]")}
-        value={ipa}
-        onSelect={setIPA}
-        onChange={restartF0}
-      />
-
       <label className={cn("flex w-[136px] max-w-full min-w-0 flex-col gap-1")}>
-        <Label className={cn("text-xs font-normal text-zinc-500")}>Tilt</Label>
-        <div className={cn("flex h-11 items-center gap-2 rounded-md border border-zinc-300 px-1")}>
+        <Label className={cn("text-xs font-normal text-muted-foreground")}>Tilt</Label>
+        <div className={cn("flex h-11 items-center gap-2 rounded-md border border-input px-1")}>
           <Input
-            className={cn("h-full border-0 shadow-none ring-0 focus-visible:ring-0")}
+            className={cn(
+              "h-8 min-w-0 flex-1 border-0 bg-transparent px-2 text-foreground",
+              "shadow-none ring-0 focus-visible:ring-0",
+            )}
             type="number"
             min={-20.0}
             max={0.0}
@@ -357,12 +425,12 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
             }}
             onChange={restartF0}
           />
-          <span className={cn("px-1 text-sm text-zinc-500")}>dB/oct</span>
+          <span className={cn("px-1 text-sm text-muted-foreground")}>dB/oct</span>
         </div>
       </label>
 
       <div className={cn("flex w-[150px] max-w-full min-w-0 flex-col gap-1")}>
-        <div className="flex min-h-4 items-center gap-1">
+        <div className={cn("flex min-h-4 items-center gap-1")}>
           <Switch
             checked={vibrato.on}
             onCheckedChange={(value) => commitVibrato({ on: value })}
@@ -370,55 +438,62 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
               "h-4 w-7 shrink-0",
               "[&>span]:h-3 [&>span]:w-3",
               "data-[state=checked]:[&>span]:translate-x-3",
-              "data-[state=checked]:bg-zinc-900 data-[state=unchecked]:bg-zinc-300",
             )}
             aria-label="Toggle vibrato"
           />
           <Popover modal={false} open={vibratoPopoverOpen} onOpenChange={setVibratoPopoverOpen}>
-            <Label className={cn("text-xs font-normal text-zinc-500")}>Vibrato</Label>
+            <Label className={cn("text-xs font-normal text-muted-foreground")}>Vibrato</Label>
             <PopoverTrigger asChild>
               <button
                 type="button"
                 className={cn(
                   "inline-flex h-4 w-4 items-center justify-center rounded",
-                  "text-zinc-500 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-1",
-                  "focus-visible:ring-zinc-950",
+                  "text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-1",
+                  "focus-visible:ring-ring",
                 )}
                 aria-label="Open vibrato controls"
                 title="Open vibrato controls"
               >
-                <SquareArrowOutUpRight className="size-3.5" />
+                <SquareArrowOutUpRight className={cn("size-3.5")} />
               </button>
             </PopoverTrigger>
             <PopoverContent
               align="start"
-              className="w-[220px] p-1.5"
+              className={cn("w-[220px] p-1.5")}
               onInteractOutside={(event) => event.preventDefault()}
             >
-              <header className="mb-1.5 flex items-center justify-between gap-1 border-b border-zinc-200 pb-1">
-                <h3 className="text-xs font-semibold text-zinc-900">Vibrato</h3>
+              <header
+                className={cn(
+                  "mb-1.5 flex items-center justify-between gap-1 border-b border-border pb-1",
+                )}
+              >
+                <h3 className={cn("text-xs font-semibold text-foreground")}>Vibrato</h3>
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="h-5 w-5 text-zinc-500"
+                  className={cn("h-5 w-5 text-muted-foreground")}
                   onClick={() => setVibratoPopoverOpen(false)}
                   aria-label="Close vibrato controls"
                 >
-                  <X className="size-3" />
+                  <X className={cn("size-3")} />
                 </Button>
               </header>
 
-              <div className="grid gap-1">
-                <div className="grid grid-cols-[42px_minmax(0,1fr)] items-center gap-1 rounded border border-zinc-200 px-1 py-1">
-                  <span className="text-[11px] text-zinc-500">On</span>
+              <div className={cn("grid gap-1")}>
+                <div
+                  className={cn(
+                    "grid grid-cols-[42px_minmax(0,1fr)] items-center gap-1 rounded border border-border px-1 py-1",
+                  )}
+                >
+                  <span className={cn("text-[11px] text-muted-foreground")}>On</span>
                   <button
                     type="button"
                     className={cn(
                       "rounded border px-1 py-0.5 text-[10px] leading-none",
                       vibrato.on
-                        ? "border-zinc-900 bg-zinc-900 text-white"
-                        : "border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100",
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-input bg-background text-foreground hover:bg-accent",
                     )}
                     onClick={() => commitVibrato({ on: !vibrato.on })}
                   >
@@ -426,10 +501,14 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
                   </button>
                 </div>
 
-                <label className="grid grid-cols-[42px_minmax(0,1fr)_48px] items-center gap-1 rounded border border-zinc-200 px-1 py-1">
-                  <span className="text-[11px] text-zinc-500">Rate</span>
+                <label
+                  className={cn(
+                    "grid grid-cols-[42px_minmax(0,1fr)_48px] items-center gap-1 rounded border border-border px-1 py-1",
+                  )}
+                >
+                  <span className={cn("text-[11px] text-muted-foreground")}>Rate</span>
                   <input
-                    className="h-2 w-full accent-zinc-900"
+                    className={rangeInputClass}
                     type="range"
                     step={0.1}
                     min={0}
@@ -443,7 +522,7 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
                     onChange={restartF0}
                   />
                   <Input
-                    className="h-6 px-1 text-right text-xs"
+                    className={cn("h-6 px-1 text-right text-xs")}
                     type="number"
                     step={0.1}
                     min={0}
@@ -458,10 +537,14 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
                   />
                 </label>
 
-                <label className="grid grid-cols-[42px_minmax(0,1fr)_48px] items-center gap-1 rounded border border-zinc-200 px-1 py-1">
-                  <span className="text-[11px] text-zinc-500">Extent</span>
+                <label
+                  className={cn(
+                    "grid grid-cols-[42px_minmax(0,1fr)_48px] items-center gap-1 rounded border border-border px-1 py-1",
+                  )}
+                >
+                  <span className={cn("text-[11px] text-muted-foreground")}>Extent</span>
                   <input
-                    className="h-2 w-full accent-zinc-900"
+                    className={rangeInputClass}
                     type="range"
                     step={0.1}
                     min={0}
@@ -475,7 +558,7 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
                     onChange={restartF0}
                   />
                   <Input
-                    className="h-6 px-1 text-right text-xs"
+                    className={cn("h-6 px-1 text-right text-xs")}
                     type="number"
                     step={0.1}
                     min={0}
@@ -490,10 +573,14 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
                   />
                 </label>
 
-                <label className="grid grid-cols-[42px_minmax(0,1fr)_48px] items-center gap-1 rounded border border-zinc-200 px-1 py-1">
-                  <span className="text-[11px] text-zinc-500">Jitter</span>
+                <label
+                  className={cn(
+                    "grid grid-cols-[42px_minmax(0,1fr)_48px] items-center gap-1 rounded border border-border px-1 py-1",
+                  )}
+                >
+                  <span className={cn("text-[11px] text-muted-foreground")}>Jitter</span>
                   <input
-                    className="h-2 w-full accent-zinc-900"
+                    className={rangeInputClass}
                     type="range"
                     step={0.1}
                     min={0}
@@ -507,7 +594,7 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
                     onChange={restartF0}
                   />
                   <Input
-                    className="h-6 px-1 text-right text-xs"
+                    className={cn("h-6 px-1 text-right text-xs")}
                     type="number"
                     step={0.1}
                     min={0}
@@ -522,10 +609,14 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
                   />
                 </label>
 
-                <label className="grid grid-cols-[42px_minmax(0,1fr)_48px] items-center gap-1 rounded border border-zinc-200 px-1 py-1">
-                  <span className="text-[11px] text-zinc-500">Onset</span>
+                <label
+                  className={cn(
+                    "grid grid-cols-[42px_minmax(0,1fr)_48px] items-center gap-1 rounded border border-border px-1 py-1",
+                  )}
+                >
+                  <span className={cn("text-[11px] text-muted-foreground")}>Onset</span>
                   <input
-                    className="h-2 w-full accent-zinc-900"
+                    className={rangeInputClass}
                     type="range"
                     step={0.1}
                     min={0}
@@ -539,7 +630,7 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
                     onChange={restartF0}
                   />
                   <Input
-                    className="h-6 px-1 text-right text-xs"
+                    className={cn("h-6 px-1 text-right text-xs")}
                     type="number"
                     step={0.1}
                     min={0}
@@ -558,10 +649,10 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
           </Popover>
         </div>
 
-        <div className={cn("flex h-11 items-center gap-1 rounded-md border border-zinc-300 px-2")}>
-          <span className="text-[11px] text-zinc-500">Rate</span>
+        <div className={cn("flex h-11 items-center gap-1 rounded-md border border-input px-2")}>
+          <span className={cn("text-[11px] text-muted-foreground")}>Rate</span>
           <input
-            className="h-2 w-full accent-zinc-900"
+            className={rangeInputClass}
             type="range"
             min={0}
             max={20}
@@ -574,14 +665,14 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
             }}
             onChange={restartF0}
           />
-          <span className="w-8 text-right text-[11px] text-zinc-500">
+          <span className={cn("w-8 text-right text-[11px] text-muted-foreground")}>
             {vibrato.rate.toFixed(1)}
           </span>
         </div>
       </div>
 
       <label className={cn("flex w-[130px] max-w-full min-w-0 flex-col gap-1")}>
-        <Label className={cn("text-xs font-normal text-zinc-500")}>Visualzation</Label>
+        <Label className={cn("text-xs font-normal text-muted-foreground")}>Visualzation</Label>
         <Select
           value={String(visType)}
           onValueChange={(value) => {
@@ -589,7 +680,7 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
             if (selected) onVisTypeChange(selected.value);
           }}
         >
-          <SelectTrigger className="h-11 text-base">
+          <SelectTrigger className={cn("h-11 text-base")}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

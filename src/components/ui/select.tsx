@@ -17,9 +17,9 @@ const SelectTrigger = React.forwardRef<
     ref={ref}
     className={cn(
       "flex h-10 w-full items-center justify-between rounded-md",
-      "border border-zinc-300 bg-white px-3 py-2 text-sm",
-      "ring-offset-white placeholder:text-zinc-500",
-      "focus:outline-none focus:ring-1 focus:ring-zinc-950",
+      "border border-input bg-background px-3 py-2 text-sm text-foreground",
+      "ring-offset-background placeholder:text-muted-foreground",
+      "focus:outline-none focus:ring-1 focus:ring-ring",
       "disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
       className,
     )}
@@ -70,7 +70,7 @@ const SelectContent = React.forwardRef<
       ref={ref}
       className={cn(
         "relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-md",
-        "border border-zinc-200 bg-white text-zinc-950 shadow-md",
+        "border border-border bg-popover text-popover-foreground shadow-md",
         "data-[state=open]:animate-in data-[state=closed]:animate-out",
         "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
         "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
@@ -120,7 +120,7 @@ const SelectItem = React.forwardRef<
     className={cn(
       "relative flex w-full cursor-default select-none items-center rounded-sm",
       "py-1.5 pl-2 pr-8 text-sm outline-none",
-      "focus:bg-zinc-100 focus:text-zinc-900",
+      "focus:bg-accent focus:text-accent-foreground",
       "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className,
     )}
@@ -143,7 +143,7 @@ const SelectSeparator = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SelectPrimitive.Separator
     ref={ref}
-    className={cn("-mx-1 my-1 h-px bg-zinc-100", className)}
+    className={cn("-mx-1 my-1 h-px bg-border", className)}
     {...props}
   />
 ));

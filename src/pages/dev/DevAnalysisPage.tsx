@@ -233,10 +233,13 @@ function NumberControl({
 }: NumberControlProps) {
   return (
     <label className={cn("flex min-w-0 flex-col gap-1", className)}>
-      <Label className={cn("text-xs font-normal text-zinc-500")}>{label}</Label>
-      <div className={cn("flex h-11 items-center gap-2 rounded-md border border-zinc-300 px-2")}>
+      <Label className={cn("text-xs font-normal text-muted-foreground")}>{label}</Label>
+      <div className={cn("flex h-11 items-center gap-2 rounded-md border border-input px-2")}>
         <Input
-          className={cn("h-full border-0 p-0 shadow-none ring-0 focus-visible:ring-0")}
+          className={cn(
+            "h-8 min-w-0 flex-1 border-0 bg-transparent px-2 text-foreground",
+            "shadow-none ring-0 focus-visible:ring-0",
+          )}
           type="number"
           value={value}
           min={min}
@@ -244,7 +247,7 @@ function NumberControl({
           step={step}
           onInput={(event) => onValue(Number((event.target as HTMLInputElement).value))}
         />
-        {suffix ? <span className={cn("text-xs text-zinc-500")}>{suffix}</span> : null}
+        {suffix ? <span className={cn("text-xs text-muted-foreground")}>{suffix}</span> : null}
       </div>
     </label>
   );
@@ -451,22 +454,50 @@ function TopologyDiagram({ mode }: { mode: DemoMode }) {
   if (mode === "legacy") {
     return (
       <svg viewBox="0 0 720 140" className={cn("h-[100px] w-full")}>
-        <text x="16" y="22" fontSize="14" fill="#334155">
+        <text x="16" y="22" fontSize="14" className="fill-slate-700">
           Source
         </text>
-        <rect x="12" y="30" width="95" height="34" rx="6" fill="#dbeafe" stroke="#93c5fd" />
-        <line x1="107" y1="47" x2="190" y2="47" stroke="#64748b" strokeWidth="2" />
-        <text x="200" y="24" fontSize="12" fill="#334155">
+        <rect x="12" y="30" width="95" height="34" rx="6" className="fill-sky-100 stroke-sky-300" />
+        <line x1="107" y1="47" x2="190" y2="47" className="stroke-slate-500" strokeWidth="2" />
+        <text x="200" y="24" fontSize="12" className="fill-slate-700">
           parallel peaking filters
         </text>
-        <rect x="198" y="34" width="80" height="26" rx="6" fill="#fef3c7" stroke="#f59e0b" />
-        <rect x="290" y="34" width="80" height="26" rx="6" fill="#fef3c7" stroke="#f59e0b" />
-        <rect x="382" y="34" width="80" height="26" rx="6" fill="#fef3c7" stroke="#f59e0b" />
-        <line x1="278" y1="47" x2="290" y2="47" stroke="#64748b" strokeWidth="2" />
-        <line x1="370" y1="47" x2="382" y2="47" stroke="#64748b" strokeWidth="2" />
-        <line x1="462" y1="47" x2="560" y2="47" stroke="#64748b" strokeWidth="2" />
-        <rect x="560" y="30" width="110" height="34" rx="6" fill="#fee2e2" stroke="#fca5a5" />
-        <text x="581" y="52" fontSize="13" fill="#7f1d1d">
+        <rect
+          x="198"
+          y="34"
+          width="80"
+          height="26"
+          rx="6"
+          className="fill-amber-100 stroke-amber-500"
+        />
+        <rect
+          x="290"
+          y="34"
+          width="80"
+          height="26"
+          rx="6"
+          className="fill-amber-100 stroke-amber-500"
+        />
+        <rect
+          x="382"
+          y="34"
+          width="80"
+          height="26"
+          rx="6"
+          className="fill-amber-100 stroke-amber-500"
+        />
+        <line x1="278" y1="47" x2="290" y2="47" className="stroke-slate-500" strokeWidth="2" />
+        <line x1="370" y1="47" x2="382" y2="47" className="stroke-slate-500" strokeWidth="2" />
+        <line x1="462" y1="47" x2="560" y2="47" className="stroke-slate-500" strokeWidth="2" />
+        <rect
+          x="560"
+          y="30"
+          width="110"
+          height="34"
+          rx="6"
+          className="fill-red-100 stroke-red-300"
+        />
+        <text x="581" y="52" fontSize="13" className="fill-red-900">
           summed out
         </text>
       </svg>
@@ -475,22 +506,50 @@ function TopologyDiagram({ mode }: { mode: DemoMode }) {
 
   return (
     <svg viewBox="0 0 720 140" className={cn("h-[100px] w-full")}>
-      <text x="16" y="22" fontSize="14" fill="#334155">
+      <text x="16" y="22" fontSize="14" className="fill-slate-700">
         Source
       </text>
-      <rect x="12" y="30" width="95" height="34" rx="6" fill="#dbeafe" stroke="#93c5fd" />
-      <line x1="107" y1="47" x2="188" y2="47" stroke="#64748b" strokeWidth="2" />
-      <text x="200" y="24" fontSize="12" fill="#334155">
+      <rect x="12" y="30" width="95" height="34" rx="6" className="fill-sky-100 stroke-sky-300" />
+      <line x1="107" y1="47" x2="188" y2="47" className="stroke-slate-500" strokeWidth="2" />
+      <text x="200" y="24" fontSize="12" className="fill-slate-700">
         cascade tract approximation
       </text>
-      <rect x="198" y="34" width="80" height="26" rx="6" fill="#dcfce7" stroke="#4ade80" />
-      <rect x="290" y="34" width="80" height="26" rx="6" fill="#dcfce7" stroke="#4ade80" />
-      <rect x="382" y="34" width="80" height="26" rx="6" fill="#dcfce7" stroke="#4ade80" />
-      <line x1="278" y1="47" x2="290" y2="47" stroke="#64748b" strokeWidth="2" />
-      <line x1="370" y1="47" x2="382" y2="47" stroke="#64748b" strokeWidth="2" />
-      <line x1="462" y1="47" x2="560" y2="47" stroke="#64748b" strokeWidth="2" />
-      <rect x="560" y="30" width="110" height="34" rx="6" fill="#dcfce7" stroke="#4ade80" />
-      <text x="588" y="52" fontSize="13" fill="#166534">
+      <rect
+        x="198"
+        y="34"
+        width="80"
+        height="26"
+        rx="6"
+        className="fill-emerald-100 stroke-emerald-400"
+      />
+      <rect
+        x="290"
+        y="34"
+        width="80"
+        height="26"
+        rx="6"
+        className="fill-emerald-100 stroke-emerald-400"
+      />
+      <rect
+        x="382"
+        y="34"
+        width="80"
+        height="26"
+        rx="6"
+        className="fill-emerald-100 stroke-emerald-400"
+      />
+      <line x1="278" y1="47" x2="290" y2="47" className="stroke-slate-500" strokeWidth="2" />
+      <line x1="370" y1="47" x2="382" y2="47" className="stroke-slate-500" strokeWidth="2" />
+      <line x1="462" y1="47" x2="560" y2="47" className="stroke-slate-500" strokeWidth="2" />
+      <rect
+        x="560"
+        y="30"
+        width="110"
+        height="34"
+        rx="6"
+        className="fill-emerald-100 stroke-emerald-400"
+      />
+      <text x="588" y="52" fontSize="13" className="fill-emerald-800">
         tract out
       </text>
     </svg>
