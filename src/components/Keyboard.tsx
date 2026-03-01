@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { useAppContext } from "@/store";
 import { cn } from "@/lib/cn";
 import { note2freq, note2midi, type Note } from "@/utils";
@@ -9,7 +9,6 @@ const TYPICAL_VOCAL_RANGE_MAX_MIDI = note2midi("C6");
 const LOWER_ROW_KEYS = "zxcvbnm,./";
 const MIDDLE_ROW_KEYS = "asdfghjkl;'";
 const UPPER_ROW_KEYS = "qwertyuiop[]\\";
-const LOWER_OVERFLOW_KEYS = "`12345";
 const UPPER_OVERFLOW_KEYS = "67890-=";
 const HOTKEY_BY_CODE: Record<string, string> = {
   Backquote: "`",
@@ -68,60 +67,33 @@ function buildHotkeyMap(noteIds: string[]) {
     return { noteByHotkey, hotkeyByNote };
   }
 
-  const midiByIndex = noteIds.map((id) => note2midi(id.replace("s", "#") as Note));
   const middleCount = Math.min(MIDDLE_ROW_KEYS.length, noteIds.length);
-  const centerIndex = Math.floor((noteIds.length - 1) / 2);
-  const inRangeIndices = midiByIndex
-    .map((midi, index) => ({ midi, index }))
-    .filter(
-      ({ midi }) =>
-        midi !== null &&
-        TYPICAL_VOCAL_RANGE_MIN_MIDI !== null &&
-        TYPICAL_VOCAL_RANGE_MAX_MIDI !== null &&
-        midi >= TYPICAL_VOCAL_RANGE_MIN_MIDI &&
-        midi <= TYPICAL_VOCAL_RANGE_MAX_MIDI,
-    )
-    .map(({ index }) => index);
-
-  // Prioritize the middle of the visible keyboard, but prefer a center note that stays in vocal range.
-  const anchorIndex =
-    inRangeIndices.length > 0
-      ? inRangeIndices.reduce((best, current) =>
-          Math.abs(current - centerIndex) < Math.abs(best - centerIndex) ? current : best,
-        )
-      : centerIndex;
-
-  const halfMiddle = Math.floor(middleCount / 2);
   const maxMiddleStart = Math.max(0, noteIds.length - middleCount);
-  const middleStart = Math.max(0, Math.min(anchorIndex - halfMiddle, maxMiddleStart));
-  const middleEnd = middleStart + middleCount;
+  const c4Index = noteIds.indexOf("C4");
+  const fallbackMiddleStart = Math.max(0, Math.min(Math.floor(noteIds.length / 2), maxMiddleStart));
+  const middleStart = c4Index >= 0 ? Math.max(0, Math.min(c4Index, maxMiddleStart)) : fallbackMiddleStart;
+  const middleEnd = Math.min(noteIds.length, middleStart + middleCount);
+  const lowerStart = Math.max(0, middleStart - LOWER_ROW_KEYS.length);
   const lowerEnd = middleStart;
-  const lowerStart = Math.max(0, lowerEnd - LOWER_ROW_KEYS.length);
   const upperStart = middleEnd;
   const upperEnd = Math.min(noteIds.length, upperStart + UPPER_ROW_KEYS.length);
-  const lowerOverflowEnd = lowerStart;
-  const lowerOverflowStart = Math.max(0, lowerOverflowEnd - LOWER_OVERFLOW_KEYS.length);
-  const upperOverflowStart = upperEnd;
-  const upperOverflowEnd = Math.min(
-    noteIds.length,
-    upperOverflowStart + UPPER_OVERFLOW_KEYS.length,
-  );
+  const numbersStart = upperEnd;
+  const numbersEnd = Math.min(noteIds.length, numbersStart + UPPER_OVERFLOW_KEYS.length);
 
-  function assign(keys: string, start: number, end: number) {
-    let keyIdx = 0;
-    for (let noteIdx = start; noteIdx < end && keyIdx < keys.length; noteIdx += 1, keyIdx += 1) {
-      const hotkey = keys[keyIdx];
-      const noteId = noteIds[noteIdx];
-      noteByHotkey.set(hotkey, noteId);
-      hotkeyByNote.set(noteId, hotkey);
+  function assignRange(keys: string, start: number, end: number) {
+    let keyIndex = 0;
+    for (let noteIndex = start; noteIndex < end && keyIndex < keys.length; noteIndex += 1) {
+      const noteId = noteIds[noteIndex];
+      noteByHotkey.set(keys[keyIndex], noteId);
+      hotkeyByNote.set(noteId, keys[keyIndex]);
+      keyIndex += 1;
     }
   }
 
-  assign(LOWER_OVERFLOW_KEYS, lowerOverflowStart, lowerOverflowEnd);
-  assign(LOWER_ROW_KEYS, lowerStart, lowerEnd);
-  assign(MIDDLE_ROW_KEYS, middleStart, middleEnd);
-  assign(UPPER_ROW_KEYS, upperStart, upperEnd);
-  assign(UPPER_OVERFLOW_KEYS, upperOverflowStart, upperOverflowEnd);
+  assignRange(LOWER_ROW_KEYS, lowerStart, lowerEnd);
+  assignRange(MIDDLE_ROW_KEYS, middleStart, middleEnd);
+  assignRange(UPPER_ROW_KEYS, upperStart, upperEnd);
+  assignRange(UPPER_OVERFLOW_KEYS, numbersStart, numbersEnd);
 
   return { noteByHotkey, hotkeyByNote };
 }
@@ -162,10 +134,6 @@ export function Keyboard({ height, activeNotes, onKeyOn, onKeyOff }: KeyboardPro
     [layout.notes],
   );
   const hotkeyMap = useMemo(() => buildHotkeyMap(noteIds), [noteIds]);
-  const hotkeyLegend = useMemo(
-    () => noteIds.map((id) => hotkeyMap.hotkeyByNote.get(id) ?? ""),
-    [hotkeyMap.hotkeyByNote, noteIds],
-  );
   const playerActiveNotes = new Set(player.activeNoteIds);
 
   const [dragging, setDragging] = useState(false);
@@ -174,7 +142,9 @@ export function Keyboard({ height, activeNotes, onKeyOn, onKeyOff }: KeyboardPro
   const [detectedNotes, setDetectedNotes] = useState<Set<string>>(new Set());
   const [showHotkeyHints, setShowHotkeyHints] = useState(false);
   const [activeHotkeyNotes, setActiveHotkeyNotes] = useState<Set<string>>(new Set());
+  const [hotkeyCenters, setHotkeyCenters] = useState<Record<string, number>>({});
   const pressedHotkeysRef = useRef(new Map<string, string>());
+  const keyboardListRef = useRef<HTMLUListElement | null>(null);
   const hotkeyMapRef = useRef(hotkeyMap);
   const onKeyOnRef = useRef(onKeyOn);
   const onKeyOffRef = useRef(onKeyOff);
@@ -305,6 +275,33 @@ export function Keyboard({ height, activeNotes, onKeyOn, onKeyOff }: KeyboardPro
     hotkeyMapRef.current = hotkeyMap;
   }, [hotkeyMap]);
 
+  useLayoutEffect(() => {
+    const listNode = keyboardListRef.current;
+    if (!listNode) return;
+    const listEl: HTMLUListElement = listNode;
+
+    function recomputeHotkeyCenters() {
+      const next: Record<string, number> = {};
+      const listRect = listEl.getBoundingClientRect();
+      noteIds.forEach((id) => {
+        const key = listEl.querySelector<HTMLElement>(`li#${CSS.escape(id)}`);
+        if (!key) return;
+        const keyRect = key.getBoundingClientRect();
+        next[id] = keyRect.left - listRect.left + keyRect.width / 2;
+      });
+      setHotkeyCenters(next);
+    }
+
+    recomputeHotkeyCenters();
+    const observer = new ResizeObserver(() => {
+      recomputeHotkeyCenters();
+    });
+    observer.observe(listEl);
+    return () => {
+      observer.disconnect();
+    };
+  }, [noteIds, keyboardWidth]);
+
   useEffect(() => {
     onKeyOnRef.current = onKeyOn;
     onKeyOffRef.current = onKeyOff;
@@ -387,6 +384,7 @@ export function Keyboard({ height, activeNotes, onKeyOn, onKeyOff }: KeyboardPro
         }}
       >
         <ul
+          ref={keyboardListRef}
           className={cn("m-0 flex flex-row items-start p-0")}
           style={{ height: `${keyboardHeight}px`, width: `${keyboardWidth}px` }}
         >
@@ -454,28 +452,39 @@ export function Keyboard({ height, activeNotes, onKeyOn, onKeyOff }: KeyboardPro
           })}
         </ul>
       </div>
-      <div className={cn("mt-1 flex items-center gap-2")}>
+      <div className={cn("relative mt-1 h-[20px]")} style={{ width: `${keyboardWidth}px` }}>
         <div
           className={cn(
-            "min-w-0 flex-1 overflow-x-auto whitespace-nowrap",
+            "absolute inset-0 overflow-hidden",
             "font-mono text-[14px] leading-none text-zinc-900",
             showHotkeyHints ? "opacity-100" : "opacity-0",
           )}
           aria-hidden={!showHotkeyHints}
         >
-          {hotkeyLegend.map((hotkey, index) => (
-            <span
-              key={`${noteIds[index]}-${hotkey}`}
-              className={cn("inline-block min-w-[12px] px-0.5 text-center")}
-            >
-              {hotkey}
-            </span>
-          ))}
+          <div className={cn("relative h-[18px]")} style={{ width: `${keyboardWidth}px` }}>
+            {noteIds.map((id) => {
+              const hotkey = hotkeyMap.hotkeyByNote.get(id);
+              const center = hotkeyCenters[id];
+              if (!hotkey || center === undefined) return null;
+              return (
+                <span
+                  key={`${id}-${hotkey}`}
+                  className={cn(
+                    "pointer-events-none absolute top-0 -translate-x-1/2 text-center leading-none",
+                    MIDDLE_ROW_KEYS.includes(hotkey) ? "font-semibold" : undefined,
+                  )}
+                  style={{ left: `${center}px` }}
+                >
+                  {hotkey}
+                </span>
+              );
+            })}
+          </div>
         </div>
         <button
           type="button"
           className={cn(
-            "rounded border border-transparent bg-transparent px-1 py-0",
+            "absolute right-0 top-0 rounded border border-transparent bg-white/90 px-1 py-0",
             "font-mono text-[11px] text-zinc-500 underline decoration-dotted",
             "hover:text-zinc-700 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-400",
           )}
