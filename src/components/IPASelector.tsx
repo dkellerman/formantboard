@@ -1,7 +1,12 @@
 import { useMemo, useState } from "react";
 import { SquareArrowOutUpRight, X } from "lucide-react";
 import { useAppContext } from "@/store";
-import { COMMON_IPA, IPA_WORDS } from "@/constants";
+import {
+  COMMON_IPA,
+  COMMON_IPA_DETAILS,
+  type CommonIPAPlacement,
+  IPA_WORDS,
+} from "@/constants";
 import { cn } from "@/lib/cn";
 import type { IPAType } from "@/types";
 import { Label } from "@/components/ui/label";
@@ -14,21 +19,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-
-const VOWEL_LAYOUT = [
-  {
-    title: "Front",
-    values: ["i", "ɪ", "ɛ", "æ"],
-  },
-  {
-    title: "Central",
-    values: ["ə"],
-  },
-  {
-    title: "Back",
-    values: ["u", "ʊ", "ɔ", "ɑ"],
-  },
-] as const;
 
 export interface IPASelectorProps {
   ipaSet?: IPAType[];
@@ -52,7 +42,7 @@ export function IPASelector({
   const { setIPA } = useAppContext();
   const [pickerOpen, setPickerOpen] = useState(false);
 
-  const values = useMemo(() => Object.values(ipaSet ?? COMMON_IPA), [ipaSet]);
+  const values = useMemo(() => ipaSet ?? COMMON_IPA, [ipaSet]);
 
   const items = useMemo(
     () =>
@@ -63,8 +53,6 @@ export function IPASelector({
     [values],
   );
 
-  const itemsMap = useMemo(() => new Map(items.map((item) => [item.value, item])), [items]);
-
   const isCommonVowelSet = useMemo(() => {
     const commonSet = new Set(COMMON_IPA);
     return values.every((item) => commonSet.has(item as (typeof COMMON_IPA)[number]));
@@ -73,13 +61,23 @@ export function IPASelector({
   const groupedVowels = useMemo(() => {
     if (!isCommonVowelSet) return [];
 
-    return VOWEL_LAYOUT.map((group) => ({
-      ...group,
-      items: group.values
-        .map((vowel) => itemsMap.get(vowel as IPAType))
-        .filter((item): item is { value: IPAType; title: string } => Boolean(item)),
-    })).filter((group) => group.items.length > 0);
-  }, [isCommonVowelSet, itemsMap]);
+    const placementByIPA = new Map<IPAType, CommonIPAPlacement>(
+      COMMON_IPA_DETAILS.map((item) => [item.value, item.placement]),
+    );
+    const groupTitleByPlacement: Record<CommonIPAPlacement, string> = {
+      front: "Front",
+      central: "Central",
+      back: "Back",
+    };
+    const placementsInOrder: CommonIPAPlacement[] = ["front", "central", "back"];
+
+    return placementsInOrder
+      .map((placement) => ({
+        title: groupTitleByPlacement[placement],
+        items: items.filter((item) => placementByIPA.get(item.value as IPAType) === placement),
+      }))
+      .filter((group) => group.items.length > 0);
+  }, [isCommonVowelSet, items]);
 
   const fallbackItems = useMemo(() => {
     if (!isCommonVowelSet) return items;

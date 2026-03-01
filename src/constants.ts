@@ -94,7 +94,19 @@ export const IPA_WORDS: Record<IPA, string> = {
 
 export const ALL_IPA = Object.values(IPA) as IPA[];
 export const VOWELS = [IPA.ɑ, IPA.ɛ, IPA.ə, IPA.æ, IPA.ɔ, IPA.u, IPA.ʊ, IPA.ɪ, IPA.i];
-export const COMMON_IPA = VOWELS;
+export type CommonIPAPlacement = "front" | "central" | "back";
+export const COMMON_IPA_DETAILS = [
+  { value: IPA.i, placement: "front" },
+  { value: IPA.ɪ, placement: "front" },
+  { value: IPA.ɛ, placement: "front" },
+  { value: IPA.æ, placement: "front" },
+  { value: IPA.ə, placement: "central" },
+  { value: IPA.u, placement: "back" },
+  { value: IPA.ʊ, placement: "back" },
+  { value: IPA.ɔ, placement: "back" },
+  { value: IPA.ɑ, placement: "back" },
+] as const;
+export const COMMON_IPA = COMMON_IPA_DETAILS.map((item) => item.value) as IPA[];
 export const CONSONANTS = [
   IPA.m,
   IPA.r,
