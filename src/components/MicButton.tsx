@@ -4,18 +4,32 @@ import { useAppStore } from "@/store";
 import { cn } from "@/lib/cn";
 import { createMicSource, createPitchDetectionNode, freq2noteCents, getHarmonics } from "@/utils";
 import { usePlayer } from "@/hooks/usePlayer";
-import { Button } from "@/components/ui/button";
+import { Button, type ButtonProps } from "@/components/ui/button";
 
 export interface MicButtonProps {
   showButton?: boolean;
   startText?: string;
   stopText?: string;
+  className?: string;
+  buttonClassName?: string;
+  buttonVariant?: ButtonProps["variant"];
+  buttonSize?: ButtonProps["size"];
+  hideText?: boolean;
+  title?: string;
+  ariaLabel?: string;
 }
 
 export function MicButton({
   showButton = true,
   startText = "Listen",
   stopText = "Stop",
+  className,
+  buttonClassName,
+  buttonVariant = "outline",
+  buttonSize,
+  hideText = false,
+  title,
+  ariaLabel,
 }: MicButtonProps) {
   const playerActions = usePlayer();
   const settings = useAppStore((state) => state.settings);
@@ -87,9 +101,11 @@ export function MicButton({
   if (!showButton) return <section className="mic" />;
 
   return (
-    <section className="mic">
+    <section className={cn("mic", className)}>
       <Button
-        variant="outline"
+        variant={buttonVariant}
+        size={buttonSize}
+        className={cn(buttonClassName)}
         onClick={() => {
           if (!listening) {
             void enableMic();
@@ -97,13 +113,19 @@ export function MicButton({
             disableMic();
           }
         }}
+        title={title ?? (listening ? stopText : startText)}
+        aria-label={ariaLabel ?? (listening ? stopText : startText)}
       >
         {listening ? (
           <Square className={cn("h-4 w-4 fill-current text-red-600")} />
         ) : (
           <Mic className={cn("h-4 w-4 text-red-600")} />
         )}
-        {listening ? stopText : startText}
+        {hideText ? (
+          <span className={cn("sr-only")}>{listening ? stopText : startText}</span>
+        ) : (
+          <span>{listening ? stopText : startText}</span>
+        )}
       </Button>
     </section>
   );

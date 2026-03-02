@@ -1,7 +1,12 @@
 import { useState } from "react";
-import { SquareArrowOutUpRight, X } from "lucide-react";
+import { RotateCcw, SquareArrowOutUpRight, X } from "lucide-react";
 import { useAppStore } from "@/store";
-import { DEFAULT_FORMANT_CASCADE_PCT, VIS_TYPES, type VisType } from "@/constants";
+import {
+  createDefaultSettings,
+  DEFAULT_FORMANT_CASCADE_PCT,
+  VIS_TYPES,
+  type VisType,
+} from "@/constants";
 import { cn } from "@/lib/cn";
 import type { Formant, Vibrato } from "@/types";
 import { formantRange } from "@/utils";
@@ -46,6 +51,14 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
 
   function restartF0() {
     setRestartSignal((current) => current + 1);
+  }
+
+  function resetSettings() {
+    const defaults = createDefaultSettings();
+    setSettings(defaults);
+    setIPA(defaults.defaultIPA);
+    onVisTypeChange(defaults.defaultVisType);
+    restartF0();
   }
 
   const formantButtons = (() => {
@@ -172,7 +185,7 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
         className,
       )}
     >
-      <F0Selector className={cn("w-[140px] sm:w-[150px]")} restartSignal={restartSignal} />
+      <F0Selector className={cn("w-[96px] sm:w-[110px]")} restartSignal={restartSignal} />
 
       <IPASelector
         className={cn("w-[200px] max-w-full sm:w-[220px]")}
@@ -183,7 +196,7 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
 
       <div className={cn("inline-flex min-w-0 flex-col gap-1")}>
         <div className={cn("flex items-center gap-1")}>
-          <Label className={cn("text-xs font-normal text-muted-foreground")}>Formants</Label>
+          <Label className={cn("text-xs font-normal text-foreground")}>Formants</Label>
           <Popover modal={false} open={formantPopoverOpen} onOpenChange={setFormantPopoverOpen}>
             <PopoverTrigger asChild>
               <button
@@ -408,7 +421,7 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
       </div>
 
       <label className={cn("flex w-[136px] max-w-full min-w-0 flex-col gap-1")}>
-        <Label className={cn("text-xs font-normal text-muted-foreground")}>Tilt</Label>
+        <Label className={cn("text-xs font-normal text-foreground")}>Tilt</Label>
         <div className={cn("flex h-11 items-center gap-2 rounded-md border border-input px-1")}>
           <Input
             className={cn(
@@ -445,7 +458,7 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
             aria-label="Toggle vibrato"
           />
           <Popover modal={false} open={vibratoPopoverOpen} onOpenChange={setVibratoPopoverOpen}>
-            <Label className={cn("text-xs font-normal text-muted-foreground")}>Vibrato</Label>
+            <Label className={cn("text-xs font-normal text-foreground")}>Vibrato</Label>
             <PopoverTrigger asChild>
               <button
                 type="button"
@@ -515,7 +528,7 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
                     type="range"
                     step={0.1}
                     min={0}
-                    max={20}
+                    max={10}
                     value={vibrato.rate}
                     onInput={(event) => {
                       const next = Number((event.target as HTMLInputElement).value);
@@ -529,7 +542,7 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
                     type="number"
                     step={0.1}
                     min={0}
-                    max={20}
+                    max={10}
                     value={vibrato.rate}
                     onInput={(event) => {
                       const next = Number((event.target as HTMLInputElement).value);
@@ -551,7 +564,7 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
                     type="range"
                     step={0.1}
                     min={0}
-                    max={20}
+                    max={5}
                     value={vibrato.extent}
                     onInput={(event) => {
                       const next = Number((event.target as HTMLInputElement).value);
@@ -565,7 +578,7 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
                     type="number"
                     step={0.1}
                     min={0}
-                    max={20}
+                    max={5}
                     value={vibrato.extent}
                     onInput={(event) => {
                       const next = Number((event.target as HTMLInputElement).value);
@@ -587,7 +600,7 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
                     type="range"
                     step={0.1}
                     min={0}
-                    max={20}
+                    max={2}
                     value={vibrato.jitter}
                     onInput={(event) => {
                       const next = Number((event.target as HTMLInputElement).value);
@@ -601,7 +614,7 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
                     type="number"
                     step={0.1}
                     min={0}
-                    max={20}
+                    max={2}
                     value={vibrato.jitter}
                     onInput={(event) => {
                       const next = Number((event.target as HTMLInputElement).value);
@@ -623,7 +636,7 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
                     type="range"
                     step={0.1}
                     min={0}
-                    max={8}
+                    max={3}
                     value={vibrato.onsetTime}
                     onInput={(event) => {
                       const next = Number((event.target as HTMLInputElement).value);
@@ -637,7 +650,7 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
                     type="number"
                     step={0.1}
                     min={0}
-                    max={8}
+                    max={3}
                     value={vibrato.onsetTime}
                     onInput={(event) => {
                       const next = Number((event.target as HTMLInputElement).value);
@@ -658,7 +671,7 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
             className={rangeInputClass}
             type="range"
             min={0}
-            max={20}
+            max={10}
             step={0.1}
             value={vibrato.rate}
             onInput={(event) => {
@@ -675,7 +688,7 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
       </div>
 
       <label className={cn("flex w-[130px] max-w-full min-w-0 flex-col gap-1")}>
-        <Label className={cn("text-xs font-normal text-muted-foreground")}>Visualization</Label>
+        <Label className={cn("text-xs font-normal text-foreground")}>Visualization</Label>
         <Select
           value={String(visType)}
           onValueChange={(value) => {
@@ -695,6 +708,21 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
           </SelectContent>
         </Select>
       </label>
+
+      <div className={cn("flex w-11 flex-col gap-1")}>
+        <span className={cn("text-xs font-normal text-transparent select-none")}>Reset</span>
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          className={cn("h-11 w-11 text-muted-foreground hover:text-foreground")}
+          onClick={resetSettings}
+          aria-label="Reset settings"
+          title="Reset settings"
+        >
+          <RotateCcw />
+        </Button>
+      </div>
     </section>
   );
 }

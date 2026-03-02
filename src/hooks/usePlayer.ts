@@ -259,6 +259,7 @@ export function usePlayer(): PlayerState {
       outputConnectedToDestination: false,
       outputConnectedToAnalyzer: false,
       compressorConnectedToOutput: false,
+      compressionActive: settings.compression.on,
       analyzeRafId: undefined,
       micAnalyzing: false,
       playing: {},
@@ -305,6 +306,40 @@ export function usePlayer(): PlayerState {
     return true;
   }
 
+  function resolveCompressionActive(noteCount?: number) {
+    const activeCount =
+      noteCount ??
+      Object.values(runtime.voices).filter((voice) => voice.started && !voice.ended).length;
+    return settings.compression.on || activeCount > 1;
+  }
+
+  function applyCompressorSettings(noteCount: number) {
+    const extra = Math.max(0, noteCount - 1);
+    const autoMode = !settings.compression.on;
+    const baseThreshold = autoMode ? -6 : settings.compression.threshold;
+    const threshold = clamp(baseThreshold - extra * 3, -60, 0);
+    const ratio = autoMode
+      ? 20
+      : clamp(settings.compression.ratio + extra * 4, settings.compression.ratio, 20);
+    const knee = autoMode ? 0 : settings.compression.knee;
+
+    compressor.threshold.value = threshold;
+    compressor.ratio.value = ratio;
+    compressor.knee.value = knee;
+    compressor.attack.value = settings.compression.attack;
+    compressor.release.value = settings.compression.release;
+  }
+
+  function updateCompressionRouting(useCompression: boolean, noteCount: number) {
+    applyCompressorSettings(noteCount);
+    if (runtime.compressionActive === useCompression) return;
+    runtime.compressionActive = useCompression;
+    Object.values(runtime.voices).forEach((voice) => {
+      if (!voice.outputNode) return;
+      connectOutput(voice.outputNode, useCompression);
+    });
+  }
+
   function syncPlayerActivity() {
     const activeVoices = Object.values(runtime.voices)
       .filter((voice) => voice.started && !voice.ended)
@@ -312,6 +347,7 @@ export function usePlayer(): PlayerState {
     const activeNoteIds = [...new Set(activeVoices.map((voice) => voice.noteId))];
     const isPlaying = activeVoices.length > 0;
     const isApiPlaying = activeVoices.some((voice) => voice.source === "api");
+    updateCompressionRouting(resolveCompressionActive(activeVoices.length), activeVoices.length);
 
     setPlayer((current) => {
       if (
@@ -425,7 +461,7 @@ export function usePlayer(): PlayerState {
     const playbackSource = options?.source ?? "ui";
     const timeOffset = Math.max(0, atTime);
     const startTime = runtime.audioContext.currentTime + timeOffset + 0.002;
-    const harmonicTilt = options?.tilt ?? settings.harmonics.tilt;
+    const baseTilt = options?.tilt ?? settings.harmonics.tilt;
     const activeIpa = options?.vowel ?? ipa;
     const formantOverrides = options?.formants;
 
@@ -444,11 +480,18 @@ export function usePlayer(): PlayerState {
     }
 
     const { sourceType, source, sourceGain, controlSource } = createSource(frequency);
+    const activeVoiceCount = Object.values(runtime.voices).filter(
+      (voice) => voice.started && !voice.ended,
+    ).length;
+    const noteCount = activeVoiceCount + 1;
+    const harmonicTilt = baseTilt - Math.abs(baseTilt) * (noteCount - 1);
+    const compressionActive = resolveCompressionActive(noteCount);
+    updateCompressionRouting(compressionActive, noteCount);
     applyHarmonics(source, sourceType, frequency, harmonicTilt);
     applyFlutter(source);
     const vibratoOsc = createVibrato(source, startTime);
     const formantsGain = connectFormants(sourceGain, activeIpa, formantOverrides);
-    connectOutput(formantsGain);
+    connectOutput(formantsGain, compressionActive);
 
     if (controlSource) source.start(startTime);
     sourceGain.gain.setValueAtTime(0, startTime);
@@ -495,6 +538,7 @@ export function usePlayer(): PlayerState {
       noteId: toNoteId(frequency),
       vowel: activeIpa,
       source: playbackSource,
+      outputNode: formantsGain,
       started: false,
       ended: false,
       releaseAt: undefined,
@@ -591,6 +635,7 @@ export function usePlayer(): PlayerState {
       source: undefined,
       rms: 0,
       tilt: undefined,
+      effectiveTilt: undefined,
       harmonics: [],
       compression: compressor.reduction,
       latency: 0,
@@ -728,6 +773,7 @@ export function usePlayer(): PlayerState {
         source: sourceType,
         pitch: { freq: frequency, note: freq2note(frequency), cents: 0 },
         harmonics: harmonics.map(([freq, gain]) => [freq, gain, 0]),
+        effectiveTilt: harmonicTilt,
       }));
     } else {
       setMetrics((current) => ({
@@ -735,6 +781,7 @@ export function usePlayer(): PlayerState {
         source: sourceType,
         pitch: { freq: frequency, note: freq2note(frequency), cents: 0 },
         harmonics: [[frequency, 1, 0]],
+        effectiveTilt: harmonicTilt,
       }));
     }
   }
@@ -846,8 +893,14 @@ export function usePlayer(): PlayerState {
     return bodyShelf;
   }
 
-  function connectOutput(formantsOutput: AudioNode) {
-    if (settings.compression.on) {
+  function connectOutput(formantsOutput: AudioNode, useCompression: boolean) {
+    try {
+      formantsOutput.disconnect();
+    } catch {
+      // Disconnect may throw when the edge is already absent.
+    }
+
+    if (useCompression) {
       formantsOutput.connect(compressor);
       if (!runtime.compressorConnectedToOutput) {
         compressor.connect(output);

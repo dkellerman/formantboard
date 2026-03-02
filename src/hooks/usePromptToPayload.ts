@@ -358,11 +358,15 @@ export function usePromptToPayload({ onPayloadReady, onStatusChange }: UsePrompt
       abortControllerRef.current = controller;
 
       try {
-        llmDebug("prompt received", { promptChars: prompt.length, promptPreview: prompt.slice(0, 180) });
+        llmDebug("prompt received", {
+          promptChars: prompt.length,
+          promptPreview: prompt.slice(0, 180),
+        });
         const model =
           (import.meta.env.VITE_OPENAI_MODEL as string | undefined)?.trim() || "gpt-4.1";
         const routerModel =
-          (import.meta.env.VITE_OPENAI_ROUTER_MODEL as string | undefined)?.trim() || "gpt-4.1-mini";
+          (import.meta.env.VITE_OPENAI_ROUTER_MODEL as string | undefined)?.trim() ||
+          "gpt-4.1-mini";
 
         onStatusChange("Routing music resources...");
         const routingRaw = await requestPayloadFromModel({
@@ -383,7 +387,9 @@ export function usePromptToPayload({ onPayloadReady, onStatusChange }: UsePrompt
 
         const routing = routingRaw as ResourceRoutingResult;
         const selectedResources = toSelectedResources(routing.resourceIds ?? []);
-        const resourcesForGeneration = selectedResources.length ? selectedResources : MUSIC_RESOURCES;
+        const resourcesForGeneration = selectedResources.length
+          ? selectedResources
+          : MUSIC_RESOURCES;
         llmDebug("router selection", {
           selectedIds: routing.resourceIds ?? [],
           selectedCount: selectedResources.length,

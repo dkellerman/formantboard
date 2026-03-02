@@ -16,6 +16,7 @@ function createInitialState() {
       source: undefined,
       rms: 0,
       tilt: undefined,
+      effectiveTilt: undefined,
       harmonics: [],
       compression: 0,
       latency: 0,

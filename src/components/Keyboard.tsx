@@ -71,7 +71,8 @@ function buildHotkeyMap(noteIds: string[]) {
   const maxMiddleStart = Math.max(0, noteIds.length - middleCount);
   const c4Index = noteIds.indexOf("C4");
   const fallbackMiddleStart = Math.max(0, Math.min(Math.floor(noteIds.length / 2), maxMiddleStart));
-  const middleStart = c4Index >= 0 ? Math.max(0, Math.min(c4Index, maxMiddleStart)) : fallbackMiddleStart;
+  const middleStart =
+    c4Index >= 0 ? Math.max(0, Math.min(c4Index, maxMiddleStart)) : fallbackMiddleStart;
   const middleEnd = Math.min(noteIds.length, middleStart + middleCount);
   const lowerStart = Math.max(0, middleStart - LOWER_ROW_KEYS.length);
   const lowerEnd = middleStart;
@@ -457,7 +458,7 @@ export function Keyboard({ height, activeNotes, onKeyOn, onKeyOff }: KeyboardPro
         <div
           className={cn(
             "absolute inset-0 overflow-hidden",
-            "font-mono text-[14px] leading-none text-zinc-900",
+            "font-mono text-[14px] leading-none text-zinc-900 dark:text-zinc-100",
             showHotkeyHints ? "opacity-100" : "opacity-0",
           )}
           aria-hidden={!showHotkeyHints}

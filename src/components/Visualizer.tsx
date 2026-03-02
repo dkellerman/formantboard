@@ -262,7 +262,7 @@ export function Visualizer({
     <section className={cn("visualizer m-0 p-0", `vtype-${vtype}`)}>
       <canvas
         ref={canvasRef}
-        className={cn("m-0 block w-full border border-border p-0")}
+        className={cn("m-0 block w-full border border-border border-b-0 p-0")}
         width={width}
         height={height}
       />

@@ -67,6 +67,7 @@ export interface MetricsData {
   source: string | undefined;
   rms: number;
   tilt: ReturnType<typeof import("regression").logarithmic> | undefined;
+  effectiveTilt: number | undefined;
   harmonics: HarmonicFrame[];
   compression: number;
   latency: number;
@@ -91,6 +92,7 @@ export interface PlayerRuntimeVoice {
   noteId: string;
   vowel: IPAType;
   source: PlayerPlaybackSource;
+  outputNode?: AudioNode;
   started: boolean;
   ended: boolean;
   releaseAt?: number;
@@ -110,6 +112,7 @@ export interface PlayerRuntime {
   outputConnectedToDestination: boolean;
   outputConnectedToAnalyzer: boolean;
   compressorConnectedToOutput: boolean;
+  compressionActive: boolean;
   analyzeRafId: number | undefined;
   micAnalyzing: boolean;
   playing: Record<

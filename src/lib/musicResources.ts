@@ -99,12 +99,7 @@ export const MUSIC_RESOURCE_CATEGORY_IDS = MUSIC_RESOURCE_CATEGORIES.map(
 
 export type MusicResourceType = "api" | "dataset" | "library" | "tool" | "docs" | "reference";
 
-export type MusicResourceLicense =
-  | "public_domain"
-  | "open"
-  | "commercial"
-  | "mixed"
-  | "unknown";
+export type MusicResourceLicense = "public_domain" | "open" | "commercial" | "mixed" | "unknown";
 
 export type MusicResourceCost = "free" | "freemium" | "paid" | "mixed" | "unknown";
 
@@ -152,8 +147,7 @@ export const MUSIC_RESOURCES: readonly MusicResource[] = [
     apiAvailable: true,
     requiresAuth: true,
     confidence: 0.95,
-    notes:
-      "As of late 2024, some endpoints have tightened access for new/in-development apps.",
+    notes: "As of late 2024, some endpoints have tightened access for new/in-development apps.",
   },
   {
     id: "spotify-audio-analysis",
@@ -230,7 +224,8 @@ export const MUSIC_RESOURCES: readonly MusicResource[] = [
     name: "Spotify Basic Pitch",
     url: "https://github.com/spotify/basic-pitch",
     type: "tool",
-    description: "Open-source audio-to-MIDI transcription model for monophonic/polyphonic material.",
+    description:
+      "Open-source audio-to-MIDI transcription model for monophonic/polyphonic material.",
     categories: ["melody", "tempo", "music_practice", "singing_acoustics"],
     tags: ["transcription", "midi", "audio", "pitch"],
     license: "open",

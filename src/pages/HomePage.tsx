@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { Square } from "lucide-react";
+import { Braces, KeyboardMusic, Sparkles, Square } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAppStore } from "@/store";
 import { cn } from "@/lib/cn";
@@ -104,9 +104,23 @@ export function HomePage() {
           onKeyOff={(note, options) => player.stop(note, false, 0, options?.immediate)}
         />
       </div>
-      <div className={cn("my-10 inline-flex gap-5")}>
+      <div
+        className={cn(
+          "my-10 inline-flex items-stretch overflow-hidden rounded-lg border border-input",
+          "divide-x divide-border bg-muted/40 shadow-sm",
+        )}
+        role="group"
+        aria-label="Playback controls"
+      >
         <MidiButton
           text="MIDI"
+          icon={<KeyboardMusic className={cn("h-4 w-4")} />}
+          title="Enable MIDI"
+          ariaLabel="Enable MIDI"
+          buttonVariant="ghost"
+          buttonClassName={cn(
+            "h-10 rounded-none rounded-l-lg px-3 text-muted-foreground hover:text-foreground",
+          )}
           onNoteOn={(note, velocity) => {
             player.play(note2freq(note), velocity);
           }}
@@ -114,9 +128,17 @@ export function HomePage() {
             player.stop(note2freq(note));
           }}
         />
-        <MicButton startText="Listen" stopText="Stop" />
+        <MicButton
+          startText="Listen"
+          stopText="Stop"
+          buttonVariant="ghost"
+          buttonClassName={cn("h-10 rounded-none px-3")}
+          title="Mic input"
+          ariaLabel="Mic input"
+        />
         <Button
-          variant="outline"
+          variant="ghost"
+          className={cn("h-10 rounded-none px-3")}
           onClick={() => {
             setApiModalOpen(true);
             if (!apiPayloadSeeded) {
@@ -125,11 +147,15 @@ export function HomePage() {
             }
             setAiPasteStatus("Ready. Paste JSON and click Run.");
           }}
+          title="Open API runner"
+          aria-label="Open API runner"
         >
-          API
+          <Braces className={cn("h-4 w-4")} aria-hidden="true" />
+          <span>API</span>
         </Button>
         <Button
-          variant={showAIPrompt || aiStopMode ? "secondary" : "outline"}
+          variant={showAIPrompt || aiStopMode ? "secondary" : "ghost"}
+          className={cn("h-10 rounded-none rounded-r-lg px-3")}
           onClick={() => {
             if (aiStopMode) {
               cancelPromptGeneration();
@@ -145,14 +171,19 @@ export function HomePage() {
             setShowAIPrompt((current) => !current);
           }}
           aria-pressed={showAIPrompt || aiStopMode}
+          title={aiStopMode ? "Stop AI playback" : "AI prompt"}
+          aria-label={aiStopMode ? "Stop AI playback" : "AI prompt"}
         >
           {aiStopMode ? (
             <span className={cn("inline-flex items-center gap-2")}>
               <Square className={cn("h-4 w-4")} aria-hidden="true" />
-              Stop
+              Stop AI
             </span>
           ) : (
-            "AI Prompt"
+            <span className={cn("inline-flex items-center gap-2")}>
+              <Sparkles className={cn("h-4 w-4")} aria-hidden="true" />
+              AI
+            </span>
           )}
         </Button>
       </div>
