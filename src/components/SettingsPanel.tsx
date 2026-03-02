@@ -185,10 +185,10 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
         className,
       )}
     >
-      <F0Selector className={cn("w-[96px] sm:w-[110px]")} restartSignal={restartSignal} />
+      <F0Selector className={cn("w-[84px] sm:w-[96px]")} restartSignal={restartSignal} />
 
       <IPASelector
-        className={cn("w-[200px] max-w-full sm:w-[220px]")}
+        className={cn("w-[150px] max-w-full")}
         value={ipa}
         onSelect={setIPA}
         onChange={restartF0}
@@ -420,9 +420,13 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
         </ToggleGroup>
       </div>
 
-      <label className={cn("flex w-[136px] max-w-full min-w-0 flex-col gap-1")}>
+      <label className={cn("flex w-[118px] max-w-full min-w-0 flex-col gap-1")}>
         <Label className={cn("text-xs font-normal text-foreground")}>Tilt</Label>
-        <div className={cn("flex h-11 items-center gap-2 rounded-md border border-input px-1")}>
+        <div
+          className={cn(
+            "flex h-11 w-full items-center gap-0.5 rounded-md border border-input px-1",
+          )}
+        >
           <Input
             className={cn(
               "h-8 min-w-0 flex-1 border-0 bg-transparent px-2 text-foreground",
@@ -441,7 +445,7 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
             }}
             onChange={restartF0}
           />
-          <span className={cn("px-1 text-sm text-muted-foreground")}>dB/oct</span>
+          <span className={cn("shrink-0 px-1 text-sm text-muted-foreground")}>dB/oct</span>
         </div>
       </label>
 

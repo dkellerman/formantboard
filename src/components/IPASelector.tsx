@@ -47,6 +47,11 @@ export function IPASelector({
       })),
     [values],
   );
+  const selectedTitle = useMemo(() => {
+    if (!value) return undefined;
+    const match = items.find((item) => item.value === value);
+    return match?.title ?? String(value);
+  }, [items, value]);
 
   const isCommonVowelSet = useMemo(() => {
     const commonSet = new Set(COMMON_IPA);
@@ -90,7 +95,7 @@ export function IPASelector({
 
   return (
     <section className={cn("flex flex-row items-center", className)}>
-      <div className={cn("flex w-full min-w-0 flex-col gap-1")}>
+      <div className={cn("flex min-w-0 flex-col gap-1 w-full")}>
         <div className={cn("flex min-h-4 items-center gap-1")}>
           {showPopout ? (
             <Popover modal={false} open={pickerOpen} onOpenChange={setPickerOpen}>
@@ -238,8 +243,10 @@ export function IPASelector({
             handleSelect(nextValue as IPAType);
           }}
         >
-          <SelectTrigger className={cn("h-11 text-base")}>
-            <SelectValue placeholder="Select..." />
+          <SelectTrigger className={cn("h-11 w-full text-base")}>
+            <SelectValue placeholder="Select...">
+              {selectedTitle ?? null}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             {items.map((item) => (
