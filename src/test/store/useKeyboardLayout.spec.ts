@@ -1,5 +1,6 @@
 import { act } from "react";
 import { beforeEach, describe, expect, it } from "vitest";
+import { MOBILE_MIN_FULL_KEY_WIDTH } from "@/hooks/useKeyboardLayout";
 import { resetAllStores } from "@/test/resetStores";
 import { getTestApp } from "@/test/resetStores";
 
@@ -33,6 +34,8 @@ describe("useKeyboardLayout store", () => {
     const store = getTestApp().keyboardLayout;
 
     expect(store.layout.topFreq).toBeGreaterThan(store.layout.bottomFreq);
-    expect(store.fullKeyWidth > 20 || store.layout.notes.length <= 37).toBe(true);
+    expect(
+      store.fullKeyWidth > MOBILE_MIN_FULL_KEY_WIDTH || store.layout.notes.length <= 37,
+    ).toBe(true);
   });
 });

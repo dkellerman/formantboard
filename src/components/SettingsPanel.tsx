@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { RotateCcw, SquareArrowOutUpRight, X } from "lucide-react";
 import { useAppStore } from "@/store";
 import {
@@ -30,9 +30,19 @@ export interface SettingsPanelProps {
   className?: string;
   visType: VisType;
   onVisTypeChange: (value: VisType) => void;
+  showAdvanced?: boolean;
+  compactToggle?: ReactNode;
+  compactVowelFullWidth?: boolean;
 }
 
-export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsPanelProps) {
+export function SettingsPanel({
+  className,
+  visType,
+  onVisTypeChange,
+  showAdvanced = true,
+  compactToggle,
+  compactVowelFullWidth = true,
+}: SettingsPanelProps) {
   const settings = useAppStore((state) => state.settings);
   const setSettings = useAppStore((state) => state.setSettings);
   const ipa = useAppStore((state) => state.ipa);
@@ -178,23 +188,40 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
   return (
     <section
       className={cn(
-        "mb-5 flex w-full flex-row flex-wrap items-start gap-2 sm:gap-3",
+        "mb-5 flex w-full flex-row gap-2 sm:gap-3",
+        showAdvanced ? "flex-wrap items-start" : "flex-nowrap items-end",
         "[&_.vui-input]:text-sm [&_.vui-select]:text-sm [&_.vui-field-label]:text-[11px]",
         "[&_.vui-field]:min-w-0",
         "[&_.vui-btn]:text-sm",
         className,
       )}
     >
-      <F0Selector className={cn("w-[84px] sm:w-[96px]")} restartSignal={restartSignal} />
+      <F0Selector
+        className={cn(showAdvanced ? "w-[84px] sm:w-[96px]" : "min-w-[98px] flex-[0_0_98px]")}
+        restartSignal={restartSignal}
+      />
 
       <IPASelector
-        className={cn("w-[150px] max-w-full")}
+        className={cn(
+          showAdvanced
+            ? "w-[150px] max-w-full"
+            : compactVowelFullWidth
+              ? "min-w-[110px] flex-1"
+              : "w-[150px] max-w-[150px] flex-[0_0_150px]",
+        )}
         value={ipa}
         onSelect={setIPA}
         onChange={restartF0}
       />
-
-      <div className={cn("inline-flex min-w-0 flex-col gap-1")}>
+      {compactToggle ? (
+        <div className={cn("flex flex-[0_0_auto] flex-col gap-1")}>
+          <span className={cn("text-xs font-normal text-transparent select-none")}>Settings</span>
+          {compactToggle}
+        </div>
+      ) : null}
+      {showAdvanced ? (
+        <>
+          <div className={cn("inline-flex min-w-0 flex-col gap-1")}>
         <div className={cn("flex items-center gap-1")}>
           <Label className={cn("text-xs font-normal text-foreground")}>Formants</Label>
           <Popover modal={false} open={formantPopoverOpen} onOpenChange={setFormantPopoverOpen}>
@@ -713,7 +740,7 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
         </Select>
       </label>
 
-      <div className={cn("flex w-11 flex-col gap-1")}>
+          <div className={cn("flex w-11 flex-col gap-1")}>
         <span className={cn("text-xs font-normal text-transparent select-none")}>Reset</span>
         <Button
           type="button"
@@ -726,7 +753,9 @@ export function SettingsPanel({ className, visType, onVisTypeChange }: SettingsP
         >
           <RotateCcw />
         </Button>
-      </div>
+          </div>
+        </>
+      ) : null}
     </section>
   );
 }

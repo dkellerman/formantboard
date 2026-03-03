@@ -68,8 +68,9 @@ export function AIPromptInput({
           <textarea
             id="fb-ai-prompt"
             className={cn(
-              "w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground",
-              "leading-5 placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring",
+              "w-full rounded-md border border-input bg-background px-3 py-2 text-base text-foreground",
+              "leading-6 placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring",
+              "sm:text-sm sm:leading-5",
               "resize-none",
             )}
             rows={3}

@@ -1,10 +1,11 @@
 import { useCallback, useState } from "react";
-import { Braces, KeyboardMusic, Sparkles, Square } from "lucide-react";
+import { Braces, ChevronDown, KeyboardMusic, MoreVertical, Sparkles, Square } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAppStore } from "@/store";
 import { cn } from "@/lib/cn";
 import { usePlayer } from "@/hooks/usePlayer";
 import { usePromptToPayload } from "@/hooks/usePromptToPayload";
+import { useViewport } from "@/hooks/useViewport";
 import { VisType } from "@/constants";
 import { AIPromptInput } from "@/components/AIPromptInput";
 import { Keyboard } from "@/components/Keyboard";
@@ -14,6 +15,7 @@ import { MidiButton } from "@/components/MidiButton";
 import { MicButton } from "@/components/MicButton";
 import { Readout } from "@/components/Readout";
 import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import type { FormantboardAPI, FormantboardJSONPayload } from "@/types";
 import { note2freq } from "@/utils";
 
@@ -41,7 +43,18 @@ export function HomePage() {
   const [apiPayloadSeeded, setApiPayloadSeeded] = useState(false);
   const [aiPasteStatus, setAiPasteStatus] = useState("Ready.");
   const [showAIPrompt, setShowAIPrompt] = useState(false);
+  const [mobileSettingsOpen, setMobileSettingsOpen] = useState(false);
+  const [controlsMenuOpen, setControlsMenuOpen] = useState(false);
   const aiStopMode = playerState.isApiPlaying;
+  const viewport = useViewport();
+  const isMobile = viewport.isMobile;
+  const keyboardHeight =
+    isMobile
+      ? viewport.isMobileLandscape
+        ? Math.round(Math.max(84, Math.min(98, viewport.height * 0.22)))
+        : Math.round(Math.max(76, Math.min(108, viewport.height * 0.15)))
+      : undefined;
+  const visualizerHeight = isMobile ? (viewport.isMobileLandscape ? 64 : 92) : 150;
 
   const handlePromptPayloadReady = useCallback((prettyPayload: string) => {
     setApiPayload(prettyPayload);
@@ -53,6 +66,15 @@ export function HomePage() {
     onPayloadReady: handlePromptPayloadReady,
     onStatusChange: handlePromptStatusChange,
   });
+
+  function openApiModal() {
+    setApiModalOpen(true);
+    if (!apiPayloadSeeded) {
+      setApiPayload(HOME_API_SAMPLE);
+      setApiPayloadSeeded(true);
+    }
+    setAiPasteStatus("Ready. Paste JSON and click Run.");
+  }
 
   function runAIPayload(raw: string) {
     const text = raw.trim();
@@ -97,9 +119,40 @@ export function HomePage() {
   return (
     <section className={cn("flex flex-col items-center gap-0")}>
       <div className={cn("w-[95vw]")}>
-        <SettingsPanel className={cn("mb-3")} visType={visType} onVisTypeChange={setVisType} />
-        {settings.viz.on ? <Visualizer vtype={visType} height={150} /> : null}
+        {isMobile ? (
+          <SettingsPanel
+            className={cn("mb-3")}
+            visType={visType}
+            onVisTypeChange={setVisType}
+            showAdvanced={mobileSettingsOpen}
+            compactVowelFullWidth={!viewport.isMobileLandscape}
+            compactToggle={
+              <button
+                type="button"
+                className={cn(
+                  "flex h-11 min-w-[92px] items-center justify-between rounded-md border border-input",
+                  "bg-muted/40 px-2.5 text-sm font-medium text-foreground",
+                )}
+                onClick={() => setMobileSettingsOpen((current) => !current)}
+                aria-expanded={mobileSettingsOpen}
+              >
+                <span>Settings</span>
+                <ChevronDown
+                  className={cn(
+                    "h-4 w-4 transition-transform",
+                    mobileSettingsOpen ? "rotate-180" : "rotate-0",
+                  )}
+                  aria-hidden="true"
+                />
+              </button>
+            }
+          />
+        ) : (
+          <SettingsPanel className={cn("mb-3")} visType={visType} onVisTypeChange={setVisType} />
+        )}
+        {settings.viz.on ? <Visualizer vtype={visType} height={visualizerHeight} /> : null}
         <Keyboard
+          height={keyboardHeight}
           onKeyOn={(note, velocity) => player.play(note, velocity)}
           onKeyOff={(note, options) => player.stop(note, false, 0, options?.immediate)}
         />
@@ -112,50 +165,47 @@ export function HomePage() {
         role="group"
         aria-label="Playback controls"
       >
-        <MidiButton
-          text="MIDI"
-          icon={<KeyboardMusic className={cn("h-4 w-4")} />}
-          title="Enable MIDI"
-          ariaLabel="Enable MIDI"
-          buttonVariant="ghost"
-          buttonClassName={cn(
-            "h-10 rounded-none rounded-l-lg px-3 text-muted-foreground hover:text-foreground",
-          )}
-          onNoteOn={(note, velocity) => {
-            player.play(note2freq(note), velocity);
-          }}
-          onNoteOff={(note) => {
-            player.stop(note2freq(note));
-          }}
-        />
+        {!isMobile ? (
+          <MidiButton
+            text="MIDI"
+            icon={<KeyboardMusic className={cn("h-4 w-4")} />}
+            title="Enable MIDI"
+            ariaLabel="Enable MIDI"
+            buttonVariant="ghost"
+            buttonClassName={cn(
+              "h-10 rounded-none rounded-l-lg px-3 text-muted-foreground hover:text-foreground",
+            )}
+            onNoteOn={(note, velocity) => {
+              player.play(note2freq(note), velocity);
+            }}
+            onNoteOff={(note) => {
+              player.stop(note2freq(note));
+            }}
+          />
+        ) : null}
         <MicButton
           startText="Listen"
           stopText="Stop"
           buttonVariant="ghost"
-          buttonClassName={cn("h-10 rounded-none px-3")}
+          buttonClassName={cn("h-10 rounded-none px-3", isMobile && "rounded-l-lg")}
           title="Mic input"
           ariaLabel="Mic input"
         />
-        <Button
-          variant="ghost"
-          className={cn("h-10 rounded-none px-3")}
-          onClick={() => {
-            setApiModalOpen(true);
-            if (!apiPayloadSeeded) {
-              setApiPayload(HOME_API_SAMPLE);
-              setApiPayloadSeeded(true);
-            }
-            setAiPasteStatus("Ready. Paste JSON and click Run.");
-          }}
-          title="Open API runner"
-          aria-label="Open API runner"
-        >
-          <Braces className={cn("h-4 w-4")} aria-hidden="true" />
-          <span>API</span>
-        </Button>
+        {!isMobile ? (
+          <Button
+            variant="ghost"
+            className={cn("h-10 rounded-none px-3")}
+            onClick={openApiModal}
+            title="Open API runner"
+            aria-label="Open API runner"
+          >
+            <Braces className={cn("h-4 w-4")} aria-hidden="true" />
+            <span>API</span>
+          </Button>
+        ) : null}
         <Button
           variant={showAIPrompt || aiStopMode ? "secondary" : "ghost"}
-          className={cn("h-10 rounded-none rounded-r-lg px-3")}
+          className={cn("h-10 rounded-none px-3", !isMobile && "rounded-r-lg")}
           onClick={() => {
             if (aiStopMode) {
               cancelPromptGeneration();
@@ -186,6 +236,57 @@ export function HomePage() {
             </span>
           )}
         </Button>
+        {isMobile ? (
+          <Popover open={controlsMenuOpen} onOpenChange={setControlsMenuOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="ghost"
+                className={cn(
+                  "h-10 rounded-none rounded-r-lg px-2 text-muted-foreground hover:text-foreground",
+                )}
+                aria-label="More controls"
+              >
+                <MoreVertical className={cn("h-4 w-4")} aria-hidden="true" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className={cn("w-44 p-1")}>
+              <div className={cn("flex flex-col gap-1")}>
+                <MidiButton
+                  text="MIDI"
+                  icon={<KeyboardMusic className={cn("h-4 w-4")} />}
+                  title="Enable MIDI"
+                  ariaLabel="Enable MIDI"
+                  buttonVariant="ghost"
+                  className={cn("w-full")}
+                  buttonClassName={cn(
+                    "h-9 w-full justify-start px-2 text-muted-foreground hover:text-foreground",
+                  )}
+                  onNoteOn={(note, velocity) => {
+                    player.play(note2freq(note), velocity);
+                  }}
+                  onNoteOff={(note) => {
+                    player.stop(note2freq(note));
+                  }}
+                />
+                <Button
+                  variant="ghost"
+                  className={cn(
+                    "h-9 w-full justify-start px-2 text-muted-foreground hover:text-foreground",
+                  )}
+                  onClick={() => {
+                    setControlsMenuOpen(false);
+                    openApiModal();
+                  }}
+                  title="Open API runner"
+                  aria-label="Open API runner"
+                >
+                  <Braces className={cn("h-4 w-4")} aria-hidden="true" />
+                  <span>API</span>
+                </Button>
+              </div>
+            </PopoverContent>
+          </Popover>
+        ) : null}
       </div>
       <Readout />
       {showAIPrompt ? (

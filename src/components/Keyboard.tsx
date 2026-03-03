@@ -131,6 +131,7 @@ export function Keyboard({ height, activeNotes, onKeyOn, onKeyOff }: KeyboardPro
 
   const layout = keyboardLayout.layout;
   const keyboardWidth = keyboardLayout.keyboardWidth;
+  const isMobile = keyboardLayout.isMobile;
   const noteIds = useMemo(
     () => layout.notes.map((note: string) => note.replace("#", "s")),
     [layout.notes],
@@ -258,9 +259,9 @@ export function Keyboard({ height, activeNotes, onKeyOn, onKeyOff }: KeyboardPro
     setActiveNote(id);
   }
 
-  function stop(id: string) {
+  function stop(id: string, options?: { immediate?: boolean }) {
     if (activeNoteRef.current !== id) return;
-    onKeyOff?.(id.replace("s", "#") as Note);
+    onKeyOff?.(id.replace("s", "#") as Note, options);
     activeNoteRef.current = null;
     setActiveNote(null);
   }
@@ -381,6 +382,7 @@ export function Keyboard({ height, activeNotes, onKeyOn, onKeyOff }: KeyboardPro
       <div
         className={cn("w-full overflow-hidden border border-zinc-300 border-t-0")}
         onMouseLeave={() => {
+          if (isMobile) return;
           stopActiveNote();
           setDragging(false);
         }}
@@ -407,33 +409,43 @@ export function Keyboard({ height, activeNotes, onKeyOn, onKeyOff }: KeyboardPro
                 className={cn(
                   getKeyClass(id, midi),
                   "outline-none ring-0 focus:outline-none focus-visible:outline-none",
-                  "focus:ring-0 focus-visible:ring-0 [-webkit-tap-highlight-color:transparent]",
+                  "focus:ring-0 focus-visible:ring-0 touch-none [-webkit-tap-highlight-color:transparent]",
                 )}
                 style={getKeyStyle(id)}
                 tabIndex={-1}
                 onMouseDown={(event) => {
+                  if (isMobile) return;
                   event.preventDefault();
                   setDragging(true);
                   play(id);
                 }}
                 onMouseUp={() => {
+                  if (isMobile) return;
                   setDragging(false);
                   stop(id);
                 }}
                 onMouseEnter={() => {
+                  if (isMobile) return;
                   if (dragging) play(id);
                 }}
                 onMouseOut={() => {
+                  if (isMobile) return;
                   if (dragging) stop(id);
                 }}
                 onTouchStart={(event) => {
-                  event.preventDefault();
+                  if (!isMobile) return;
                   setDragging(true);
                   play(id);
                 }}
                 onTouchEnd={() => {
+                  if (!isMobile) return;
                   setDragging(false);
-                  stop(id);
+                  stop(id, { immediate: true });
+                }}
+                onTouchCancel={() => {
+                  if (!isMobile) return;
+                  setDragging(false);
+                  stop(id, { immediate: true });
                 }}
               >
                 <label
@@ -454,48 +466,50 @@ export function Keyboard({ height, activeNotes, onKeyOn, onKeyOff }: KeyboardPro
           })}
         </ul>
       </div>
-      <div className={cn("relative mt-1 h-[20px]")} style={{ width: `${keyboardWidth}px` }}>
-        <div
-          className={cn(
-            "absolute inset-0 overflow-hidden",
-            "font-mono text-[14px] leading-none text-zinc-900 dark:text-zinc-100",
-            showHotkeyHints ? "opacity-100" : "opacity-0",
-          )}
-          aria-hidden={!showHotkeyHints}
-        >
-          <div className={cn("relative h-[18px]")} style={{ width: `${keyboardWidth}px` }}>
-            {noteIds.map((id) => {
-              const hotkey = hotkeyMap.hotkeyByNote.get(id);
-              const center = hotkeyCenters[id];
-              if (!hotkey || center === undefined) return null;
-              return (
-                <span
-                  key={`${id}-${hotkey}`}
-                  className={cn(
-                    "pointer-events-none absolute top-0 -translate-x-1/2 text-center leading-none",
-                    MIDDLE_ROW_KEYS.includes(hotkey) ? "font-semibold" : undefined,
-                  )}
-                  style={{ left: `${center}px` }}
-                >
-                  {hotkey}
-                </span>
-              );
-            })}
+      {!isMobile ? (
+        <div className={cn("relative mt-1 h-[20px]")} style={{ width: `${keyboardWidth}px` }}>
+          <div
+            className={cn(
+              "absolute inset-0 overflow-hidden",
+              "font-mono text-[14px] leading-none text-zinc-900 dark:text-zinc-100",
+              showHotkeyHints ? "opacity-100" : "opacity-0",
+            )}
+            aria-hidden={!showHotkeyHints}
+          >
+            <div className={cn("relative h-[18px]")} style={{ width: `${keyboardWidth}px` }}>
+              {noteIds.map((id) => {
+                const hotkey = hotkeyMap.hotkeyByNote.get(id);
+                const center = hotkeyCenters[id];
+                if (!hotkey || center === undefined) return null;
+                return (
+                  <span
+                    key={`${id}-${hotkey}`}
+                    className={cn(
+                      "pointer-events-none absolute top-0 -translate-x-1/2 text-center leading-none",
+                      MIDDLE_ROW_KEYS.includes(hotkey) ? "font-semibold" : undefined,
+                    )}
+                    style={{ left: `${center}px` }}
+                  >
+                    {hotkey}
+                  </span>
+                );
+              })}
+            </div>
           </div>
+          <button
+            type="button"
+            className={cn(
+              "absolute right-0 top-0 rounded border border-transparent bg-white/90 px-1 py-0",
+              "font-mono text-[11px] text-zinc-500 underline decoration-dotted",
+              "hover:text-zinc-700 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-400",
+            )}
+            onClick={() => setShowHotkeyHints((current) => !current)}
+            aria-pressed={showHotkeyHints}
+          >
+            {showHotkeyHints ? "Hide hotkeys" : "Show hotkeys"}
+          </button>
         </div>
-        <button
-          type="button"
-          className={cn(
-            "absolute right-0 top-0 rounded border border-transparent bg-white/90 px-1 py-0",
-            "font-mono text-[11px] text-zinc-500 underline decoration-dotted",
-            "hover:text-zinc-700 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-400",
-          )}
-          onClick={() => setShowHotkeyHints((current) => !current)}
-          aria-pressed={showHotkeyHints}
-        >
-          {showHotkeyHints ? "Hide hotkeys" : "Show hotkeys"}
-        </button>
-      </div>
+      ) : null}
     </div>
   );
 }
