@@ -117,6 +117,15 @@ function isEditableElement(target: EventTarget | null) {
   return ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName);
 }
 
+function getKeyIdAtTouchPoint(touch: Touch) {
+  const target = document.elementFromPoint(touch.clientX, touch.clientY);
+  if (!(target instanceof HTMLElement)) {
+    return null;
+  }
+  const keyElement = target.closest<HTMLLIElement>("li[data-key-id]");
+  return keyElement?.id ?? null;
+}
+
 export interface KeyboardProps {
   height?: number;
   activeNotes?: Set<string>;
@@ -266,10 +275,10 @@ export function Keyboard({ height, activeNotes, onKeyOn, onKeyOff }: KeyboardPro
     setActiveNote(null);
   }
 
-  function stopActiveNote() {
+  function stopActiveNote(options?: { immediate?: boolean }) {
     const current = activeNoteRef.current;
     if (!current) return;
-    onKeyOff?.(current.replace("s", "#") as Note);
+    onKeyOff?.(current.replace("s", "#") as Note, options);
     activeNoteRef.current = null;
     setActiveNote(null);
   }
@@ -389,8 +398,29 @@ export function Keyboard({ height, activeNotes, onKeyOn, onKeyOff }: KeyboardPro
       >
         <ul
           ref={keyboardListRef}
-          className={cn("m-0 flex flex-row items-start p-0")}
+          className={cn(
+            "m-0 flex flex-row items-start p-0 touch-none select-none",
+            "[-webkit-user-select:none] [-webkit-touch-callout:none]",
+          )}
           style={{ height: `${keyboardHeight}px`, width: `${keyboardWidth}px` }}
+          onTouchMove={(event) => {
+            if (!isMobile || !dragging) return;
+            const touch = event.touches[0];
+            if (!touch) return;
+            const nextId = getKeyIdAtTouchPoint(touch);
+            if (!nextId) return;
+            play(nextId);
+          }}
+          onTouchEnd={() => {
+            if (!isMobile) return;
+            setDragging(false);
+            stopActiveNote({ immediate: true });
+          }}
+          onTouchCancel={() => {
+            if (!isMobile) return;
+            setDragging(false);
+            stopActiveNote({ immediate: true });
+          }}
         >
           {noteIds.map((id: string) => {
             const note = id.replace("s", "#") as Note;
@@ -409,10 +439,14 @@ export function Keyboard({ height, activeNotes, onKeyOn, onKeyOff }: KeyboardPro
                 className={cn(
                   getKeyClass(id, midi),
                   "outline-none ring-0 focus:outline-none focus-visible:outline-none",
-                  "focus:ring-0 focus-visible:ring-0 touch-none [-webkit-tap-highlight-color:transparent]",
+                  "focus:ring-0 focus-visible:ring-0 touch-none select-none",
+                  "[-webkit-user-select:none] [-webkit-touch-callout:none] [-webkit-tap-highlight-color:transparent]",
                 )}
                 style={getKeyStyle(id)}
                 tabIndex={-1}
+                onContextMenu={(event) => {
+                  event.preventDefault();
+                }}
                 onMouseDown={(event) => {
                   if (isMobile) return;
                   event.preventDefault();
@@ -435,7 +469,9 @@ export function Keyboard({ height, activeNotes, onKeyOn, onKeyOff }: KeyboardPro
                 onTouchStart={(event) => {
                   if (!isMobile) return;
                   setDragging(true);
-                  play(id);
+                  const touch = event.touches[0];
+                  const nextId = touch ? getKeyIdAtTouchPoint(touch) : id;
+                  play(nextId ?? id);
                 }}
                 onTouchEnd={() => {
                   if (!isMobile) return;

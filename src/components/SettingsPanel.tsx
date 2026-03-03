@@ -222,537 +222,539 @@ export function SettingsPanel({
       {showAdvanced ? (
         <>
           <div className={cn("inline-flex min-w-0 flex-col gap-1")}>
-        <div className={cn("flex items-center gap-1")}>
-          <Label className={cn("text-xs font-normal text-foreground")}>Formants</Label>
-          <Popover modal={false} open={formantPopoverOpen} onOpenChange={setFormantPopoverOpen}>
-            <PopoverTrigger asChild>
-              <button
-                type="button"
-                className={cn(
-                  "inline-flex h-4 w-4 items-center justify-center rounded",
-                  "text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-1",
-                  "focus-visible:ring-ring",
-                )}
-                aria-label="Open formant controls"
-                title="Open formant controls"
-              >
-                <SquareArrowOutUpRight className={cn("size-3.5")} />
-              </button>
-            </PopoverTrigger>
-            <PopoverContent
-              align="start"
-              className={cn("w-[260px] p-1.5")}
-              onInteractOutside={(event) => event.preventDefault()}
-            >
-              <header
-                className={cn(
-                  "mb-1.5 flex items-center justify-between gap-1 border-b border-border pb-1",
-                )}
-              >
-                <h3 className={cn("text-xs font-semibold text-foreground")}>Formants</h3>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className={cn("h-5 w-5 text-muted-foreground")}
-                  onClick={() => setFormantPopoverOpen(false)}
-                  aria-label="Close formant controls"
-                >
-                  <X className={cn("size-3")} />
-                </Button>
-              </header>
-
-              <div className={cn("grid gap-1")}>
-                <div
-                  className={cn(
-                    "grid grid-cols-[20px_30px_repeat(3,minmax(0,1fr))] items-center gap-1 px-1 text-[9px] uppercase tracking-wide text-muted-foreground",
-                  )}
-                >
-                  <span />
-                  <span />
-                  <span className={cn("text-center")}>Freq</span>
-                  <span className={cn("text-center")}>Q</span>
-                  <span className={cn("text-center")}>Gain</span>
-                </div>
-
-                {ipaSpec.map((formant, idx) => (
-                  <div
-                    key={idx}
-                    className={cn(
-                      "grid grid-cols-[20px_30px_repeat(3,minmax(0,1fr))] items-center gap-1 rounded border border-border px-1 py-1",
-                    )}
-                  >
-                    <div className={cn("text-[10px] font-medium text-foreground")}>F{idx + 1}</div>
-                    <button
-                      type="button"
-                      className={cn(
-                        "rounded border px-0 py-0.5 text-[9px] leading-none",
-                        formant.on
-                          ? "border-primary bg-primary text-primary-foreground"
-                          : "border-input bg-background text-foreground hover:bg-accent",
-                      )}
-                      onClick={() => updateTemporaryFormant(idx, { on: !formant.on })}
-                    >
-                      {formant.on ? "On" : "Off"}
-                    </button>
-                    <Input
-                      aria-label={`Formant F${idx + 1} frequency`}
-                      className={cn("h-6 px-1 text-[11px]")}
-                      type="number"
-                      step={10}
-                      min={0}
-                      max={12000}
-                      value={Number.isFinite(formant.frequency) ? formant.frequency : 0}
-                      onInput={(event) => {
-                        const next = Number((event.target as HTMLInputElement).value);
-                        if (!Number.isFinite(next)) return;
-                        updateTemporaryFormant(idx, { frequency: next });
-                      }}
-                    />
-                    <Input
-                      aria-label={`Formant F${idx + 1} Q`}
-                      className={cn("h-6 px-1 text-[11px]")}
-                      type="number"
-                      step={0.1}
-                      min={0.1}
-                      max={40}
-                      value={Number.isFinite(formant.Q) ? formant.Q : 0}
-                      onInput={(event) => {
-                        const next = Number((event.target as HTMLInputElement).value);
-                        if (!Number.isFinite(next)) return;
-                        updateTemporaryFormant(idx, { Q: next });
-                      }}
-                    />
-                    <Input
-                      aria-label={`Formant F${idx + 1} gain`}
-                      className={cn("h-6 px-1 text-[11px]")}
-                      type="number"
-                      step={0.1}
-                      min={-40}
-                      max={60}
-                      value={Number.isFinite(formant.gain) ? formant.gain : 0}
-                      onInput={(event) => {
-                        const next = Number((event.target as HTMLInputElement).value);
-                        if (!Number.isFinite(next)) return;
-                        updateTemporaryFormant(idx, { gain: next });
-                      }}
-                    />
-                  </div>
-                ))}
-
-                <label
-                  className={cn(
-                    "grid grid-cols-[52px_minmax(0,1fr)_42px_12px] items-center gap-1 rounded border border-border px-1 py-1",
-                  )}
-                >
-                  <span className={cn("flex flex-col leading-none")}>
-                    <span className={cn("text-[11px] text-muted-foreground")}>Cascade</span>
-                  </span>
-                  <input
-                    className={rangeInputClass}
-                    type="range"
-                    step={1}
-                    min={0}
-                    max={100}
-                    value={Math.round(cascadePctForIPA * 100)}
-                    onInput={(event) => {
-                      const next = Number((event.target as HTMLInputElement).value);
-                      if (!Number.isFinite(next)) return;
-                      updateFormantCascadePct(next / 100);
-                    }}
-                  />
-                  <Input
-                    className={cn("h-6 px-1 text-right text-xs")}
-                    type="number"
-                    step={1}
-                    min={0}
-                    max={100}
-                    value={Math.round(cascadePctForIPA * 100)}
-                    onInput={(event) => {
-                      const next = Number((event.target as HTMLInputElement).value);
-                      if (!Number.isFinite(next)) return;
-                      updateFormantCascadePct(next / 100);
-                    }}
-                  />
-                  <span className={cn("text-[10px] text-muted-foreground")}>%</span>
-                </label>
-              </div>
-            </PopoverContent>
-          </Popover>
-        </div>
-        <ToggleGroup
-          className={cn(
-            "h-11 w-[140px] gap-0 rounded-md border border-input",
-            "bg-muted sm:w-[150px]",
-          )}
-          type="multiple"
-          value={formantButtons}
-          onValueChange={updateFormants}
-        >
-          {ipaSpec.map((formant: Formant, idx: number) => {
-            return (
-              <div key={idx} className={cn("group relative flex h-full flex-1")}>
-                <ToggleGroupItem
-                  value={String(idx)}
-                  variant="outline"
-                  size="default"
-                  title={
-                    "Formant F" +
-                    (idx + 1) +
-                    " [" +
-                    (formant.on ? "ON" : "OFF") +
-                    "] " +
-                    formantRange(formant).join("-") +
-                    "hz"
-                  }
-                  aria-label={
-                    "Formant F" +
-                    (idx + 1) +
-                    " [" +
-                    (formant.on ? "ON" : "OFF") +
-                    "] " +
-                    formantRange(formant).join("-") +
-                    "hz"
-                  }
-                  className={cn(
-                    "h-full w-full rounded-none border-0",
-                    idx === 0 ? "border-l-0" : "border-l border-border",
-                    "px-0 py-0 text-base font-normal leading-none",
-                    "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-                    "data-[state=on]:bg-background data-[state=on]:text-foreground",
-                    "data-[state=on]:hover:bg-background",
-                    "dark:data-[state=on]:bg-black dark:data-[state=on]:text-white",
-                    "dark:data-[state=on]:hover:bg-black",
-                  )}
-                >
-                  F{idx + 1}
-                </ToggleGroupItem>
-                <div
-                  className={cn(
-                    "pointer-events-none absolute left-1/2 top-full z-[70]",
-                    "mt-1 hidden -translate-x-1/2",
-                    "whitespace-nowrap rounded border border-border bg-popover px-2 py-1",
-                    "text-xs text-popover-foreground shadow-lg",
-                    "group-hover:block",
-                  )}
-                >
-                  <div>
-                    Formant F{idx + 1} [{formant.on ? "ON" : "OFF"}]
-                  </div>
-                  <div>{formantRange(formant).join("-")}hz</div>
-                </div>
-              </div>
-            );
-          })}
-        </ToggleGroup>
-      </div>
-
-      <label className={cn("flex w-[118px] max-w-full min-w-0 flex-col gap-1")}>
-        <Label className={cn("text-xs font-normal text-foreground")}>Tilt</Label>
-        <div
-          className={cn(
-            "flex h-11 w-full items-center gap-0.5 rounded-md border border-input px-1",
-          )}
-        >
-          <Input
-            className={cn(
-              "h-8 min-w-0 flex-1 border-0 bg-transparent px-2 text-foreground",
-              "shadow-none ring-0 focus-visible:ring-0",
-            )}
-            type="number"
-            min={-20.0}
-            max={0.0}
-            value={settings.harmonics.tilt}
-            onInput={(event) => {
-              const value = Number((event.target as HTMLInputElement).value);
-              setSettings((current) => ({
-                ...current,
-                harmonics: { ...current.harmonics, tilt: value },
-              }));
-            }}
-            onChange={restartF0}
-          />
-          <span className={cn("shrink-0 px-1 text-sm text-muted-foreground")}>dB/oct</span>
-        </div>
-      </label>
-
-      <div className={cn("flex w-[150px] max-w-full min-w-0 flex-col gap-1")}>
-        <div className={cn("flex min-h-4 items-center gap-1")}>
-          <Switch
-            checked={vibrato.on}
-            onCheckedChange={(value) => commitVibrato({ on: value })}
-            className={cn(
-              "h-4 w-7 shrink-0",
-              "[&>span]:h-3 [&>span]:w-3",
-              "data-[state=checked]:[&>span]:translate-x-3",
-            )}
-            aria-label="Toggle vibrato"
-          />
-          <Popover modal={false} open={vibratoPopoverOpen} onOpenChange={setVibratoPopoverOpen}>
-            <Label className={cn("text-xs font-normal text-foreground")}>Vibrato</Label>
-            <PopoverTrigger asChild>
-              <button
-                type="button"
-                className={cn(
-                  "inline-flex h-4 w-4 items-center justify-center rounded",
-                  "text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-1",
-                  "focus-visible:ring-ring",
-                )}
-                aria-label="Open vibrato controls"
-                title="Open vibrato controls"
-              >
-                <SquareArrowOutUpRight className={cn("size-3.5")} />
-              </button>
-            </PopoverTrigger>
-            <PopoverContent
-              align="start"
-              className={cn("w-[220px] p-1.5")}
-              onInteractOutside={(event) => event.preventDefault()}
-            >
-              <header
-                className={cn(
-                  "mb-1.5 flex items-center justify-between gap-1 border-b border-border pb-1",
-                )}
-              >
-                <h3 className={cn("text-xs font-semibold text-foreground")}>Vibrato</h3>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className={cn("h-5 w-5 text-muted-foreground")}
-                  onClick={() => setVibratoPopoverOpen(false)}
-                  aria-label="Close vibrato controls"
-                >
-                  <X className={cn("size-3")} />
-                </Button>
-              </header>
-
-              <div className={cn("grid gap-1")}>
-                <div
-                  className={cn(
-                    "grid grid-cols-[42px_minmax(0,1fr)] items-center gap-1 rounded border border-border px-1 py-1",
-                  )}
-                >
-                  <span className={cn("text-[11px] text-muted-foreground")}>On</span>
+            <div className={cn("flex items-center gap-1")}>
+              <Label className={cn("text-xs font-normal text-foreground")}>Formants</Label>
+              <Popover modal={false} open={formantPopoverOpen} onOpenChange={setFormantPopoverOpen}>
+                <PopoverTrigger asChild>
                   <button
                     type="button"
                     className={cn(
-                      "rounded border px-1 py-0.5 text-[10px] leading-none",
-                      vibrato.on
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-input bg-background text-foreground hover:bg-accent",
+                      "inline-flex h-4 w-4 items-center justify-center rounded",
+                      "text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-1",
+                      "focus-visible:ring-ring",
                     )}
-                    onClick={() => commitVibrato({ on: !vibrato.on })}
+                    aria-label="Open formant controls"
+                    title="Open formant controls"
                   >
-                    {vibrato.on ? "On" : "Off"}
+                    <SquareArrowOutUpRight className={cn("size-3.5")} />
                   </button>
-                </div>
-
-                <label
-                  className={cn(
-                    "grid grid-cols-[42px_minmax(0,1fr)_48px] items-center gap-1 rounded border border-border px-1 py-1",
-                  )}
+                </PopoverTrigger>
+                <PopoverContent
+                  align="start"
+                  className={cn("w-[260px] p-1.5")}
+                  onInteractOutside={(event) => event.preventDefault()}
                 >
-                  <span className={cn("text-[11px] text-muted-foreground")}>Rate</span>
-                  <input
-                    className={rangeInputClass}
-                    type="range"
-                    step={0.1}
-                    min={0}
-                    max={10}
-                    value={vibrato.rate}
-                    onInput={(event) => {
-                      const next = Number((event.target as HTMLInputElement).value);
-                      if (!Number.isFinite(next)) return;
-                      patchVibrato({ rate: next });
-                    }}
-                    onChange={restartF0}
-                  />
-                  <Input
-                    className={cn("h-6 px-1 text-right text-xs")}
-                    type="number"
-                    step={0.1}
-                    min={0}
-                    max={10}
-                    value={vibrato.rate}
-                    onInput={(event) => {
-                      const next = Number((event.target as HTMLInputElement).value);
-                      if (!Number.isFinite(next)) return;
-                      patchVibrato({ rate: next });
-                    }}
-                    onChange={restartF0}
-                  />
-                </label>
+                  <header
+                    className={cn(
+                      "mb-1.5 flex items-center justify-between gap-1 border-b border-border pb-1",
+                    )}
+                  >
+                    <h3 className={cn("text-xs font-semibold text-foreground")}>Formants</h3>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className={cn("h-5 w-5 text-muted-foreground")}
+                      onClick={() => setFormantPopoverOpen(false)}
+                      aria-label="Close formant controls"
+                    >
+                      <X className={cn("size-3")} />
+                    </Button>
+                  </header>
 
-                <label
-                  className={cn(
-                    "grid grid-cols-[42px_minmax(0,1fr)_48px] items-center gap-1 rounded border border-border px-1 py-1",
-                  )}
+                  <div className={cn("grid gap-1")}>
+                    <div
+                      className={cn(
+                        "grid grid-cols-[20px_30px_repeat(3,minmax(0,1fr))] items-center gap-1 px-1 text-[9px] uppercase tracking-wide text-muted-foreground",
+                      )}
+                    >
+                      <span />
+                      <span />
+                      <span className={cn("text-center")}>Freq</span>
+                      <span className={cn("text-center")}>Q</span>
+                      <span className={cn("text-center")}>Gain</span>
+                    </div>
+
+                    {ipaSpec.map((formant, idx) => (
+                      <div
+                        key={idx}
+                        className={cn(
+                          "grid grid-cols-[20px_30px_repeat(3,minmax(0,1fr))] items-center gap-1 rounded border border-border px-1 py-1",
+                        )}
+                      >
+                        <div className={cn("text-[10px] font-medium text-foreground")}>
+                          F{idx + 1}
+                        </div>
+                        <button
+                          type="button"
+                          className={cn(
+                            "rounded border px-0 py-0.5 text-[9px] leading-none",
+                            formant.on
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : "border-input bg-background text-foreground hover:bg-accent",
+                          )}
+                          onClick={() => updateTemporaryFormant(idx, { on: !formant.on })}
+                        >
+                          {formant.on ? "On" : "Off"}
+                        </button>
+                        <Input
+                          aria-label={`Formant F${idx + 1} frequency`}
+                          className={cn("h-6 px-1 text-[11px]")}
+                          type="number"
+                          step={10}
+                          min={0}
+                          max={12000}
+                          value={Number.isFinite(formant.frequency) ? formant.frequency : 0}
+                          onInput={(event) => {
+                            const next = Number((event.target as HTMLInputElement).value);
+                            if (!Number.isFinite(next)) return;
+                            updateTemporaryFormant(idx, { frequency: next });
+                          }}
+                        />
+                        <Input
+                          aria-label={`Formant F${idx + 1} Q`}
+                          className={cn("h-6 px-1 text-[11px]")}
+                          type="number"
+                          step={0.1}
+                          min={0.1}
+                          max={40}
+                          value={Number.isFinite(formant.Q) ? formant.Q : 0}
+                          onInput={(event) => {
+                            const next = Number((event.target as HTMLInputElement).value);
+                            if (!Number.isFinite(next)) return;
+                            updateTemporaryFormant(idx, { Q: next });
+                          }}
+                        />
+                        <Input
+                          aria-label={`Formant F${idx + 1} gain`}
+                          className={cn("h-6 px-1 text-[11px]")}
+                          type="number"
+                          step={0.1}
+                          min={-40}
+                          max={60}
+                          value={Number.isFinite(formant.gain) ? formant.gain : 0}
+                          onInput={(event) => {
+                            const next = Number((event.target as HTMLInputElement).value);
+                            if (!Number.isFinite(next)) return;
+                            updateTemporaryFormant(idx, { gain: next });
+                          }}
+                        />
+                      </div>
+                    ))}
+
+                    <label
+                      className={cn(
+                        "grid grid-cols-[52px_minmax(0,1fr)_42px_12px] items-center gap-1 rounded border border-border px-1 py-1",
+                      )}
+                    >
+                      <span className={cn("flex flex-col leading-none")}>
+                        <span className={cn("text-[11px] text-muted-foreground")}>Cascade</span>
+                      </span>
+                      <input
+                        className={rangeInputClass}
+                        type="range"
+                        step={1}
+                        min={0}
+                        max={100}
+                        value={Math.round(cascadePctForIPA * 100)}
+                        onInput={(event) => {
+                          const next = Number((event.target as HTMLInputElement).value);
+                          if (!Number.isFinite(next)) return;
+                          updateFormantCascadePct(next / 100);
+                        }}
+                      />
+                      <Input
+                        className={cn("h-6 px-1 text-right text-xs")}
+                        type="number"
+                        step={1}
+                        min={0}
+                        max={100}
+                        value={Math.round(cascadePctForIPA * 100)}
+                        onInput={(event) => {
+                          const next = Number((event.target as HTMLInputElement).value);
+                          if (!Number.isFinite(next)) return;
+                          updateFormantCascadePct(next / 100);
+                        }}
+                      />
+                      <span className={cn("text-[10px] text-muted-foreground")}>%</span>
+                    </label>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </div>
+            <ToggleGroup
+              className={cn(
+                "h-11 w-[140px] gap-0 rounded-md border border-input",
+                "bg-muted sm:w-[150px]",
+              )}
+              type="multiple"
+              value={formantButtons}
+              onValueChange={updateFormants}
+            >
+              {ipaSpec.map((formant: Formant, idx: number) => {
+                return (
+                  <div key={idx} className={cn("group relative flex h-full flex-1")}>
+                    <ToggleGroupItem
+                      value={String(idx)}
+                      variant="outline"
+                      size="default"
+                      title={
+                        "Formant F" +
+                        (idx + 1) +
+                        " [" +
+                        (formant.on ? "ON" : "OFF") +
+                        "] " +
+                        formantRange(formant).join("-") +
+                        "hz"
+                      }
+                      aria-label={
+                        "Formant F" +
+                        (idx + 1) +
+                        " [" +
+                        (formant.on ? "ON" : "OFF") +
+                        "] " +
+                        formantRange(formant).join("-") +
+                        "hz"
+                      }
+                      className={cn(
+                        "h-full w-full rounded-none border-0",
+                        idx === 0 ? "border-l-0" : "border-l border-border",
+                        "px-0 py-0 text-base font-normal leading-none",
+                        "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+                        "data-[state=on]:bg-background data-[state=on]:text-foreground",
+                        "data-[state=on]:hover:bg-background",
+                        "dark:data-[state=on]:bg-black dark:data-[state=on]:text-white",
+                        "dark:data-[state=on]:hover:bg-black",
+                      )}
+                    >
+                      F{idx + 1}
+                    </ToggleGroupItem>
+                    <div
+                      className={cn(
+                        "pointer-events-none absolute left-1/2 top-full z-[70]",
+                        "mt-1 hidden -translate-x-1/2",
+                        "whitespace-nowrap rounded border border-border bg-popover px-2 py-1",
+                        "text-xs text-popover-foreground shadow-lg",
+                        "group-hover:block",
+                      )}
+                    >
+                      <div>
+                        Formant F{idx + 1} [{formant.on ? "ON" : "OFF"}]
+                      </div>
+                      <div>{formantRange(formant).join("-")}hz</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </ToggleGroup>
+          </div>
+
+          <label className={cn("flex w-[118px] max-w-full min-w-0 flex-col gap-1")}>
+            <Label className={cn("text-xs font-normal text-foreground")}>Tilt</Label>
+            <div
+              className={cn(
+                "flex h-11 w-full items-center gap-0.5 rounded-md border border-input px-1",
+              )}
+            >
+              <Input
+                className={cn(
+                  "h-8 min-w-0 flex-1 border-0 bg-transparent px-2 text-foreground",
+                  "shadow-none ring-0 focus-visible:ring-0",
+                )}
+                type="number"
+                min={-20.0}
+                max={0.0}
+                value={settings.harmonics.tilt}
+                onInput={(event) => {
+                  const value = Number((event.target as HTMLInputElement).value);
+                  setSettings((current) => ({
+                    ...current,
+                    harmonics: { ...current.harmonics, tilt: value },
+                  }));
+                }}
+                onChange={restartF0}
+              />
+              <span className={cn("shrink-0 px-1 text-sm text-muted-foreground")}>dB/oct</span>
+            </div>
+          </label>
+
+          <div className={cn("flex w-[150px] max-w-full min-w-0 flex-col gap-1")}>
+            <div className={cn("flex min-h-4 items-center gap-1")}>
+              <Switch
+                checked={vibrato.on}
+                onCheckedChange={(value) => commitVibrato({ on: value })}
+                className={cn(
+                  "h-4 w-7 shrink-0",
+                  "[&>span]:h-3 [&>span]:w-3",
+                  "data-[state=checked]:[&>span]:translate-x-3",
+                )}
+                aria-label="Toggle vibrato"
+              />
+              <Popover modal={false} open={vibratoPopoverOpen} onOpenChange={setVibratoPopoverOpen}>
+                <Label className={cn("text-xs font-normal text-foreground")}>Vibrato</Label>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className={cn(
+                      "inline-flex h-4 w-4 items-center justify-center rounded",
+                      "text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-1",
+                      "focus-visible:ring-ring",
+                    )}
+                    aria-label="Open vibrato controls"
+                    title="Open vibrato controls"
+                  >
+                    <SquareArrowOutUpRight className={cn("size-3.5")} />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent
+                  align="start"
+                  className={cn("w-[220px] p-1.5")}
+                  onInteractOutside={(event) => event.preventDefault()}
                 >
-                  <span className={cn("text-[11px] text-muted-foreground")}>Extent</span>
-                  <input
-                    className={rangeInputClass}
-                    type="range"
-                    step={0.1}
-                    min={0}
-                    max={5}
-                    value={vibrato.extent}
-                    onInput={(event) => {
-                      const next = Number((event.target as HTMLInputElement).value);
-                      if (!Number.isFinite(next)) return;
-                      patchVibrato({ extent: next });
-                    }}
-                    onChange={restartF0}
-                  />
-                  <Input
-                    className={cn("h-6 px-1 text-right text-xs")}
-                    type="number"
-                    step={0.1}
-                    min={0}
-                    max={5}
-                    value={vibrato.extent}
-                    onInput={(event) => {
-                      const next = Number((event.target as HTMLInputElement).value);
-                      if (!Number.isFinite(next)) return;
-                      patchVibrato({ extent: next });
-                    }}
-                    onChange={restartF0}
-                  />
-                </label>
+                  <header
+                    className={cn(
+                      "mb-1.5 flex items-center justify-between gap-1 border-b border-border pb-1",
+                    )}
+                  >
+                    <h3 className={cn("text-xs font-semibold text-foreground")}>Vibrato</h3>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className={cn("h-5 w-5 text-muted-foreground")}
+                      onClick={() => setVibratoPopoverOpen(false)}
+                      aria-label="Close vibrato controls"
+                    >
+                      <X className={cn("size-3")} />
+                    </Button>
+                  </header>
 
-                <label
-                  className={cn(
-                    "grid grid-cols-[42px_minmax(0,1fr)_48px] items-center gap-1 rounded border border-border px-1 py-1",
-                  )}
-                >
-                  <span className={cn("text-[11px] text-muted-foreground")}>Jitter</span>
-                  <input
-                    className={rangeInputClass}
-                    type="range"
-                    step={0.1}
-                    min={0}
-                    max={2}
-                    value={vibrato.jitter}
-                    onInput={(event) => {
-                      const next = Number((event.target as HTMLInputElement).value);
-                      if (!Number.isFinite(next)) return;
-                      patchVibrato({ jitter: next });
-                    }}
-                    onChange={restartF0}
-                  />
-                  <Input
-                    className={cn("h-6 px-1 text-right text-xs")}
-                    type="number"
-                    step={0.1}
-                    min={0}
-                    max={2}
-                    value={vibrato.jitter}
-                    onInput={(event) => {
-                      const next = Number((event.target as HTMLInputElement).value);
-                      if (!Number.isFinite(next)) return;
-                      patchVibrato({ jitter: next });
-                    }}
-                    onChange={restartF0}
-                  />
-                </label>
+                  <div className={cn("grid gap-1")}>
+                    <div
+                      className={cn(
+                        "grid grid-cols-[42px_minmax(0,1fr)] items-center gap-1 rounded border border-border px-1 py-1",
+                      )}
+                    >
+                      <span className={cn("text-[11px] text-muted-foreground")}>On</span>
+                      <button
+                        type="button"
+                        className={cn(
+                          "rounded border px-1 py-0.5 text-[10px] leading-none",
+                          vibrato.on
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : "border-input bg-background text-foreground hover:bg-accent",
+                        )}
+                        onClick={() => commitVibrato({ on: !vibrato.on })}
+                      >
+                        {vibrato.on ? "On" : "Off"}
+                      </button>
+                    </div>
 
-                <label
-                  className={cn(
-                    "grid grid-cols-[42px_minmax(0,1fr)_48px] items-center gap-1 rounded border border-border px-1 py-1",
-                  )}
-                >
-                  <span className={cn("text-[11px] text-muted-foreground")}>Onset</span>
-                  <input
-                    className={rangeInputClass}
-                    type="range"
-                    step={0.1}
-                    min={0}
-                    max={3}
-                    value={vibrato.onsetTime}
-                    onInput={(event) => {
-                      const next = Number((event.target as HTMLInputElement).value);
-                      if (!Number.isFinite(next)) return;
-                      patchVibrato({ onsetTime: next });
-                    }}
-                    onChange={restartF0}
-                  />
-                  <Input
-                    className={cn("h-6 px-1 text-right text-xs")}
-                    type="number"
-                    step={0.1}
-                    min={0}
-                    max={3}
-                    value={vibrato.onsetTime}
-                    onInput={(event) => {
-                      const next = Number((event.target as HTMLInputElement).value);
-                      if (!Number.isFinite(next)) return;
-                      patchVibrato({ onsetTime: next });
-                    }}
-                    onChange={restartF0}
-                  />
-                </label>
-              </div>
-            </PopoverContent>
-          </Popover>
-        </div>
+                    <label
+                      className={cn(
+                        "grid grid-cols-[42px_minmax(0,1fr)_48px] items-center gap-1 rounded border border-border px-1 py-1",
+                      )}
+                    >
+                      <span className={cn("text-[11px] text-muted-foreground")}>Rate</span>
+                      <input
+                        className={rangeInputClass}
+                        type="range"
+                        step={0.1}
+                        min={0}
+                        max={10}
+                        value={vibrato.rate}
+                        onInput={(event) => {
+                          const next = Number((event.target as HTMLInputElement).value);
+                          if (!Number.isFinite(next)) return;
+                          patchVibrato({ rate: next });
+                        }}
+                        onChange={restartF0}
+                      />
+                      <Input
+                        className={cn("h-6 px-1 text-right text-xs")}
+                        type="number"
+                        step={0.1}
+                        min={0}
+                        max={10}
+                        value={vibrato.rate}
+                        onInput={(event) => {
+                          const next = Number((event.target as HTMLInputElement).value);
+                          if (!Number.isFinite(next)) return;
+                          patchVibrato({ rate: next });
+                        }}
+                        onChange={restartF0}
+                      />
+                    </label>
 
-        <div className={cn("flex h-11 items-center gap-1 rounded-md border border-input px-2")}>
-          <span className={cn("text-[11px] text-muted-foreground")}>Rate</span>
-          <input
-            className={rangeInputClass}
-            type="range"
-            min={0}
-            max={10}
-            step={0.1}
-            value={vibrato.rate}
-            onInput={(event) => {
-              const next = Number((event.target as HTMLInputElement).value);
-              if (!Number.isFinite(next)) return;
-              patchVibrato({ rate: next });
-            }}
-            onChange={restartF0}
-          />
-          <span className={cn("w-8 text-right text-[11px] text-muted-foreground")}>
-            {vibrato.rate.toFixed(1)}
-          </span>
-        </div>
-      </div>
+                    <label
+                      className={cn(
+                        "grid grid-cols-[42px_minmax(0,1fr)_48px] items-center gap-1 rounded border border-border px-1 py-1",
+                      )}
+                    >
+                      <span className={cn("text-[11px] text-muted-foreground")}>Extent</span>
+                      <input
+                        className={rangeInputClass}
+                        type="range"
+                        step={0.1}
+                        min={0}
+                        max={5}
+                        value={vibrato.extent}
+                        onInput={(event) => {
+                          const next = Number((event.target as HTMLInputElement).value);
+                          if (!Number.isFinite(next)) return;
+                          patchVibrato({ extent: next });
+                        }}
+                        onChange={restartF0}
+                      />
+                      <Input
+                        className={cn("h-6 px-1 text-right text-xs")}
+                        type="number"
+                        step={0.1}
+                        min={0}
+                        max={5}
+                        value={vibrato.extent}
+                        onInput={(event) => {
+                          const next = Number((event.target as HTMLInputElement).value);
+                          if (!Number.isFinite(next)) return;
+                          patchVibrato({ extent: next });
+                        }}
+                        onChange={restartF0}
+                      />
+                    </label>
 
-      <label className={cn("flex w-[130px] max-w-full min-w-0 flex-col gap-1")}>
-        <Label className={cn("text-xs font-normal text-foreground")}>Visualization</Label>
-        <Select
-          value={String(visType)}
-          onValueChange={(value) => {
-            const selected = VIS_TYPES.find((item) => String(item.value) === value);
-            if (selected) onVisTypeChange(selected.value);
-          }}
-        >
-          <SelectTrigger className={cn("h-11 text-base")}>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {VIS_TYPES.map((item) => (
-              <SelectItem key={String(item.value)} value={String(item.value)}>
-                {item.title}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </label>
+                    <label
+                      className={cn(
+                        "grid grid-cols-[42px_minmax(0,1fr)_48px] items-center gap-1 rounded border border-border px-1 py-1",
+                      )}
+                    >
+                      <span className={cn("text-[11px] text-muted-foreground")}>Jitter</span>
+                      <input
+                        className={rangeInputClass}
+                        type="range"
+                        step={0.1}
+                        min={0}
+                        max={2}
+                        value={vibrato.jitter}
+                        onInput={(event) => {
+                          const next = Number((event.target as HTMLInputElement).value);
+                          if (!Number.isFinite(next)) return;
+                          patchVibrato({ jitter: next });
+                        }}
+                        onChange={restartF0}
+                      />
+                      <Input
+                        className={cn("h-6 px-1 text-right text-xs")}
+                        type="number"
+                        step={0.1}
+                        min={0}
+                        max={2}
+                        value={vibrato.jitter}
+                        onInput={(event) => {
+                          const next = Number((event.target as HTMLInputElement).value);
+                          if (!Number.isFinite(next)) return;
+                          patchVibrato({ jitter: next });
+                        }}
+                        onChange={restartF0}
+                      />
+                    </label>
+
+                    <label
+                      className={cn(
+                        "grid grid-cols-[42px_minmax(0,1fr)_48px] items-center gap-1 rounded border border-border px-1 py-1",
+                      )}
+                    >
+                      <span className={cn("text-[11px] text-muted-foreground")}>Onset</span>
+                      <input
+                        className={rangeInputClass}
+                        type="range"
+                        step={0.1}
+                        min={0}
+                        max={3}
+                        value={vibrato.onsetTime}
+                        onInput={(event) => {
+                          const next = Number((event.target as HTMLInputElement).value);
+                          if (!Number.isFinite(next)) return;
+                          patchVibrato({ onsetTime: next });
+                        }}
+                        onChange={restartF0}
+                      />
+                      <Input
+                        className={cn("h-6 px-1 text-right text-xs")}
+                        type="number"
+                        step={0.1}
+                        min={0}
+                        max={3}
+                        value={vibrato.onsetTime}
+                        onInput={(event) => {
+                          const next = Number((event.target as HTMLInputElement).value);
+                          if (!Number.isFinite(next)) return;
+                          patchVibrato({ onsetTime: next });
+                        }}
+                        onChange={restartF0}
+                      />
+                    </label>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div className={cn("flex h-11 items-center gap-1 rounded-md border border-input px-2")}>
+              <span className={cn("text-[11px] text-muted-foreground")}>Rate</span>
+              <input
+                className={rangeInputClass}
+                type="range"
+                min={0}
+                max={10}
+                step={0.1}
+                value={vibrato.rate}
+                onInput={(event) => {
+                  const next = Number((event.target as HTMLInputElement).value);
+                  if (!Number.isFinite(next)) return;
+                  patchVibrato({ rate: next });
+                }}
+                onChange={restartF0}
+              />
+              <span className={cn("w-8 text-right text-[11px] text-muted-foreground")}>
+                {vibrato.rate.toFixed(1)}
+              </span>
+            </div>
+          </div>
+
+          <label className={cn("flex w-[130px] max-w-full min-w-0 flex-col gap-1")}>
+            <Label className={cn("text-xs font-normal text-foreground")}>Visualization</Label>
+            <Select
+              value={String(visType)}
+              onValueChange={(value) => {
+                const selected = VIS_TYPES.find((item) => String(item.value) === value);
+                if (selected) onVisTypeChange(selected.value);
+              }}
+            >
+              <SelectTrigger className={cn("h-11 text-base")}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {VIS_TYPES.map((item) => (
+                  <SelectItem key={String(item.value)} value={String(item.value)}>
+                    {item.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </label>
 
           <div className={cn("flex w-11 flex-col gap-1")}>
-        <span className={cn("text-xs font-normal text-transparent select-none")}>Reset</span>
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          className={cn("h-11 w-11 text-muted-foreground hover:text-foreground")}
-          onClick={resetSettings}
-          aria-label="Reset settings"
-          title="Reset settings"
-        >
-          <RotateCcw />
-        </Button>
+            <span className={cn("text-xs font-normal text-transparent select-none")}>Reset</span>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className={cn("h-11 w-11 text-muted-foreground hover:text-foreground")}
+              onClick={resetSettings}
+              aria-label="Reset settings"
+              title="Reset settings"
+            >
+              <RotateCcw />
+            </Button>
           </div>
         </>
       ) : null}

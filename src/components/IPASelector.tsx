@@ -244,9 +244,7 @@ export function IPASelector({
           }}
         >
           <SelectTrigger className={cn("h-11 w-full text-base")}>
-            <SelectValue placeholder="Select...">
-              {selectedTitle ?? null}
-            </SelectValue>
+            <SelectValue placeholder="Select...">{selectedTitle ?? null}</SelectValue>
           </SelectTrigger>
           <SelectContent>
             {items.map((item) => (

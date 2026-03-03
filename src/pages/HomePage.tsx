@@ -48,12 +48,11 @@ export function HomePage() {
   const aiStopMode = playerState.isApiPlaying;
   const viewport = useViewport();
   const isMobile = viewport.isMobile;
-  const keyboardHeight =
-    isMobile
-      ? viewport.isMobileLandscape
-        ? Math.round(Math.max(84, Math.min(98, viewport.height * 0.22)))
-        : Math.round(Math.max(76, Math.min(108, viewport.height * 0.15)))
-      : undefined;
+  const keyboardHeight = isMobile
+    ? viewport.isMobileLandscape
+      ? Math.round(Math.max(84, Math.min(98, viewport.height * 0.22)))
+      : Math.round(Math.max(76, Math.min(108, viewport.height * 0.15)))
+    : undefined;
   const visualizerHeight = isMobile ? (viewport.isMobileLandscape ? 64 : 92) : 150;
 
   const handlePromptPayloadReady = useCallback((prettyPayload: string) => {

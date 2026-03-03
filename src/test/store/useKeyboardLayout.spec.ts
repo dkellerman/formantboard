@@ -5,9 +5,18 @@ import { resetAllStores } from "@/test/resetStores";
 import { getTestApp } from "@/test/resetStores";
 
 function setWindowWidth(width: number) {
+  setWindowSize(width, window.innerHeight);
+}
+
+function setWindowSize(width: number, height: number) {
   Object.defineProperty(window, "innerWidth", {
     configurable: true,
     value: width,
+    writable: true,
+  });
+  Object.defineProperty(window, "innerHeight", {
+    configurable: true,
+    value: height,
     writable: true,
   });
   act(() => {
@@ -34,8 +43,23 @@ describe("useKeyboardLayout store", () => {
     const store = getTestApp().keyboardLayout;
 
     expect(store.layout.topFreq).toBeGreaterThan(store.layout.bottomFreq);
-    expect(
-      store.fullKeyWidth > MOBILE_MIN_FULL_KEY_WIDTH || store.layout.notes.length <= 37,
-    ).toBe(true);
+    expect(store.fullKeyWidth > MOBILE_MIN_FULL_KEY_WIDTH || store.layout.notes.length <= 37).toBe(
+      true,
+    );
+  });
+
+  it("prioritizes wider keys for mobile portrait", () => {
+    const store = getTestApp().keyboardLayout;
+
+    setWindowSize(320, 700);
+    const portraitFullKeyWidth = store.fullKeyWidth;
+    const portraitNoteCount = store.layout.notes.length;
+
+    setWindowSize(320, 260);
+    const landscapeFullKeyWidth = store.fullKeyWidth;
+    const landscapeNoteCount = store.layout.notes.length;
+
+    expect(portraitFullKeyWidth).toBeGreaterThanOrEqual(landscapeFullKeyWidth);
+    expect(portraitNoteCount).toBeLessThanOrEqual(landscapeNoteCount);
   });
 });
