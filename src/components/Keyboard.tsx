@@ -117,7 +117,12 @@ function isEditableElement(target: EventTarget | null) {
   return ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName);
 }
 
-function getKeyIdAtTouchPoint(touch: Touch) {
+type TouchPoint = {
+  clientX: number;
+  clientY: number;
+};
+
+function getKeyIdAtTouchPoint(touch: TouchPoint) {
   const target = document.elementFromPoint(touch.clientX, touch.clientY);
   if (!(target instanceof HTMLElement)) {
     return null;
