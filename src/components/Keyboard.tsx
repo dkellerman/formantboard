@@ -6,80 +6,27 @@ import { useKeyboardLayout } from "@/hooks/useKeyboardLayout";
 
 const TYPICAL_VOCAL_RANGE_MIN_MIDI = note2midi("E2");
 const TYPICAL_VOCAL_RANGE_MAX_MIDI = note2midi("C6");
-const LOWER_ROW_KEYS = "zxcvbnm,./";
-const MIDDLE_ROW_KEYS = "asdfghjkl;'";
-const UPPER_ROW_KEYS = "qwertyuiop[]\\";
-const UPPER_OVERFLOW_KEYS = "67890-=";
-const HOTKEY_BY_CODE: Record<string, string> = {
-  Backquote: "`",
-  Digit1: "1",
-  Digit2: "2",
-  Digit3: "3",
-  Digit4: "4",
-  Digit5: "5",
-  Digit6: "6",
-  Digit7: "7",
-  Digit8: "8",
-  Digit9: "9",
-  Digit0: "0",
-  Minus: "-",
-  Equal: "=",
-  KeyQ: "q",
-  KeyW: "w",
-  KeyE: "e",
-  KeyR: "r",
-  KeyT: "t",
-  KeyY: "y",
-  KeyU: "u",
-  KeyI: "i",
-  KeyO: "o",
-  KeyP: "p",
-  BracketLeft: "[",
-  BracketRight: "]",
-  Backslash: "\\",
-  KeyA: "a",
-  KeyS: "s",
-  KeyD: "d",
-  KeyF: "f",
-  KeyG: "g",
-  KeyH: "h",
-  KeyJ: "j",
-  KeyK: "k",
-  KeyL: "l",
-  Semicolon: ";",
-  Quote: "'",
-  KeyZ: "z",
-  KeyX: "x",
-  KeyC: "c",
-  KeyV: "v",
-  KeyB: "b",
-  KeyN: "n",
-  KeyM: "m",
-  Comma: ",",
-  Period: ".",
-  Slash: "/",
-};
 
 function buildHotkeyMap(noteIds: string[]) {
   const noteByHotkey = new Map<string, string>();
   const hotkeyByNote = new Map<string, string>();
-  if (noteIds.length === 0) {
-    return { noteByHotkey, hotkeyByNote };
-  }
+  if (noteIds.length === 0) return { noteByHotkey, hotkeyByNote };
 
-  const middleCount = Math.min(MIDDLE_ROW_KEYS.length, noteIds.length);
+  const lowerKeys = "zxcvbnm,./";
+  const middleKeys = "asdfghjkl;'";
+  const upperKeys = "qwertyuiop[]\\";
+  const overflowKeys = "67890-=";
+  const middleCount = Math.min(middleKeys.length, noteIds.length);
   const maxMiddleStart = Math.max(0, noteIds.length - middleCount);
   const c4Index = noteIds.indexOf("C4");
   const fallbackMiddleStart = Math.max(0, Math.min(Math.floor(noteIds.length / 2), maxMiddleStart));
   const middleStart =
     c4Index >= 0 ? Math.max(0, Math.min(c4Index, maxMiddleStart)) : fallbackMiddleStart;
   const middleEnd = Math.min(noteIds.length, middleStart + middleCount);
-  const lowerStart = Math.max(0, middleStart - LOWER_ROW_KEYS.length);
-  const lowerEnd = middleStart;
+  const lowerStart = Math.max(0, middleStart - lowerKeys.length);
   const upperStart = middleEnd;
-  const upperEnd = Math.min(noteIds.length, upperStart + UPPER_ROW_KEYS.length);
-  const numbersStart = upperEnd;
-  const numbersEnd = Math.min(noteIds.length, numbersStart + UPPER_OVERFLOW_KEYS.length);
+  const upperEnd = Math.min(noteIds.length, upperStart + upperKeys.length);
+  const overflowStart = upperEnd;
 
   function assignRange(keys: string, start: number, end: number) {
     let keyIndex = 0;
@@ -91,20 +38,45 @@ function buildHotkeyMap(noteIds: string[]) {
     }
   }
 
-  assignRange(LOWER_ROW_KEYS, lowerStart, lowerEnd);
-  assignRange(MIDDLE_ROW_KEYS, middleStart, middleEnd);
-  assignRange(UPPER_ROW_KEYS, upperStart, upperEnd);
-  assignRange(UPPER_OVERFLOW_KEYS, numbersStart, numbersEnd);
+  assignRange(lowerKeys, lowerStart, middleStart);
+  assignRange(middleKeys, middleStart, middleEnd);
+  assignRange(upperKeys, upperStart, upperEnd);
+  assignRange(overflowKeys, overflowStart, noteIds.length);
 
   return { noteByHotkey, hotkeyByNote };
 }
 
-function normalizeHotkey(key: string) {
-  return key.length === 1 ? key.toLowerCase() : "";
-}
-
 function resolveHotkey(event: KeyboardEvent) {
-  return HOTKEY_BY_CODE[event.code] ?? normalizeHotkey(event.key);
+  const code = event.code;
+  if (/^Key[A-Z]$/.test(code)) return code.slice(3).toLowerCase();
+  if (/^Digit[0-9]$/.test(code)) return code.slice(5);
+
+  switch (code) {
+    case "Backquote":
+      return "`";
+    case "Minus":
+      return "-";
+    case "Equal":
+      return "=";
+    case "BracketLeft":
+      return "[";
+    case "BracketRight":
+      return "]";
+    case "Backslash":
+      return "\\";
+    case "Semicolon":
+      return ";";
+    case "Quote":
+      return "'";
+    case "Comma":
+      return ",";
+    case "Period":
+      return ".";
+    case "Slash":
+      return "/";
+    default:
+      return event.key.length === 1 ? event.key.toLowerCase() : "";
+  }
 }
 
 function isEditableElement(target: EventTarget | null) {
@@ -151,7 +123,7 @@ export function Keyboard({ height, activeNotes, onKeyOn, onKeyOff }: KeyboardPro
     [layout.notes],
   );
   const hotkeyMap = useMemo(() => buildHotkeyMap(noteIds), [noteIds]);
-  const playerActiveNotes = new Set(player.activeNoteIds);
+  const playerActiveNotes = player.activeNoteIds;
 
   const [dragging, setDragging] = useState(false);
   const [activeNote, setActiveNote] = useState<string | null>(null);
@@ -189,7 +161,7 @@ export function Keyboard({ height, activeNotes, onKeyOn, onKeyOff }: KeyboardPro
       activeNote === id ||
       activeHotkeyNotes.has(id) ||
       activeNotes?.has(id) === true ||
-      playerActiveNotes.has(id)
+      playerActiveNotes.includes(id)
     );
   }
 
@@ -253,12 +225,11 @@ export function Keyboard({ height, activeNotes, onKeyOn, onKeyOff }: KeyboardPro
     }
 
     const letter = id.substring(0, id.length - 1).toUpperCase();
-    const overlaps = new Set(["C", "D", "F", "G", "A"]);
 
     return {
       minWidth: `${whiteKeyWidth}px`,
       width: `${whiteKeyWidth}px`,
-      marginRight: overlaps.has(letter) ? `-${blackKeyWidth}px` : undefined,
+      marginRight: ["C", "D", "F", "G", "A"].includes(letter) ? `-${blackKeyWidth}px` : undefined,
     };
   }
 
@@ -443,8 +414,7 @@ export function Keyboard({ height, activeNotes, onKeyOn, onKeyOff }: KeyboardPro
                 data-midi={midi ?? undefined}
                 className={cn(
                   getKeyClass(id, midi),
-                  "outline-none ring-0 focus:outline-none focus-visible:outline-none",
-                  "focus:ring-0 focus-visible:ring-0 touch-none select-none",
+                  "touch-none select-none",
                   "[-webkit-user-select:none] [-webkit-touch-callout:none] [-webkit-tap-highlight-color:transparent]",
                 )}
                 style={getKeyStyle(id)}
@@ -527,7 +497,7 @@ export function Keyboard({ height, activeNotes, onKeyOn, onKeyOff }: KeyboardPro
                     key={`${id}-${hotkey}`}
                     className={cn(
                       "pointer-events-none absolute top-0 -translate-x-1/2 text-center leading-none",
-                      MIDDLE_ROW_KEYS.includes(hotkey) ? "font-semibold" : undefined,
+                      "asdfghjkl;'".includes(hotkey) ? "font-semibold" : undefined,
                     )}
                     style={{ left: `${center}px` }}
                   >
@@ -542,7 +512,7 @@ export function Keyboard({ height, activeNotes, onKeyOn, onKeyOff }: KeyboardPro
             className={cn(
               "absolute right-0 top-0 rounded border border-transparent bg-white/90 px-1 py-0",
               "font-mono text-[11px] text-zinc-500 underline decoration-dotted",
-              "hover:text-zinc-700 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-400",
+              "hover:text-zinc-700",
             )}
             onClick={() => setShowHotkeyHints((current) => !current)}
             aria-pressed={showHotkeyHints}

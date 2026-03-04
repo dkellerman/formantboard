@@ -80,7 +80,7 @@ export function SettingsPanel({
   })();
 
   function updateFormants(btns: string[]) {
-    const selected = new Set(btns.map((value) => Number(value)));
+    const selected = btns.map((value) => Number(value));
     setSettings((current) => ({
       ...current,
       formants: {
@@ -89,7 +89,7 @@ export function SettingsPanel({
           ...current.formants.ipa,
           [ipa]: current.formants.ipa[ipa].map((formant, idx) => ({
             ...formant,
-            on: selected.has(idx),
+            on: selected.includes(idx),
           })),
         },
       },
@@ -166,33 +166,11 @@ export function SettingsPanel({
     restartF0();
   }
 
-  const rangeInputClass = cn(
-    "h-2 w-full appearance-none bg-transparent",
-    "[&::-webkit-slider-runnable-track]:h-1.5 [&::-webkit-slider-runnable-track]:rounded-full",
-    "[&::-webkit-slider-runnable-track]:border [&::-webkit-slider-runnable-track]:border-border",
-    "[&::-webkit-slider-runnable-track]:bg-secondary",
-    "[&::-moz-range-track]:h-1.5 [&::-moz-range-track]:rounded-full",
-    "[&::-moz-range-track]:border [&::-moz-range-track]:border-border",
-    "[&::-moz-range-track]:bg-secondary",
-    "[&::-webkit-slider-thumb]:-mt-1 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:w-3.5",
-    "[&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full",
-    "[&::-webkit-slider-thumb]:border [&::-webkit-slider-thumb]:border-primary",
-    "[&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:shadow-sm",
-    "[&::-webkit-slider-thumb]:ring-2 [&::-webkit-slider-thumb]:ring-background",
-    "[&::-moz-range-thumb]:h-3.5 [&::-moz-range-thumb]:w-3.5 [&::-moz-range-thumb]:rounded-full",
-    "[&::-moz-range-thumb]:border [&::-moz-range-thumb]:border-primary",
-    "[&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:shadow-sm",
-    "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
-  );
-
   return (
     <section
       className={cn(
         "mb-5 flex w-full flex-row gap-2 sm:gap-3",
         showAdvanced ? "flex-wrap items-start" : "flex-nowrap items-end",
-        "[&_.vui-input]:text-sm [&_.vui-select]:text-sm [&_.vui-field-label]:text-[11px]",
-        "[&_.vui-field]:min-w-0",
-        "[&_.vui-btn]:text-sm",
         className,
       )}
     >
@@ -229,9 +207,8 @@ export function SettingsPanel({
                   <button
                     type="button"
                     className={cn(
-                      "inline-flex h-4 w-4 items-center justify-center rounded",
-                      "text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-1",
-                      "focus-visible:ring-ring",
+                      "inline-flex size-4 items-center justify-center rounded",
+                      "text-muted-foreground hover:text-foreground",
                     )}
                     aria-label="Open formant controls"
                     title="Open formant controls"
@@ -254,7 +231,7 @@ export function SettingsPanel({
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className={cn("h-5 w-5 text-muted-foreground")}
+                      className={cn("size-5 text-muted-foreground")}
                       onClick={() => setFormantPopoverOpen(false)}
                       aria-label="Close formant controls"
                     >
@@ -351,7 +328,7 @@ export function SettingsPanel({
                         <span className={cn("text-[11px] text-muted-foreground")}>Cascade</span>
                       </span>
                       <input
-                        className={rangeInputClass}
+                        className="fb-range-input"
                         type="range"
                         step={1}
                         min={0}
@@ -459,7 +436,7 @@ export function SettingsPanel({
               <Input
                 className={cn(
                   "h-8 min-w-0 flex-1 border-0 bg-transparent px-2 text-foreground",
-                  "shadow-none ring-0 focus-visible:ring-0",
+                  "shadow-none",
                 )}
                 type="number"
                 min={-20.0}
@@ -496,9 +473,8 @@ export function SettingsPanel({
                   <button
                     type="button"
                     className={cn(
-                      "inline-flex h-4 w-4 items-center justify-center rounded",
-                      "text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-1",
-                      "focus-visible:ring-ring",
+                      "inline-flex size-4 items-center justify-center rounded",
+                      "text-muted-foreground hover:text-foreground",
                     )}
                     aria-label="Open vibrato controls"
                     title="Open vibrato controls"
@@ -521,7 +497,7 @@ export function SettingsPanel({
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className={cn("h-5 w-5 text-muted-foreground")}
+                      className={cn("size-5 text-muted-foreground")}
                       onClick={() => setVibratoPopoverOpen(false)}
                       aria-label="Close vibrato controls"
                     >
@@ -557,7 +533,7 @@ export function SettingsPanel({
                     >
                       <span className={cn("text-[11px] text-muted-foreground")}>Rate</span>
                       <input
-                        className={rangeInputClass}
+                        className="fb-range-input"
                         type="range"
                         step={0.1}
                         min={0}
@@ -593,7 +569,7 @@ export function SettingsPanel({
                     >
                       <span className={cn("text-[11px] text-muted-foreground")}>Extent</span>
                       <input
-                        className={rangeInputClass}
+                        className="fb-range-input"
                         type="range"
                         step={0.1}
                         min={0}
@@ -629,7 +605,7 @@ export function SettingsPanel({
                     >
                       <span className={cn("text-[11px] text-muted-foreground")}>Jitter</span>
                       <input
-                        className={rangeInputClass}
+                        className="fb-range-input"
                         type="range"
                         step={0.1}
                         min={0}
@@ -665,7 +641,7 @@ export function SettingsPanel({
                     >
                       <span className={cn("text-[11px] text-muted-foreground")}>Onset</span>
                       <input
-                        className={rangeInputClass}
+                        className="fb-range-input"
                         type="range"
                         step={0.1}
                         min={0}
@@ -701,7 +677,7 @@ export function SettingsPanel({
             <div className={cn("flex h-11 items-center gap-1 rounded-md border border-input px-2")}>
               <span className={cn("text-[11px] text-muted-foreground")}>Rate</span>
               <input
-                className={rangeInputClass}
+                className="fb-range-input"
                 type="range"
                 min={0}
                 max={10}
@@ -748,7 +724,7 @@ export function SettingsPanel({
               type="button"
               variant="outline"
               size="icon"
-              className={cn("h-11 w-11 text-muted-foreground hover:text-foreground")}
+              className={cn("size-11 text-muted-foreground hover:text-foreground")}
               onClick={resetSettings}
               aria-label="Reset settings"
               title="Reset settings"

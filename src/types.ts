@@ -250,3 +250,13 @@ export interface FormantboardAPI {
   play: (events: FormantboardPlayEvent[], options?: FormantboardPlayOptions) => void;
   fromJSON: (input: string | FormantboardJSONPayload) => void;
 }
+
+export type VoiceOptions = FormantboardVoiceOptions;
+export type LoopSetting = FormantboardLoopSetting;
+export type PlayOptions = FormantboardPlayOptions;
+export type PlayEvent = FormantboardPlayEvent;
+export type JSONNote = FormantboardJSONNote;
+export type JSONPayload = FormantboardJSONPayload;
+export type NormalizedPayload = FormantboardNormalizedPayload;
+export type ValidationResult<T> = FormantboardValidationResult<T>;
+export type API = FormantboardAPI;

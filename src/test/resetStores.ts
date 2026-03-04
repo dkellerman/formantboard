@@ -3,7 +3,7 @@ import { resetAppStore } from "@/store";
 
 let testApp = initTestApp();
 
-export function resetAllStores() {
+export function resetStores() {
   testApp.destroy();
   resetAppStore();
   testApp = initTestApp();

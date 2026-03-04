@@ -37,7 +37,7 @@ export function IPASelector({
   const setIPA = useAppStore((state) => state.setIPA);
   const [pickerOpen, setPickerOpen] = useState(false);
 
-  const values = useMemo(() => ipaSet ?? COMMON_IPA, [ipaSet]);
+  const values = ipaSet ?? COMMON_IPA;
 
   const items = useMemo(
     () =>
@@ -54,37 +54,32 @@ export function IPASelector({
   }, [items, value]);
 
   const isCommonVowelSet = useMemo(() => {
-    const commonSet = new Set(COMMON_IPA);
-    return values.every((item) => commonSet.has(item as (typeof COMMON_IPA)[number]));
+    return values.every((item) => COMMON_IPA.includes(item as (typeof COMMON_IPA)[number]));
   }, [values]);
 
   const groupedVowels = useMemo(() => {
     if (!isCommonVowelSet) return [];
-
-    const placementByIPA = new Map<IPAType, CommonIPAPlacement>(
+    const placementByIpa = new Map<IPAType, CommonIPAPlacement>(
       COMMON_IPA_DETAILS.map((item) => [item.value, item.placement]),
     );
-    const groupTitleByPlacement: Record<CommonIPAPlacement, string> = {
+    const titleByPlacement: Record<CommonIPAPlacement, string> = {
       front: "Front",
       central: "Central",
       back: "Back",
     };
-    const placementsInOrder: CommonIPAPlacement[] = ["front", "central", "back"];
 
-    return placementsInOrder
+    return (["front", "central", "back"] as const)
       .map((placement) => ({
-        title: groupTitleByPlacement[placement],
-        items: items.filter((item) => placementByIPA.get(item.value as IPAType) === placement),
+        title: titleByPlacement[placement],
+        items: items.filter((item) => placementByIpa.get(item.value as IPAType) === placement),
       }))
       .filter((group) => group.items.length > 0);
   }, [isCommonVowelSet, items]);
 
   const fallbackItems = useMemo(() => {
     if (!isCommonVowelSet) return items;
-    const grouped = new Set(
-      groupedVowels.flatMap((group) => group.items.map((item) => item.value)),
-    );
-    return items.filter((item) => !grouped.has(item.value));
+    const groupedValues = groupedVowels.flatMap((group) => group.items.map((item) => item.value));
+    return items.filter((item) => !groupedValues.includes(item.value));
   }, [groupedVowels, isCommonVowelSet, items]);
 
   function handleSelect(nextValue: IPAType) {
@@ -106,9 +101,8 @@ export function IPASelector({
                 <button
                   type="button"
                   className={cn(
-                    "inline-flex h-4 w-4 items-center justify-center rounded",
-                    "text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-1",
-                    "focus-visible:ring-ring",
+                    "inline-flex size-4 items-center justify-center rounded",
+                    "text-muted-foreground hover:text-foreground",
                   )}
                   aria-label="Open vowel picker"
                   title="Open vowel picker"
@@ -132,7 +126,7 @@ export function IPASelector({
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className={cn("h-6 w-6 text-muted-foreground")}
+                    className={cn("size-6 text-muted-foreground")}
                     onClick={() => setPickerOpen(false)}
                     aria-label="Close vowel picker"
                   >

@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
   SUPPORTED_IPA_VOWELS,
-  formantboardJsonSchemas,
+  apiJsonSchemas,
   validateJSONPayloadInput,
   validatePlayEventsInput,
 } from "@/hooks/useAPIValidation";
 
-describe("formantboard API validation", () => {
+describe("API validation", () => {
   it("accepts canonical play events", () => {
     const result = validatePlayEventsInput([
       {
@@ -161,12 +161,12 @@ describe("formantboard API validation", () => {
 
   it("exports non-empty JSON schemas and supported vowels", () => {
     expect(SUPPORTED_IPA_VOWELS).toEqual(["ɑ", "ɛ", "ə", "æ", "ɔ", "u", "ʊ", "ɪ", "i"]);
-    expect(formantboardJsonSchemas.playEvents).toEqual(
+    expect(apiJsonSchemas.playEvents).toEqual(
       expect.objectContaining({
         type: "array",
       }),
     );
-    expect(formantboardJsonSchemas.jsonPayload).toEqual(
+    expect(apiJsonSchemas.jsonPayload).toEqual(
       expect.objectContaining({
         type: "object",
       }),

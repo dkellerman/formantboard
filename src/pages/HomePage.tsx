@@ -16,7 +16,7 @@ import { MicButton } from "@/components/MicButton";
 import { Readout } from "@/components/Readout";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import type { FormantboardAPI, FormantboardJSONPayload } from "@/types";
+import type { API, JSONPayload } from "@/types";
 import { note2freq } from "@/utils";
 
 const HOME_API_SAMPLE = JSON.stringify(
@@ -83,12 +83,12 @@ export function HomePage() {
     }
 
     try {
-      const fb = (window as Window & { fb?: FormantboardAPI }).fb;
+      const fb = (window as Window & { fb?: API }).fb;
       if (!fb) {
         throw new Error("window.fb is not available yet.");
       }
 
-      const parsed = JSON.parse(text) as FormantboardJSONPayload;
+      const parsed = JSON.parse(text) as JSONPayload;
       if (!Array.isArray(parsed.notes)) {
         throw new Error("Payload must include notes: []");
       }
@@ -107,7 +107,7 @@ export function HomePage() {
 
   function prettifyPayload() {
     try {
-      const parsed = JSON.parse(apiPayload) as FormantboardJSONPayload;
+      const parsed = JSON.parse(apiPayload) as JSONPayload;
       setApiPayload(JSON.stringify(parsed, null, 2));
       setAiPasteStatus("JSON formatted.");
     } catch (error) {
@@ -138,7 +138,7 @@ export function HomePage() {
                 <span>Settings</span>
                 <ChevronDown
                   className={cn(
-                    "h-4 w-4 transition-transform",
+                    "size-4 transition-transform",
                     mobileSettingsOpen ? "rotate-180" : "rotate-0",
                   )}
                   aria-hidden="true"
@@ -167,7 +167,7 @@ export function HomePage() {
         {!isMobile ? (
           <MidiButton
             text="MIDI"
-            icon={<KeyboardMusic className={cn("h-4 w-4")} />}
+            icon={<KeyboardMusic className={cn("size-4")} />}
             title="Enable MIDI"
             ariaLabel="Enable MIDI"
             buttonVariant="ghost"
@@ -198,7 +198,7 @@ export function HomePage() {
             title="Open API runner"
             aria-label="Open API runner"
           >
-            <Braces className={cn("h-4 w-4")} aria-hidden="true" />
+            <Braces className={cn("size-4")} aria-hidden="true" />
             <span>API</span>
           </Button>
         ) : null}
@@ -208,7 +208,7 @@ export function HomePage() {
           onClick={() => {
             if (aiStopMode) {
               cancelPromptGeneration();
-              const fb = (window as Window & { fb?: FormantboardAPI }).fb;
+              const fb = (window as Window & { fb?: API }).fb;
               if (fb) {
                 fb.stop();
               } else {
@@ -225,12 +225,12 @@ export function HomePage() {
         >
           {aiStopMode ? (
             <span className={cn("inline-flex items-center gap-2")}>
-              <Square className={cn("h-4 w-4")} aria-hidden="true" />
+              <Square className={cn("size-4")} aria-hidden="true" />
               Stop AI
             </span>
           ) : (
             <span className={cn("inline-flex items-center gap-2")}>
-              <Sparkles className={cn("h-4 w-4")} aria-hidden="true" />
+              <Sparkles className={cn("size-4")} aria-hidden="true" />
               AI
             </span>
           )}
@@ -245,14 +245,14 @@ export function HomePage() {
                 )}
                 aria-label="More controls"
               >
-                <MoreVertical className={cn("h-4 w-4")} aria-hidden="true" />
+                <MoreVertical className={cn("size-4")} aria-hidden="true" />
               </Button>
             </PopoverTrigger>
             <PopoverContent align="end" className={cn("w-44 p-1")}>
               <div className={cn("flex flex-col gap-1")}>
                 <MidiButton
                   text="MIDI"
-                  icon={<KeyboardMusic className={cn("h-4 w-4")} />}
+                  icon={<KeyboardMusic className={cn("size-4")} />}
                   title="Enable MIDI"
                   ariaLabel="Enable MIDI"
                   buttonVariant="ghost"
@@ -279,7 +279,7 @@ export function HomePage() {
                   title="Open API runner"
                   aria-label="Open API runner"
                 >
-                  <Braces className={cn("h-4 w-4")} aria-hidden="true" />
+                  <Braces className={cn("size-4")} aria-hidden="true" />
                   <span>API</span>
                 </Button>
               </div>
@@ -320,7 +320,7 @@ export function HomePage() {
               <button
                 type="button"
                 className={cn(
-                  "h-8 w-8 rounded border border-input bg-background text-foreground hover:bg-accent",
+                  "size-8 rounded border border-input bg-background text-foreground hover:bg-accent",
                 )}
                 aria-label="Close API modal"
                 onClick={() => setApiModalOpen(false)}
@@ -342,7 +342,7 @@ export function HomePage() {
               data-ai-json-input="true"
               className={cn(
                 "h-60 w-full resize-y rounded-md border border-input bg-background p-3 font-mono",
-                "text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring",
+                "text-xs text-foreground",
               )}
               placeholder='{"notes":[{"note":60,"time":0,"dur":0.5}]}'
               spellCheck={false}
@@ -362,11 +362,11 @@ export function HomePage() {
               <Button variant="default" onClick={() => runAIPayload(apiPayload)}>
                 Run
               </Button>
-              <Button variant="secondary" onClick={prettifyPayload}>
+              <Button variant="outline" onClick={prettifyPayload}>
                 Format
               </Button>
               <Button
-                variant="secondary"
+                variant="outline"
                 onClick={() => {
                   setApiPayload("");
                   setAiPasteStatus("Cleared.");

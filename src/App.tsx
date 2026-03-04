@@ -3,63 +3,20 @@ import { Menu } from "lucide-react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { cn } from "@/lib/cn";
 import { usePlayer } from "@/hooks/usePlayer";
-import { useFormantboardApi } from "@/hooks/useFormantboardApi";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
-type ThemeMode = "light" | "dark" | "system";
-
-const THEME_STORAGE_KEY = "theme";
-
-function normalizeThemeMode(value: string | null): ThemeMode {
-  if (value === "light" || value === "dark" || value === "system") {
-    return value;
-  }
-  return "system";
-}
+import { useAPI } from "@/hooks/useAPI";
+import { useThemeMode } from "@/hooks/useThemeMode";
+import { ThemeModeSelect } from "@/components/ThemeModeSelect";
 
 export function App() {
   const [drawer, setDrawer] = useState(false);
-  const [themeMode, setThemeMode] = useState<ThemeMode>(() => {
-    const value = window.localStorage.getItem(THEME_STORAGE_KEY);
-    return normalizeThemeMode(value);
-  });
+  const { themeMode, setThemeMode } = useThemeMode();
   const location = useLocation();
   const player = usePlayer();
-  useFormantboardApi(player);
+  useAPI(player);
 
   useEffect(() => {
     setDrawer(false);
   }, [location.pathname]);
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    const root = document.documentElement;
-
-    const applyTheme = () => {
-      const resolvedTheme =
-        themeMode === "system" ? (mediaQuery.matches ? "dark" : "light") : themeMode;
-      root.classList.toggle("dark", resolvedTheme === "dark");
-      root.style.colorScheme = resolvedTheme;
-    };
-
-    applyTheme();
-    window.localStorage.setItem(THEME_STORAGE_KEY, themeMode);
-
-    if (themeMode !== "system") {
-      return;
-    }
-
-    mediaQuery.addEventListener("change", applyTheme);
-    return () => {
-      mediaQuery.removeEventListener("change", applyTheme);
-    };
-  }, [themeMode]);
 
   return (
     <div className={cn("min-h-screen")}>
@@ -73,7 +30,7 @@ export function App() {
       >
         <button
           className={cn(
-            "relative z-[60] inline-flex h-9 w-9 items-center justify-center text-muted-foreground",
+            "relative z-[60] inline-flex size-9 items-center justify-center text-muted-foreground",
             "transition-colors hover:bg-accent hover:text-accent-foreground",
             "motion-safe:transition-transform motion-safe:hover:scale-[1.04]",
           )}
@@ -81,7 +38,7 @@ export function App() {
           aria-label="Toggle menu"
           onClick={() => setDrawer((open) => !open)}
         >
-          <Menu className={cn("h-5 w-5")} />
+          <Menu className={cn("size-5")} />
         </button>
         <h1 className={cn("m-0 text-xl font-medium tracking-tight")}>
           <Link to="/" className={cn("text-foreground no-underline hover:underline")}>
@@ -129,21 +86,7 @@ export function App() {
           >
             Theme mode
           </div>
-          <Select
-            value={themeMode}
-            onValueChange={(value) => {
-              setThemeMode(normalizeThemeMode(value));
-            }}
-          >
-            <SelectTrigger aria-label="Select color mode" className={cn("h-9 w-full")}>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="system">System</SelectItem>
-              <SelectItem value="light">Light</SelectItem>
-              <SelectItem value="dark">Dark</SelectItem>
-            </SelectContent>
-          </Select>
+          <ThemeModeSelect value={themeMode} onChange={setThemeMode} className={cn("h-9 w-full")} />
         </div>
       </aside>
 

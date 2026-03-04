@@ -1,7 +1,7 @@
 import { act } from "react";
 import { beforeEach, describe, expect, it } from "vitest";
 import { MOBILE_MIN_FULL_KEY_WIDTH } from "@/hooks/useKeyboardLayout";
-import { resetAllStores } from "@/test/resetStores";
+import { resetStores } from "@/test/resetStores";
 import { getTestApp } from "@/test/resetStores";
 
 function setWindowWidth(width: number) {
@@ -26,7 +26,7 @@ function setWindowSize(width: number, height: number) {
 
 describe("useKeyboardLayout store", () => {
   beforeEach(() => {
-    resetAllStores();
+    resetStores();
   });
 
   it("tracks keyboard width from window size", () => {

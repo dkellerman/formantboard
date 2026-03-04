@@ -4,76 +4,76 @@ import { IPA_WORDS, VOWELS } from "@/constants";
 import { useAppStore } from "@/store";
 import type {
   FormantOverride,
-  FormantboardAPI,
-  FormantboardLoopSetting,
-  FormantboardPlayOptions,
-  FormantboardPlayEvent,
-  FormantboardVoiceOptions,
+  API,
+  LoopSetting,
+  PlayOptions,
+  PlayEvent,
+  VoiceOptions,
   IPAType,
   PlayerState,
 } from "@/types";
 import { midi2note, type Note } from "@/utils";
 
-const FORMANTBOARD_AI_CONTRACT_ID = "formantboard-ai-contract";
-const FORMANTBOARD_AI_GUIDE_ID = "formantboard-ai-guide";
-const NOTE_EVENT_FIELDS = [
-  "vowel",
-  "pitch",
-  "duration",
-  "timing",
-  "volume",
-  "tilt",
-  "formants",
-] as const;
-const AVAILABLE_VOWELS = [...VOWELS] as IPAType[];
-const AVAILABLE_VOWELS_SET = new Set<IPAType>(AVAILABLE_VOWELS);
-const FB_BASIC_CAPABILITIES = [
-  "tempo-accurate scheduled notes",
-  "opt-in loop playback (count or infinite)",
-  "per-note vowel shaping",
-  "per-note tilt control",
-  "targeted per-formant enable/disable (F1/F2/F3)",
-] as const;
-const FB_ADVANCED_CAPABILITIES = ["per-note formant overrides"] as const;
-const FB_CAPABILITIES = [...FB_BASIC_CAPABILITIES, ...FB_ADVANCED_CAPABILITIES] as const;
-const FB_LIMITS = [
-  "formant overrides currently target indexed formants (F1/F2/F3), not arbitrary count expansion",
-  "vowel list is constrained to declared VOWELS",
-] as const;
-const FB_USAGE_GUIDANCE =
-  "Always validate input first (validatePlay / validateFromJSON), then schedule notes. Keep note/time/dur stable; if you need formant control, target one formant at a time (F1/F2/F3). Keep looping off unless the user explicitly requests looping.";
-const FB_DISCOVERY = {
-  docs: {
-    ui: "/api",
-    markdown: "/api.md",
-    llms: "/llms.txt",
-    agents: "/agents.txt",
-  },
-  startHere: [
-    "Read /llms.txt (or /agents.txt).",
-    "If method details are needed, read /api.md or /api.",
-    "Use window.fb.validateFromJSON(payload) before window.fb.fromJSON(payload).",
-    "Keep loop off by default. Only set payload.loop or window.fb.setLoop(...) when requested.",
-  ],
-} as const;
-const FB_POLICY = {
-  defaultMode: "basic",
-  firstStep: "validate",
-  strategy:
-    "Prefer window.fb.play with pitch/timing/duration/volume/vowel; when needed, use window.fb.setFormantActive(index, on) for focused formant changes.",
-  advancedOnlyWhen: [
-    "you need a target timbre that vowel+tilt cannot reach",
-    "you are matching known formant values",
-    "the user explicitly asks for formant tweaking",
-  ],
-  loopOnlyWhen: ["the user explicitly asks for looping"],
-  avoidAdvancedWhen: [
-    "you only need natural vowel articulation",
-    "you are generating ordinary melodies/rhythms",
-  ],
+const vowels = [...VOWELS] as IPAType[];
+const spec = {
+  noteFields: ["vowel", "pitch", "duration", "timing", "volume", "tilt", "formants"] as const,
+  basic: [
+    "tempo-accurate scheduled notes",
+    "opt-in loop playback (count or infinite)",
+    "per-note vowel shaping",
+    "per-note tilt control",
+    "targeted per-formant enable/disable (F1/F2/F3)",
+  ] as const,
+  advanced: ["per-note formant overrides"] as const,
+  capabilities: [
+    "tempo-accurate scheduled notes",
+    "opt-in loop playback (count or infinite)",
+    "per-note vowel shaping",
+    "per-note tilt control",
+    "targeted per-formant enable/disable (F1/F2/F3)",
+    "per-note formant overrides",
+  ] as const,
+  limits: [
+    "formant overrides currently target indexed formants (F1/F2/F3), not arbitrary count expansion",
+    "vowel list is constrained to declared VOWELS",
+  ] as const,
+  usage:
+    "Always validate input first (validatePlay / validateFromJSON), then schedule notes. Keep note/time/dur stable; if you need formant control, target one formant at a time (F1/F2/F3). Keep looping off unless the user explicitly requests looping.",
+  discovery: {
+    docs: {
+      ui: "/api",
+      markdown: "/api.md",
+      llms: "/llms.txt",
+      agents: "/agents.txt",
+    },
+    startHere: [
+      "Read /llms.txt (or /agents.txt).",
+      "If method details are needed, read /api.md or /api.",
+      "Use window.fb.validateFromJSON(payload) before window.fb.fromJSON(payload).",
+      "Keep loop off by default. Only set payload.loop or window.fb.setLoop(...) when requested.",
+    ],
+  } as const,
+  policy: {
+    defaultMode: "basic",
+    firstStep: "validate",
+    strategy:
+      "Prefer window.fb.play with pitch/timing/duration/volume/vowel; when needed, use window.fb.setFormantActive(index, on) for focused formant changes.",
+    advancedOnlyWhen: [
+      "you need a target timbre that vowel+tilt cannot reach",
+      "you are matching known formant values",
+      "the user explicitly asks for formant tweaking",
+    ],
+    loopOnlyWhen: ["the user explicitly asks for looping"],
+    avoidAdvancedWhen: [
+      "you only need natural vowel articulation",
+      "you are generating ordinary melodies/rhythms",
+    ],
+  } as const,
+  goal:
+    "Perform expressive notes by coordinating pitch and vowel/formant shape over time.",
 } as const;
 
-const FORMANTBOARD_AI_CONTRACT = {
+const contract = {
   version: 8,
   performance: {
     interaction: "press-release",
@@ -81,7 +81,7 @@ const FORMANTBOARD_AI_CONTRACT = {
     entrypoint: "window.fb.play",
     timeUnits: "seconds-from-now",
     polyphony: true,
-    noteEventFields: NOTE_EVENT_FIELDS,
+    noteEventFields: spec.noteFields,
     noteEventMap: {
       pitch: "note",
       timing: "time",
@@ -93,9 +93,9 @@ const FORMANTBOARD_AI_CONTRACT = {
   keys: {
     selector: "[data-midi]",
   },
-  discovery: FB_DISCOVERY,
+  discovery: spec.discovery,
   vowels: {
-    selector: AVAILABLE_VOWELS,
+    selector: vowels,
     entrypoint: "window.fb.setVowel",
     words: IPA_WORDS,
   },
@@ -104,20 +104,19 @@ const FORMANTBOARD_AI_CONTRACT = {
     strictObjects: true,
     methods: ["window.fb.validatePlay", "window.fb.validateFromJSON"],
     schemaEntrypoints: ["window.fb.schemas", "window.fb.schemaJson", "window.fb.getSchemaJson"],
-    supportedVowels: AVAILABLE_VOWELS,
+    supportedVowels: vowels,
   },
-  policy: FB_POLICY,
-  basicCapabilities: FB_BASIC_CAPABILITIES,
-  advancedCapabilities: FB_ADVANCED_CAPABILITIES,
-  capabilities: FB_CAPABILITIES,
-  limits: FB_LIMITS,
+  policy: spec.policy,
+  basicCapabilities: spec.basic,
+  advancedCapabilities: spec.advanced,
+  capabilities: spec.capabilities,
+  limits: spec.limits,
 } as const;
 
-const FORMANTBOARD_AI_GUIDE = {
+const guide = {
   version: 1,
   intent: {
-    primaryGoal:
-      "Perform expressive notes by coordinating pitch and vowel/formant shape over time.",
+    primaryGoal: spec.goal,
     whatToDo: [
       "Treat each note as an articulatory event, not just a pitch trigger.",
       "Validate payloads before playback and stop if validation fails.",
@@ -125,10 +124,10 @@ const FORMANTBOARD_AI_GUIDE = {
       "Use vowel/formant controls to simulate timbre movement while notes are playing.",
     ],
   },
-  policy: FB_POLICY,
-  discovery: FB_DISCOVERY,
+  policy: spec.policy,
+  discovery: spec.discovery,
   capabilities: {
-    eventFields: NOTE_EVENT_FIELDS,
+    eventFields: spec.noteFields,
     basicControls: [
       "play",
       "press",
@@ -158,7 +157,7 @@ const FORMANTBOARD_AI_GUIDE = {
       formants: [{ index: 1, frequency: 2100 }],
     },
   },
-  limits: FB_LIMITS,
+  limits: spec.limits,
 } as const;
 
 function clampToPositiveSeconds(value: number | undefined, fallback: number) {
@@ -184,10 +183,8 @@ function resolveNote(note: number | Note): number | Note {
 
 function resolveVowel(vowel: IPAType | undefined) {
   if (!vowel) return undefined;
-  if (!AVAILABLE_VOWELS_SET.has(vowel)) {
-    throw new Error(
-      `Unsupported vowel "${vowel}". Supported vowels: ${AVAILABLE_VOWELS.join(", ")}`,
-    );
+  if (!vowels.includes(vowel)) {
+    throw new Error(`Unsupported vowel "${vowel}". Supported vowels: ${vowels.join(", ")}`);
   }
   return vowel;
 }
@@ -228,7 +225,7 @@ type NormalizedLoopMode =
   | { kind: "infinite"; value: "infinite" };
 
 function normalizeLoopSetting(
-  loop: FormantboardLoopSetting | undefined,
+  loop: LoopSetting | undefined,
   label = "loop",
 ): NormalizedLoopMode {
   if (loop === undefined || loop === false) {
@@ -248,15 +245,15 @@ function normalizeLoopSetting(
   return { kind: "count", value: loop };
 }
 
-export function useFormantboardApi(player: PlayerState) {
+export function useAPI(player: PlayerState) {
   const validation = useAPIValidation();
   const playerRef = useRef(player);
-  const apiRef = useRef<FormantboardAPI | undefined>(undefined);
+  const apiRef = useRef<API | undefined>(undefined);
   const schemaJsonRef = useRef(validation.schemaJson);
-  const loopModeRef = useRef<FormantboardLoopSetting>(false);
+  const loopModeRef = useRef<LoopSetting>(false);
   const loopTimerRef = useRef<number | undefined>(undefined);
   const loopSequenceRef = useRef(0);
-  const voiceRef = useRef<FormantboardVoiceOptions>({
+  const voiceRef = useRef<VoiceOptions>({
     vowel: resolveVowel(useAppStore.getState().ipa),
     volume: 1,
   });
@@ -276,7 +273,7 @@ export function useFormantboardApi(player: PlayerState) {
     useAppStore.getState().setIPA(nextVowel);
   }
 
-  function setVoice(voice: FormantboardVoiceOptions) {
+  function setVoice(voice: VoiceOptions) {
     const nextVowel = resolveVowel(voice.vowel);
     const nextFormants = normalizeFormantOverrides(voice.formants);
     voiceRef.current = {
@@ -328,7 +325,7 @@ export function useFormantboardApi(player: PlayerState) {
     patchFormant(index, { on });
   }
 
-  function setLoop(loop: FormantboardLoopSetting) {
+  function setLoop(loop: LoopSetting) {
     const normalized = normalizeLoopSetting(loop);
     loopModeRef.current = normalized.kind === "off" ? false : normalized.value;
   }
@@ -339,27 +336,27 @@ export function useFormantboardApi(player: PlayerState) {
 
   if (!apiRef.current) {
     apiRef.current = {
-      version: FORMANTBOARD_AI_CONTRACT.version,
-      goal: FORMANTBOARD_AI_GUIDE.intent.primaryGoal,
-      defaultMode: FB_POLICY.defaultMode,
-      usageGuidance: FB_USAGE_GUIDANCE,
-      advancedFeatures: FB_ADVANCED_CAPABILITIES,
-      capabilities: FB_CAPABILITIES,
-      limits: FB_LIMITS,
-      interaction: FORMANTBOARD_AI_CONTRACT.performance.interaction,
-      timing: FORMANTBOARD_AI_CONTRACT.performance.timing,
-      timeUnits: FORMANTBOARD_AI_CONTRACT.performance.timeUnits,
-      keySelector: FORMANTBOARD_AI_CONTRACT.keys.selector,
-      entrypoint: FORMANTBOARD_AI_CONTRACT.performance.entrypoint,
-      discovery: FB_DISCOVERY,
-      noteEventFields: FORMANTBOARD_AI_CONTRACT.performance.noteEventFields,
-      vowels: AVAILABLE_VOWELS,
+      version: contract.version,
+      goal: guide.intent.primaryGoal,
+      defaultMode: spec.policy.defaultMode,
+      usageGuidance: spec.usage,
+      advancedFeatures: spec.advanced,
+      capabilities: spec.capabilities,
+      limits: spec.limits,
+      interaction: contract.performance.interaction,
+      timing: contract.performance.timing,
+      timeUnits: contract.performance.timeUnits,
+      keySelector: contract.keys.selector,
+      entrypoint: contract.performance.entrypoint,
+      discovery: spec.discovery,
+      noteEventFields: contract.performance.noteEventFields,
+      vowels,
       validationEngine: "zod",
       schemas: validation.schemas,
       schemaJson: schemaJsonRef.current,
       getSchemaJson: () => schemaJsonRef.current,
       setVowel,
-      getVowels: () => AVAILABLE_VOWELS,
+      getVowels: () => vowels,
       validatePlay: (events) => validation.validatePlay(events),
       validateFromJSON: (input) => {
         if (typeof input === "string") {
@@ -414,7 +411,7 @@ export function useFormantboardApi(player: PlayerState) {
         stopLoopScheduler();
         playerRef.current.stopApiPlayback();
       },
-      play: (events: FormantboardPlayEvent[], options?: FormantboardPlayOptions) => {
+      play: (events: PlayEvent[], options?: PlayOptions) => {
         const validation = apiRef.current?.validatePlay(events);
         if (!validation || !validation.ok) {
           throw new Error(
@@ -513,31 +510,31 @@ export function useFormantboardApi(player: PlayerState) {
   useEffect(() => {
     const api = apiRef.current;
     if (!api) return;
-    const globalWindow = window as Window & { fb?: FormantboardAPI };
+    const globalWindow = window as Window & { fb?: API };
 
     let appendedContractNode = false;
     let appendedGuideNode = false;
     let contractNode = document.getElementById(
-      FORMANTBOARD_AI_CONTRACT_ID,
+      "formantboard-ai-contract",
     ) as HTMLScriptElement | null;
     if (!contractNode) {
       contractNode = document.createElement("script");
-      contractNode.id = FORMANTBOARD_AI_CONTRACT_ID;
+      contractNode.id = "formantboard-ai-contract";
       contractNode.type = "application/json";
       document.head.appendChild(contractNode);
       appendedContractNode = true;
     }
-    contractNode.textContent = JSON.stringify(FORMANTBOARD_AI_CONTRACT, null, 2);
+    contractNode.textContent = JSON.stringify(contract, null, 2);
 
-    let guideNode = document.getElementById(FORMANTBOARD_AI_GUIDE_ID) as HTMLScriptElement | null;
+    let guideNode = document.getElementById("formantboard-ai-guide") as HTMLScriptElement | null;
     if (!guideNode) {
       guideNode = document.createElement("script");
-      guideNode.id = FORMANTBOARD_AI_GUIDE_ID;
+      guideNode.id = "formantboard-ai-guide";
       guideNode.type = "application/json";
       document.head.appendChild(guideNode);
       appendedGuideNode = true;
     }
-    guideNode.textContent = JSON.stringify(FORMANTBOARD_AI_GUIDE, null, 2);
+    guideNode.textContent = JSON.stringify(guide, null, 2);
 
     globalWindow.fb = api;
     return () => {

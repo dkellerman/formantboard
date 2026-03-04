@@ -465,8 +465,6 @@ export function SandboxPage() {
     <section
       className={cn(
         "px-5 pb-8 text-xs text-foreground",
-        "[&_.vui-input]:text-sm [&_.vui-select]:text-sm [&_.vui-field-label]:text-[11px]",
-        "[&_.vui-switch-label]:text-xs [&_.vui-checkbox-label]:text-xs",
       )}
     >
       <fieldset className={cn("border-0 pb-2")}>
@@ -661,7 +659,7 @@ export function SandboxPage() {
             onChange={restartF0}
           />
           <NumberControl
-            className={cn("w-[150px] [&_.vui-suffix]:text-foreground")}
+            className={cn("w-[150px]")}
             label="Tilt"
             modelValue={harmonics.tilt}
             min="-40"

@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 import { VOWELS } from "@/constants";
 import { MUSIC_RESOURCES, type MusicResource } from "@/lib/musicResources";
-import type { FormantboardAPI, FormantboardJSONPayload, FormantboardLoopSetting } from "@/types";
+import type { API, JSONPayload, LoopSetting } from "@/types";
 
 type ChatCompletionsResponse = {
   output?: Array<{
@@ -169,7 +169,7 @@ function buildUserPrompt(prompt: string, selectedResourceContext: string, routin
   `.trim();
 }
 
-export function deriveLoopFromPrompt(prompt: string): FormantboardLoopSetting | undefined {
+export function deriveLoopFromPrompt(prompt: string): LoopSetting | undefined {
   const normalized = prompt.toLowerCase();
   const hasLoopWord = /\bloop(?:ing|ed|s)?\b/.test(normalized);
   if (!hasLoopWord) return undefined;
@@ -338,7 +338,7 @@ export function usePromptToPayload({ onPayloadReady, onStatusChange }: UsePrompt
         return;
       }
 
-      const fb = (window as Window & { fb?: FormantboardAPI }).fb;
+      const fb = (window as Window & { fb?: API }).fb;
       if (!fb) {
         onStatusChange("window.fb is not available yet.");
         return;
@@ -418,7 +418,7 @@ export function usePromptToPayload({ onPayloadReady, onStatusChange }: UsePrompt
           return;
         }
 
-        const parsed = parsedRaw as FormantboardJSONPayload;
+        const parsed = parsedRaw as JSONPayload;
         const inferredLoop = deriveLoopFromPrompt(prompt);
         parsed.loop = inferredLoop ?? false;
         llmDebug("generator output summary", {

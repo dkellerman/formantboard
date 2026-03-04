@@ -167,15 +167,15 @@ const NORMALIZED_JSON_PAYLOAD_SCHEMA = JSON_PAYLOAD_INPUT_SCHEMA.transform((payl
   return normalized;
 });
 
-export const formantboardSchemas = {
+export const apiSchemas = {
   playEvents: z.array(PLAY_EVENT_SCHEMA),
   jsonPayload: JSON_PAYLOAD_INPUT_SCHEMA,
 };
 
-const PLAY_EVENTS_JSON_SCHEMA = z.toJSONSchema(formantboardSchemas.playEvents);
-const JSON_PAYLOAD_JSON_SCHEMA = z.toJSONSchema(formantboardSchemas.jsonPayload);
+const PLAY_EVENTS_JSON_SCHEMA = z.toJSONSchema(apiSchemas.playEvents);
+const JSON_PAYLOAD_JSON_SCHEMA = z.toJSONSchema(apiSchemas.jsonPayload);
 
-export const formantboardJsonSchemas = {
+export const apiJsonSchemas = {
   // Force plain JSON objects so consumers don't see framework-specific prototypes.
   playEvents: JSON.parse(JSON.stringify(PLAY_EVENTS_JSON_SCHEMA)),
   jsonPayload: JSON.parse(JSON.stringify(JSON_PAYLOAD_JSON_SCHEMA)),
@@ -210,7 +210,7 @@ function formatZodError(prefix: string, error: ZodError) {
 export function validatePlayEventsInput(
   input: unknown,
 ): { ok: true; value: FormantboardPlayEvent[] } | { ok: false; error: string } {
-  const parsed = formantboardSchemas.playEvents.safeParse(input);
+  const parsed = apiSchemas.playEvents.safeParse(input);
   if (!parsed.success) {
     return {
       ok: false,
@@ -244,8 +244,8 @@ export const SUPPORTED_IPA_VOWELS = IPA_VOWELS;
 export function useAPIValidation() {
   return useMemo(
     () => ({
-      schemas: formantboardSchemas,
-      schemaJson: formantboardJsonSchemas,
+      schemas: apiSchemas,
+      schemaJson: apiJsonSchemas,
       validatePlay: validatePlayEventsInput,
       validateFromJSON: validateJSONPayloadInput,
       supportedVowels: SUPPORTED_IPA_VOWELS,
