@@ -57,7 +57,7 @@ const RESOURCE_ROUTER_SCHEMA = {
 } as const;
 
 const PAYLOAD_SYSTEM_PROMPT = `
-  You generate valid FormantBoard performance payload JSON only.
+  You generate valid performance payload JSON only.
   Return exactly one JSON object and no markdown.
   Use canonical lead melodies for named songs and widely known variants.
   Search authoritative notation sources when needed.
@@ -338,9 +338,11 @@ export function usePromptToPayload({ onPayloadReady, onStatusChange }: UsePrompt
         return;
       }
 
-      const fb = (window as Window & { fb?: API }).fb;
-      if (!fb) {
-        onStatusChange("window.fb is not available yet.");
+      const api =
+        (window as Window & { api?: API; fb?: API }).api ??
+        (window as Window & { api?: API; fb?: API }).fb;
+      if (!api) {
+        onStatusChange("window.api is not available yet.");
         return;
       }
 
@@ -408,7 +410,7 @@ export function usePromptToPayload({ onPayloadReady, onStatusChange }: UsePrompt
           system: PAYLOAD_SYSTEM_PROMPT,
           user,
           temperature: 0,
-          schemaName: "formantboard_payload",
+          schemaName: "api_payload",
           schema: RESPONSE_PAYLOAD_SCHEMA,
           tools: [{ type: "web_search_preview" }],
           signal: controller.signal,
@@ -427,12 +429,12 @@ export function usePromptToPayload({ onPayloadReady, onStatusChange }: UsePrompt
           firstNote: parsed.notes[0] ?? null,
         });
 
-        const validation = fb.validateFromJSON(parsed);
+        const validation = api.validateFromJSON(parsed);
         if (!validation.ok) {
           throw new Error(`Validation failed: ${validation.error}`);
         }
 
-        fb.fromJSON(parsed);
+        api.fromJSON(parsed);
         const pretty = JSON.stringify(parsed, null, 2);
         onPayloadReady(pretty);
         onStatusChange(`Scheduled ${parsed.notes.length} note event(s).`);

@@ -83,9 +83,10 @@ export function HomePage() {
     }
 
     try {
-      const fb = (window as Window & { fb?: API }).fb;
-      if (!fb) {
-        throw new Error("window.fb is not available yet.");
+      const api = (window as Window & { api?: API; fb?: API }).api ??
+        (window as Window & { api?: API; fb?: API }).fb;
+      if (!api) {
+        throw new Error("window.api is not available yet.");
       }
 
       const parsed = JSON.parse(text) as JSONPayload;
@@ -93,12 +94,12 @@ export function HomePage() {
         throw new Error("Payload must include notes: []");
       }
 
-      const validation = fb.validateFromJSON(parsed);
+      const validation = api.validateFromJSON(parsed);
       if (!validation.ok) {
         throw new Error(validation.error);
       }
 
-      fb.fromJSON(parsed);
+      api.fromJSON(parsed);
       setAiPasteStatus(`Scheduled ${parsed.notes.length} note event(s).`);
     } catch (error) {
       setAiPasteStatus(error instanceof Error ? error.message : "Could not run payload.");
@@ -208,9 +209,10 @@ export function HomePage() {
           onClick={() => {
             if (aiStopMode) {
               cancelPromptGeneration();
-              const fb = (window as Window & { fb?: API }).fb;
-              if (fb) {
-                fb.stop();
+              const api = (window as Window & { api?: API; fb?: API }).api ??
+                (window as Window & { api?: API; fb?: API }).fb;
+              if (api) {
+                api.stop();
               } else {
                 player.stopApiPlayback();
               }
@@ -329,7 +331,7 @@ export function HomePage() {
               </button>
             </div>
             <p className={cn("mb-2 mt-0 text-sm text-popover-foreground")}>
-              Paste payload JSON for <code>window.fb.fromJSON</code>. See{" "}
+              Paste payload JSON for <code>window.api.fromJSON</code>. See{" "}
               <Link to="/api" className={cn("text-foreground underline")}>
                 /api instructions
               </Link>

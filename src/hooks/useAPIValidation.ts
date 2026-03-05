@@ -2,11 +2,11 @@ import { useMemo } from "react";
 import { z, type ZodError } from "zod";
 import { VOWELS } from "@/constants";
 import type {
-  FormantboardLoopSetting,
-  FormantboardNormalizedPayload,
-  FormantboardPlayEvent,
-  FormantboardVoiceOptions,
   IPAType,
+  LoopSetting,
+  NormalizedPayload,
+  PlayEvent,
+  VoiceOptions,
 } from "@/types";
 
 const IPA_VOWELS = [...VOWELS] as IPAType[];
@@ -126,8 +126,8 @@ const JSON_PAYLOAD_INPUT_SCHEMA = z
   })
   .strict();
 
-function normalizeJSONNote(note: z.infer<typeof JSON_NOTE_INPUT_SCHEMA>): FormantboardPlayEvent {
-  const normalized: FormantboardPlayEvent = {
+function normalizeJSONNote(note: z.infer<typeof JSON_NOTE_INPUT_SCHEMA>): PlayEvent {
+  const normalized: PlayEvent = {
     note: note.note ?? (note.m as number),
     time: note.time ?? (note.t as number),
     dur: note.dur ?? (note.d as number),
@@ -151,17 +151,17 @@ function normalizeJSONNote(note: z.infer<typeof JSON_NOTE_INPUT_SCHEMA>): Forman
 }
 
 const NORMALIZED_JSON_PAYLOAD_SCHEMA = JSON_PAYLOAD_INPUT_SCHEMA.transform((payload) => {
-  const normalized: FormantboardNormalizedPayload = {
+  const normalized: NormalizedPayload = {
     bpm: payload.bpm,
     notes: payload.notes.map((note) => normalizeJSONNote(note)),
   };
 
   if (payload.loop !== undefined) {
-    normalized.loop = payload.loop as FormantboardLoopSetting;
+    normalized.loop = payload.loop as LoopSetting;
   }
 
   if (payload.voice) {
-    normalized.voice = payload.voice as FormantboardVoiceOptions;
+    normalized.voice = payload.voice as VoiceOptions;
   }
 
   return normalized;
@@ -209,7 +209,7 @@ function formatZodError(prefix: string, error: ZodError) {
 
 export function validatePlayEventsInput(
   input: unknown,
-): { ok: true; value: FormantboardPlayEvent[] } | { ok: false; error: string } {
+): { ok: true; value: PlayEvent[] } | { ok: false; error: string } {
   const parsed = apiSchemas.playEvents.safeParse(input);
   if (!parsed.success) {
     return {
@@ -219,13 +219,13 @@ export function validatePlayEventsInput(
   }
   return {
     ok: true,
-    value: parsed.data as FormantboardPlayEvent[],
+    value: parsed.data as PlayEvent[],
   };
 }
 
 export function validateJSONPayloadInput(
   input: unknown,
-): { ok: true; value: FormantboardNormalizedPayload } | { ok: false; error: string } {
+): { ok: true; value: NormalizedPayload } | { ok: false; error: string } {
   const parsed = NORMALIZED_JSON_PAYLOAD_SCHEMA.safeParse(input);
   if (!parsed.success) {
     return {

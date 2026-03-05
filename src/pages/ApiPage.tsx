@@ -170,44 +170,44 @@ type MethodParamDoc = {
 
 const METHOD_PARAM_DOCS: MethodParamDoc[] = [
   {
-    method: "fb.schemas",
+    method: "api.schemas",
     summary:
       "Live Zod schema objects (safeParse-capable). Not JSON-serializable, so they may look empty when stringified.",
-    signature: "fb.schemas = { playEvents: ZodSchema, jsonPayload: ZodSchema }",
+    signature: "api.schemas = { playEvents: ZodSchema, jsonPayload: ZodSchema }",
     params: [],
   },
   {
-    method: "fb.getSchemaJson()",
+    method: "api.getSchemaJson()",
     summary: "Returns the plain JSON schemas as a fresh value for logging/tooling.",
-    signature: "fb.getSchemaJson(): { playEvents: JSONSchema, jsonPayload: JSONSchema }",
+    signature: "api.getSchemaJson(): { playEvents: JSONSchema, jsonPayload: JSONSchema }",
     params: [],
   },
   {
-    method: "fb.schemaJson",
+    method: "api.schemaJson",
     summary: "JSON Schema snapshots exported from the active Zod schemas.",
-    signature: "fb.schemaJson = { playEvents: JSONSchema, jsonPayload: JSONSchema }",
+    signature: "api.schemaJson = { playEvents: JSONSchema, jsonPayload: JSONSchema }",
     params: [],
   },
   {
-    method: "fb.validatePlay(events)",
+    method: "api.validatePlay(events)",
     summary: "Pre-validate events with Zod before scheduling.",
     signature:
-      "fb.validatePlay(events: unknown): { ok: true; value: PlayEvent[] } | { ok: false; error: string }",
+      "api.validatePlay(events: unknown): { ok: true; value: PlayEvent[] } | { ok: false; error: string }",
     caveat: `vowel must be one of: ${SUPPORTED_IPA_VOWELS_TEXT}`,
     params: [
       {
         name: "events",
         type: "unknown",
         required: true,
-        description: "Any input. Use this for preflight before fb.play(events).",
+        description: "Any input. Use this for preflight before api.play(events).",
       },
     ],
   },
   {
-    method: "fb.validateFromJSON(payload)",
+    method: "api.validateFromJSON(payload)",
     summary: "Pre-validate JSON/object payload with Zod before scheduling.",
     signature:
-      "fb.validateFromJSON(payload: unknown): { ok: true; value: NormalizedPerformancePayload } | { ok: false; error: string }",
+      "api.validateFromJSON(payload: unknown): { ok: true; value: NormalizedPerformancePayload } | { ok: false; error: string }",
     caveat: `voice.vowel and notes[].vowel must be one of: ${SUPPORTED_IPA_VOWELS_TEXT}`,
     params: [
       {
@@ -219,10 +219,10 @@ const METHOD_PARAM_DOCS: MethodParamDoc[] = [
     ],
   },
   {
-    method: "fb.play(events)",
+    method: "api.play(events)",
     summary: "Schedule multiple note events using seconds from now.",
     signature:
-      "fb.play(events: PlayEvent[], options?: { loop?: false | true | number | 'infinite' })",
+      "api.play(events: PlayEvent[], options?: { loop?: false | true | number | 'infinite' })",
     caveat: `vowel must be one of: ${SUPPORTED_IPA_VOWELS_TEXT}`,
     params: [
       {
@@ -251,9 +251,9 @@ const METHOD_PARAM_DOCS: MethodParamDoc[] = [
 }`,
   },
   {
-    method: "fb.fromJSON(payload)",
-    summary: "Parse a payload using the same note fields as fb.play (optionally BPM-based).",
-    signature: "fb.fromJSON(payload: string | PerformancePayload)",
+    method: "api.fromJSON(payload)",
+    summary: "Parse a payload using the same note fields as api.play (optionally BPM-based).",
+    signature: "api.fromJSON(payload: string | PerformancePayload)",
     caveat: `voice.vowel and notes[].vowel must be one of: ${SUPPORTED_IPA_VOWELS_TEXT}`,
     params: [
       {
@@ -282,9 +282,9 @@ const METHOD_PARAM_DOCS: MethodParamDoc[] = [
 }`,
   },
   {
-    method: "fb.setVoice(opts)",
+    method: "api.setVoice(opts)",
     summary: "Set default voice settings used by later notes.",
-    signature: "fb.setVoice(opts: VoiceOptions)",
+    signature: "api.setVoice(opts: VoiceOptions)",
     caveat: `vowel must be one of: ${SUPPORTED_IPA_VOWELS_TEXT}`,
     params: [
       {
@@ -302,9 +302,9 @@ const METHOD_PARAM_DOCS: MethodParamDoc[] = [
 }`,
   },
   {
-    method: "fb.setLoop(mode)",
-    summary: "Set default loop mode used by future fb.play/fb.fromJSON calls.",
-    signature: "fb.setLoop(mode: false | true | number | 'infinite')",
+    method: "api.setLoop(mode)",
+    summary: "Set default loop mode used by future api.play/api.fromJSON calls.",
+    signature: "api.setLoop(mode: false | true | number | 'infinite')",
     params: [
       {
         name: "mode",
@@ -316,15 +316,15 @@ const METHOD_PARAM_DOCS: MethodParamDoc[] = [
     ],
   },
   {
-    method: "fb.getLoop()",
+    method: "api.getLoop()",
     summary: "Read current default loop mode.",
-    signature: "fb.getLoop(): false | 'infinite' | number",
+    signature: "api.getLoop(): false | 'infinite' | number",
     params: [],
   },
   {
-    method: "fb.setFormantActive(index, on)",
+    method: "api.setFormantActive(index, on)",
     summary: "Enable/disable one formant index (usually F1/F2/F3).",
-    signature: "fb.setFormantActive(index: number, on: boolean)",
+    signature: "api.setFormantActive(index: number, on: boolean)",
     params: [
       {
         name: "index",
@@ -351,19 +351,21 @@ export function ApiPage() {
 
   function runPayload() {
     try {
-      const fb = (window as Window & { fb?: API }).fb;
-      if (!fb) {
-        throw new Error("window.fb is not available yet.");
+      const api =
+        (window as Window & { api?: API; fb?: API }).api ??
+        (window as Window & { api?: API; fb?: API }).fb;
+      if (!api) {
+        throw new Error("window.api is not available yet.");
       }
       const parsed = JSON.parse(payload) as JSONPayload;
       if (!Array.isArray(parsed.notes)) {
         throw new Error("Payload must include notes: []");
       }
-      const validation = fb.validateFromJSON(parsed);
+      const validation = api.validateFromJSON(parsed);
       if (!validation.ok) {
         throw new Error(validation.error);
       }
-      fb.fromJSON(parsed);
+      api.fromJSON(parsed);
       setStatus({
         tone: "ok",
         text: `Scheduled ${parsed.notes.length} note event(s).`,
@@ -402,7 +404,7 @@ export function ApiPage() {
       >
         <h2 className={cn("m-0 text-2xl font-semibold text-foreground")}>FormantBoard API</h2>
         <p className={cn("mb-0 mt-2 text-muted-foreground")}>
-          Use <code>window.fb</code> to schedule notes and shape vowels while playing.
+          Use <code>window.api</code> to schedule notes and shape vowels while playing.
         </p>
       </header>
 
@@ -422,7 +424,7 @@ export function ApiPage() {
             <code>/api.md</code> (compact markdown method reference)
           </li>
           <li>
-            runtime entrypoint: <code>window.fb</code>
+            runtime entrypoint: <code>window.api</code>
           </li>
         </ul>
       </section>
@@ -432,7 +434,7 @@ export function ApiPage() {
         <ol className={cn("mb-0 mt-3 list-decimal space-y-1 pl-5 text-muted-foreground")}>
           <li>Write a payload with note events.</li>
           <li>
-            Run <code>fb.validatePlay(...)</code> or <code>fb.validateFromJSON(...)</code> first. If
+            Run <code>api.validatePlay(...)</code> or <code>api.validateFromJSON(...)</code> first. If
             invalid, stop and fix payload before playback.
           </li>
           <li>Set pitch + timing + duration on every event.</li>
@@ -456,57 +458,57 @@ export function ApiPage() {
             </thead>
             <tbody className="text-foreground">
               <tr className={cn("border-b border-border/60")}>
-                <td className="py-2 pr-3 font-mono">fb.schemas</td>
+                <td className="py-2 pr-3 font-mono">api.schemas</td>
                 <td className="py-2 pr-3">Zod schema objects for play/fromJSON payloads</td>
                 <td className="py-2">Default for agent introspection</td>
               </tr>
               <tr className={cn("border-b border-border/60")}>
-                <td className="py-2 pr-3 font-mono">fb.getSchemaJson()</td>
+                <td className="py-2 pr-3 font-mono">api.getSchemaJson()</td>
                 <td className="py-2 pr-3">Returns plain JSON schemas (best for logs/tools)</td>
                 <td className="py-2">Default for non-JS tooling</td>
               </tr>
               <tr className={cn("border-b border-border/60")}>
-                <td className="py-2 pr-3 font-mono">fb.schemaJson</td>
+                <td className="py-2 pr-3 font-mono">api.schemaJson</td>
                 <td className="py-2 pr-3">JSON Schema snapshots exported from zod</td>
                 <td className="py-2">Default for direct property access</td>
               </tr>
               <tr className={cn("border-b border-border/60")}>
-                <td className="py-2 pr-3 font-mono">fb.validatePlay(events)</td>
+                <td className="py-2 pr-3 font-mono">api.validatePlay(events)</td>
                 <td className="py-2 pr-3">Pre-validate event arrays with Zod</td>
                 <td className="py-2">Default before play</td>
               </tr>
               <tr className={cn("border-b border-border/60")}>
-                <td className="py-2 pr-3 font-mono">fb.validateFromJSON(payload)</td>
+                <td className="py-2 pr-3 font-mono">api.validateFromJSON(payload)</td>
                 <td className="py-2 pr-3">Pre-validate JSON/object payloads with Zod</td>
                 <td className="py-2">Default before fromJSON</td>
               </tr>
               <tr className={cn("border-b border-border/60")}>
-                <td className="py-2 pr-3 font-mono">fb.play(events, options?)</td>
+                <td className="py-2 pr-3 font-mono">api.play(events, options?)</td>
                 <td className="py-2 pr-3">Schedule tempo-accurate note events</td>
                 <td className="py-2">Default</td>
               </tr>
               <tr className={cn("border-b border-border/60")}>
-                <td className="py-2 pr-3 font-mono">fb.fromJSON(payload)</td>
+                <td className="py-2 pr-3 font-mono">api.fromJSON(payload)</td>
                 <td className="py-2 pr-3">Run full JSON payload (BPM + voice + notes)</td>
                 <td className="py-2">Default</td>
               </tr>
               <tr className={cn("border-b border-border/60")}>
-                <td className="py-2 pr-3 font-mono">fb.setVoice(opts)</td>
+                <td className="py-2 pr-3 font-mono">api.setVoice(opts)</td>
                 <td className="py-2 pr-3">Set default vowel/volume/tilt</td>
                 <td className="py-2">Default</td>
               </tr>
               <tr className={cn("border-b border-border/60")}>
-                <td className="py-2 pr-3 font-mono">fb.setLoop(mode)</td>
+                <td className="py-2 pr-3 font-mono">api.setLoop(mode)</td>
                 <td className="py-2 pr-3">Set default loop mode (off / count / infinite)</td>
                 <td className="py-2">Only when user explicitly requests looping</td>
               </tr>
               <tr className={cn("border-b border-border/60")}>
-                <td className="py-2 pr-3 font-mono">fb.getLoop()</td>
+                <td className="py-2 pr-3 font-mono">api.getLoop()</td>
                 <td className="py-2 pr-3">Read current default loop mode</td>
                 <td className="py-2">Inspection helper</td>
               </tr>
               <tr className={cn("border-b border-border/60")}>
-                <td className="py-2 pr-3 font-mono">fb.setFormantActive(index, on)</td>
+                <td className="py-2 pr-3 font-mono">api.setFormantActive(index, on)</td>
                 <td className="py-2 pr-3">Toggle one formant (F1/F2/F3) for the active vowel</td>
                 <td className="py-2">Default when formants are needed</td>
               </tr>
@@ -528,10 +530,10 @@ export function ApiPage() {
             Zod Schema Snapshot
           </summary>
           <p className={cn("mb-0 mt-2 text-xs text-muted-foreground")}>
-            These are the same schemas exposed at <code>window.fb.schemaJson</code>.
+            These are the same schemas exposed at <code>window.api.schemaJson</code>.
           </p>
           <p className={cn("mb-0 mt-1 text-xs text-muted-foreground")}>
-            Note: <code>window.fb.schemas</code> are live Zod objects and are not meant to be
+            Note: <code>window.api.schemas</code> are live Zod objects and are not meant to be
             JSON-stringified.
           </p>
           <p className={cn("mb-0 mt-2 font-mono text-xs text-foreground")}>playEvents</p>
@@ -628,8 +630,8 @@ export function ApiPage() {
               formants.
             </li>
             <li>
-              Validate first, always: use <code>fb.validateFromJSON(payload)</code> before{" "}
-              <code>fb.fromJSON(payload)</code> and abort on any validation error.
+              Validate first, always: use <code>api.validateFromJSON(payload)</code> before{" "}
+              <code>api.fromJSON(payload)</code> and abort on any validation error.
             </li>
             <li>
               Only after melody is correct, add IPA vowels while keeping note/time/dur unchanged.

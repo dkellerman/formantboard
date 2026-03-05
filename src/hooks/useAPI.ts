@@ -49,15 +49,15 @@ const spec = {
     startHere: [
       "Read /llms.txt (or /agents.txt).",
       "If method details are needed, read /api.md or /api.",
-      "Use window.fb.validateFromJSON(payload) before window.fb.fromJSON(payload).",
-      "Keep loop off by default. Only set payload.loop or window.fb.setLoop(...) when requested.",
+      "Use window.api.validateFromJSON(payload) before window.api.fromJSON(payload).",
+      "Keep loop off by default. Only set payload.loop or window.api.setLoop(...) when requested.",
     ],
   } as const,
   policy: {
     defaultMode: "basic",
     firstStep: "validate",
     strategy:
-      "Prefer window.fb.play with pitch/timing/duration/volume/vowel; when needed, use window.fb.setFormantActive(index, on) for focused formant changes.",
+      "Prefer window.api.play with pitch/timing/duration/volume/vowel; when needed, use window.api.setFormantActive(index, on) for focused formant changes.",
     advancedOnlyWhen: [
       "you need a target timbre that vowel+tilt cannot reach",
       "you are matching known formant values",
@@ -78,7 +78,7 @@ const contract = {
   performance: {
     interaction: "press-release",
     timing: "audio-context",
-    entrypoint: "window.fb.play",
+    entrypoint: "window.api.play",
     timeUnits: "seconds-from-now",
     polyphony: true,
     noteEventFields: spec.noteFields,
@@ -96,14 +96,14 @@ const contract = {
   discovery: spec.discovery,
   vowels: {
     selector: vowels,
-    entrypoint: "window.fb.setVowel",
+    entrypoint: "window.api.setVowel",
     words: IPA_WORDS,
   },
   validation: {
     engine: "zod",
     strictObjects: true,
-    methods: ["window.fb.validatePlay", "window.fb.validateFromJSON"],
-    schemaEntrypoints: ["window.fb.schemas", "window.fb.schemaJson", "window.fb.getSchemaJson"],
+    methods: ["window.api.validatePlay", "window.api.validateFromJSON"],
+    schemaEntrypoints: ["window.api.schemas", "window.api.schemaJson", "window.api.getSchemaJson"],
     supportedVowels: vowels,
   },
   policy: spec.policy,
@@ -120,7 +120,7 @@ const guide = {
     whatToDo: [
       "Treat each note as an articulatory event, not just a pitch trigger.",
       "Validate payloads before playback and stop if validation fails.",
-      "Prefer scheduled playback via window.fb.play for tempo accuracy.",
+      "Prefer scheduled playback via window.api.play for tempo accuracy.",
       "Use vowel/formant controls to simulate timbre movement while notes are playing.",
     ],
   },
@@ -510,7 +510,7 @@ export function useAPI(player: PlayerState) {
   useEffect(() => {
     const api = apiRef.current;
     if (!api) return;
-    const globalWindow = window as Window & { fb?: API };
+    const globalWindow = window as Window & { api?: API; fb?: API };
 
     let appendedContractNode = false;
     let appendedGuideNode = false;
@@ -536,12 +536,16 @@ export function useAPI(player: PlayerState) {
     }
     guideNode.textContent = JSON.stringify(guide, null, 2);
 
+    globalWindow.api = api;
     globalWindow.fb = api;
     return () => {
       loopSequenceRef.current += 1;
       if (loopTimerRef.current !== undefined) {
         window.clearTimeout(loopTimerRef.current);
         loopTimerRef.current = undefined;
+      }
+      if (globalWindow.api === api) {
+        delete globalWindow.api;
       }
       if (globalWindow.fb === api) {
         delete globalWindow.fb;

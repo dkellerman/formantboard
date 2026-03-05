@@ -133,20 +133,20 @@ export interface FormantOverride {
   gain?: number;
 }
 
-export interface FormantboardVoiceOptions {
+export interface VoiceOptions {
   vowel?: IPAType;
   volume?: number;
   tilt?: number;
   formants?: FormantOverride[];
 }
 
-export type FormantboardLoopSetting = boolean | number | "infinite";
+export type LoopSetting = boolean | number | "infinite";
 
-export interface FormantboardPlayOptions {
-  loop?: FormantboardLoopSetting;
+export interface PlayOptions {
+  loop?: LoopSetting;
 }
 
-export interface FormantboardPlayEvent {
+export interface PlayEvent {
   note: number | Note;
   time: number;
   dur: number;
@@ -157,7 +157,7 @@ export interface FormantboardPlayEvent {
   formants?: FormantOverride[];
 }
 
-export interface FormantboardJSONNote {
+export interface JSONNote {
   note?: number | Note;
   time?: number;
   dur?: number;
@@ -176,23 +176,23 @@ export interface FormantboardJSONNote {
   formantOverrides?: FormantOverride[];
 }
 
-export interface FormantboardJSONPayload {
+export interface JSONPayload {
   bpm?: number;
-  loop?: FormantboardLoopSetting;
-  voice?: FormantboardVoiceOptions;
-  notes: FormantboardJSONNote[];
+  loop?: LoopSetting;
+  voice?: VoiceOptions;
+  notes: JSONNote[];
 }
 
-export interface FormantboardNormalizedPayload {
+export interface NormalizedPayload {
   bpm?: number;
-  loop?: FormantboardLoopSetting;
-  voice?: FormantboardVoiceOptions;
-  notes: FormantboardPlayEvent[];
+  loop?: LoopSetting;
+  voice?: VoiceOptions;
+  notes: PlayEvent[];
 }
 
-export type FormantboardValidationResult<T> = { ok: true; value: T } | { ok: false; error: string };
+export type ValidationResult<T> = { ok: true; value: T } | { ok: false; error: string };
 
-export interface FormantboardAPI {
+export interface API {
   version: number;
   goal: string;
   defaultMode: "basic";
@@ -231,11 +231,11 @@ export interface FormantboardAPI {
   };
   setVowel: (vowel: IPAType) => void;
   getVowels: () => readonly IPAType[];
-  validatePlay: (events: unknown) => FormantboardValidationResult<FormantboardPlayEvent[]>;
-  validateFromJSON: (input: unknown) => FormantboardValidationResult<FormantboardNormalizedPayload>;
-  setVoice: (voice: FormantboardVoiceOptions) => void;
-  setLoop: (loop: FormantboardLoopSetting) => void;
-  getLoop: () => FormantboardLoopSetting;
+  validatePlay: (events: unknown) => ValidationResult<PlayEvent[]>;
+  validateFromJSON: (input: unknown) => ValidationResult<NormalizedPayload>;
+  setVoice: (voice: VoiceOptions) => void;
+  setLoop: (loop: LoopSetting) => void;
+  getLoop: () => LoopSetting;
   setFormantActive: (index: number, on: boolean) => void;
   now: () => number;
   press: (
@@ -243,20 +243,10 @@ export interface FormantboardAPI {
     velocity?: number,
     atTime?: number,
     duration?: number,
-    options?: FormantboardVoiceOptions,
+    options?: VoiceOptions,
   ) => void;
   clickKey: (midi: number, atTime?: number, duration?: number, velocity?: number) => void;
   stop: () => void;
-  play: (events: FormantboardPlayEvent[], options?: FormantboardPlayOptions) => void;
-  fromJSON: (input: string | FormantboardJSONPayload) => void;
+  play: (events: PlayEvent[], options?: PlayOptions) => void;
+  fromJSON: (input: string | JSONPayload) => void;
 }
-
-export type VoiceOptions = FormantboardVoiceOptions;
-export type LoopSetting = FormantboardLoopSetting;
-export type PlayOptions = FormantboardPlayOptions;
-export type PlayEvent = FormantboardPlayEvent;
-export type JSONNote = FormantboardJSONNote;
-export type JSONPayload = FormantboardJSONPayload;
-export type NormalizedPayload = FormantboardNormalizedPayload;
-export type ValidationResult<T> = FormantboardValidationResult<T>;
-export type API = FormantboardAPI;
