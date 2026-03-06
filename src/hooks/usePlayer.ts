@@ -13,7 +13,7 @@ import {
   arr2rms,
   type Note,
 } from "@/utils";
-import type { HarmonicFrame, MetricsData, PlayerNoteOptions, PlayerState } from "@/types";
+import type { HarmonicFrame, IPAType, MetricsData, PlayerNoteOptions, PlayerState } from "@/types";
 
 type FormantTopology = "parallel" | "cascade";
 type FormantLike = {
@@ -235,7 +235,6 @@ function computeDynamicCompensationGain(
 
 export function usePlayer(): PlayerState {
   const settings = useAppStore((state) => state.settings);
-  const ipa = useAppStore((state) => state.ipa);
   const setMetrics = useAppStore((state) => state.setMetrics);
   const player = useAppStore((state) => state.player);
   const setPlayer = useAppStore((state) => state.setPlayer);
@@ -306,32 +305,36 @@ export function usePlayer(): PlayerState {
     return true;
   }
 
-  function resolveCompressionActive(noteCount?: number) {
+  function resolveCompressionActive(noteCount?: number, settingsOverride = settings) {
     const activeCount =
       noteCount ??
       Object.values(runtime.voices).filter((voice) => voice.started && !voice.ended).length;
-    return settings.compression.on || activeCount > 1;
+    return settingsOverride.compression.on || activeCount > 1;
   }
 
-  function applyCompressorSettings(noteCount: number) {
+  function applyCompressorSettings(noteCount: number, settingsOverride = settings) {
     const extra = Math.max(0, noteCount - 1);
-    const autoMode = !settings.compression.on;
-    const baseThreshold = autoMode ? -6 : settings.compression.threshold;
+    const autoMode = !settingsOverride.compression.on;
+    const baseThreshold = autoMode ? -6 : settingsOverride.compression.threshold;
     const threshold = clamp(baseThreshold - extra * 3, -60, 0);
     const ratio = autoMode
       ? 20
-      : clamp(settings.compression.ratio + extra * 4, settings.compression.ratio, 20);
-    const knee = autoMode ? 0 : settings.compression.knee;
+      : clamp(
+          settingsOverride.compression.ratio + extra * 4,
+          settingsOverride.compression.ratio,
+          20,
+        );
+    const knee = autoMode ? 0 : settingsOverride.compression.knee;
 
     compressor.threshold.value = threshold;
     compressor.ratio.value = ratio;
     compressor.knee.value = knee;
-    compressor.attack.value = settings.compression.attack;
-    compressor.release.value = settings.compression.release;
+    compressor.attack.value = settingsOverride.compression.attack;
+    compressor.release.value = settingsOverride.compression.release;
   }
 
-  function updateCompressionRouting(useCompression: boolean, noteCount: number) {
-    applyCompressorSettings(noteCount);
+  function updateCompressionRouting(useCompression: boolean, noteCount: number, settingsOverride = settings) {
+    applyCompressorSettings(noteCount, settingsOverride);
     if (runtime.compressionActive === useCompression) return;
     runtime.compressionActive = useCompression;
     Object.values(runtime.voices).forEach((voice) => {
@@ -341,13 +344,21 @@ export function usePlayer(): PlayerState {
   }
 
   function syncPlayerActivity() {
-    const activeVoices = Object.values(runtime.voices)
+    const voices = Object.values(runtime.voices).filter((voice) => !voice.ended);
+    const activeVoices = voices
       .filter((voice) => voice.started && !voice.ended)
       .sort((a, b) => a.startOrder - b.startOrder);
+    const activeApiVoices = activeVoices.filter((voice) => voice.source === "api");
     const activeNoteIds = [...new Set(activeVoices.map((voice) => voice.noteId))];
     const isPlaying = activeVoices.length > 0;
-    const isApiPlaying = activeVoices.some((voice) => voice.source === "api");
+    const isApiPlaying = voices.some((voice) => voice.source === "api");
     updateCompressionRouting(resolveCompressionActive(activeVoices.length), activeVoices.length);
+
+    const activeApiVowel = activeApiVoices.at(-1)?.vowel;
+    const liveIpa = useAppStore.getState().ipa;
+    if (activeApiVowel && liveIpa !== activeApiVowel) {
+      useAppStore.getState().setIPA(activeApiVowel);
+    }
 
     setPlayer((current) => {
       if (
@@ -455,14 +466,20 @@ export function usePlayer(): PlayerState {
     duration?: number,
     options?: PlayerNoteOptions,
   ) {
+    const currentState = useAppStore.getState();
+    const liveSettings = currentState.settings;
+    const liveIpa = currentState.ipa;
     const perfStartTime = runtime.audioContext.currentTime;
+    if (runtime.audioContext.state === "suspended") {
+      void runtime.audioContext.resume();
+    }
     const frequency = noteOrFreq2freq(note);
     if (frequency > CAP_FREQ) return;
     const playbackSource = options?.source ?? "ui";
     const timeOffset = Math.max(0, atTime);
     const startTime = runtime.audioContext.currentTime + timeOffset + 0.002;
-    const baseTilt = options?.tilt ?? settings.harmonics.tilt;
-    const activeIpa = options?.vowel ?? ipa;
+    const baseTilt = options?.tilt ?? liveSettings.harmonics.tilt;
+    const activeIpa = options?.vowel ?? liveIpa;
     const formantOverrides = options?.formants;
 
     // API-triggered immediate retriggers should replace the current voice.
@@ -479,25 +496,25 @@ export function usePlayer(): PlayerState {
       });
     }
 
-    const { sourceType, source, sourceGain, controlSource } = createSource(frequency);
+    const { sourceType, source, sourceGain, controlSource } = createSource(frequency, liveSettings);
     const activeVoiceCount = Object.values(runtime.voices).filter(
       (voice) => voice.started && !voice.ended,
     ).length;
     const noteCount = activeVoiceCount + 1;
     const harmonicTilt = baseTilt - Math.abs(baseTilt) * (noteCount - 1);
-    const compressionActive = resolveCompressionActive(noteCount);
-    updateCompressionRouting(compressionActive, noteCount);
-    applyHarmonics(source, sourceType, frequency, harmonicTilt);
-    applyFlutter(source);
-    const vibratoOsc = createVibrato(source, startTime);
-    const formantsGain = connectFormants(sourceGain, activeIpa, formantOverrides);
+    const compressionActive = resolveCompressionActive(noteCount, liveSettings);
+    updateCompressionRouting(compressionActive, noteCount, liveSettings);
+    applyHarmonics(source, sourceType, frequency, harmonicTilt, liveSettings);
+    applyFlutter(source, liveSettings);
+    const vibratoOsc = createVibrato(source, startTime, liveSettings);
+    const formantsGain = connectFormants(sourceGain, activeIpa, formantOverrides, liveSettings);
     connectOutput(formantsGain, compressionActive);
 
     if (controlSource) source.start(startTime);
     sourceGain.gain.setValueAtTime(0, startTime);
     sourceGain.gain.linearRampToValueAtTime(
-      velocity * settings.f0.keyGain,
-      startTime + settings.f0.onsetTime,
+      velocity * liveSettings.f0.keyGain,
+      startTime + liveSettings.f0.onsetTime,
     );
 
     const stopVoice: (typeof runtime.playing)[number] = (opts) => {
@@ -508,9 +525,9 @@ export function usePlayer(): PlayerState {
         sourceGain.gain.cancelScheduledValues(releaseAt);
         sourceGain.gain.setValueAtTime(0, releaseAt);
       } else {
-        sourceGain.gain.setTargetAtTime(0, releaseAt, settings.f0.decayTime);
+        sourceGain.gain.setTargetAtTime(0, releaseAt, liveSettings.f0.decayTime);
       }
-      const stopAt = immediate ? releaseAt + 0.005 : releaseAt + settings.f0.decayTime + 1;
+      const stopAt = immediate ? releaseAt + 0.005 : releaseAt + liveSettings.f0.decayTime + 1;
       if (controlSource) {
         try {
           source.stop(stopAt);
@@ -729,8 +746,8 @@ export function usePlayer(): PlayerState {
     }, cleanupMs);
   }
 
-  function createSource(frequency: number) {
-    const sourceType = settings.f0.sourceType;
+  function createSource(frequency: number, settingsOverride = settings) {
+    const sourceType = settingsOverride.f0.sourceType;
     const oscillator = new OscillatorNode(runtime.audioContext, { frequency, type: sourceType });
     const oscGain = new GainNode(runtime.audioContext, { gain: 0 });
     const noiseGain = new GainNode(runtime.audioContext, { gain: 0 });
@@ -738,7 +755,7 @@ export function usePlayer(): PlayerState {
     let sourceGain: GainNode = oscGain;
     let controlSource = true;
 
-    if (settings.f0.source === F0_SOURCE_NOISE) {
+    if (settingsOverride.f0.source === F0_SOURCE_NOISE) {
       source = runtime.noise;
       sourceGain = noiseGain;
       controlSource = false;
@@ -746,7 +763,7 @@ export function usePlayer(): PlayerState {
 
     source.connect(sourceGain);
 
-    if (!settings.f0.on && source instanceof OscillatorNode) {
+    if (!settingsOverride.f0.on && source instanceof OscillatorNode) {
       source.frequency.value = 0;
     }
 
@@ -758,13 +775,14 @@ export function usePlayer(): PlayerState {
     sourceType: OscillatorType,
     frequency: number,
     harmonicTilt: number,
+    settingsOverride = settings,
   ) {
-    if (settings.harmonics.on && source instanceof OscillatorNode) {
+    if (settingsOverride.harmonics.on && source instanceof OscillatorNode) {
       const [harmonics, periodicWave] = createHarmonics(
         runtime.audioContext,
         frequency,
-        settings.harmonics.max,
-        settings.harmonics.maxFreq,
+        settingsOverride.harmonics.max,
+        settingsOverride.harmonics.maxFreq,
         harmonicTilt,
       );
       source.setPeriodicWave(periodicWave);
@@ -786,23 +804,27 @@ export function usePlayer(): PlayerState {
     }
   }
 
-  function applyFlutter(source: AudioScheduledSourceNode) {
-    if (settings.flutter.on && source instanceof OscillatorNode) {
-      const flutterGain = new GainNode(runtime.audioContext, { gain: settings.flutter.amount });
+  function applyFlutter(source: AudioScheduledSourceNode, settingsOverride = settings) {
+    if (settingsOverride.flutter.on && source instanceof OscillatorNode) {
+      const flutterGain = new GainNode(runtime.audioContext, { gain: settingsOverride.flutter.amount });
       runtime.noise.connect(flutterGain);
       flutterGain.connect(source.frequency);
     }
   }
 
-  function createVibrato(source: AudioScheduledSourceNode, startTime: number) {
+  function createVibrato(
+    source: AudioScheduledSourceNode,
+    startTime: number,
+    settingsOverride = settings,
+  ) {
     let vibratoOsc: OscillatorNode | null = null;
-    if (settings.vibrato.on && source instanceof OscillatorNode) {
-      vibratoOsc = new OscillatorNode(runtime.audioContext, { frequency: settings.vibrato.rate });
+    if (settingsOverride.vibrato.on && source instanceof OscillatorNode) {
+      vibratoOsc = new OscillatorNode(runtime.audioContext, { frequency: settingsOverride.vibrato.rate });
       const vibratoGain = new GainNode(runtime.audioContext, { gain: 0 });
       vibratoOsc.connect(vibratoGain);
       vibratoGain.connect(source.frequency);
-      const extentHz = Math.max(0, settings.vibrato.extent);
-      const onsetSec = Math.max(0, settings.vibrato.onsetTime);
+      const extentHz = Math.max(0, settingsOverride.vibrato.extent);
+      const onsetSec = Math.max(0, settingsOverride.vibrato.onsetTime);
       vibratoGain.gain.cancelScheduledValues(startTime);
       vibratoGain.gain.setValueAtTime(0, startTime);
       if (onsetSec > 0) {
@@ -811,8 +833,10 @@ export function usePlayer(): PlayerState {
         vibratoGain.gain.setValueAtTime(extentHz, startTime);
       }
       vibratoOsc.start(startTime);
-      if (settings.vibrato.jitter) {
-        const vibratoJitter = new GainNode(runtime.audioContext, { gain: settings.vibrato.jitter });
+      if (settingsOverride.vibrato.jitter) {
+        const vibratoJitter = new GainNode(runtime.audioContext, {
+          gain: settingsOverride.vibrato.jitter,
+        });
         runtime.noise.connect(vibratoJitter);
         vibratoJitter.connect(vibratoOsc.frequency);
       }
@@ -823,25 +847,30 @@ export function usePlayer(): PlayerState {
 
   function connectFormants(
     sourceGain: GainNode,
-    activeIpa: typeof ipa,
+    activeIpa: IPAType,
     formantOverrides: PlayerNoteOptions["formants"],
+    settingsOverride = settings,
   ): AudioNode {
     const formantsGain = new GainNode(runtime.audioContext, { gain: 1 });
     const activeFormantSpec =
       formantOverrides && formantOverrides.length > 0
-        ? settings.formants.ipa[activeIpa].map((formant, index) => {
+        ? settingsOverride.formants.ipa[activeIpa].map((formant, index) => {
             const patch = formantOverrides.find((item) => item.index === index);
             if (!patch) return formant;
             const next = { ...patch };
             delete (next as { index?: number }).index;
             return { ...formant, ...next };
           })
-        : settings.formants.ipa[activeIpa];
+        : settingsOverride.formants.ipa[activeIpa];
     const activeFormants = activeFormantSpec.filter(
       (formant) => formant.on && formant.frequency > 0,
     ) as FormantLike[];
-    const cascadePctDefault = settings.formants.cascadePctDefault ?? DEFAULT_FORMANT_CASCADE_PCT;
-    const cascadePctMultiplier = Math.max(0, settings.formants.cascadePctByIPA?.[activeIpa] ?? 1);
+    const cascadePctDefault =
+      settingsOverride.formants.cascadePctDefault ?? DEFAULT_FORMANT_CASCADE_PCT;
+    const cascadePctMultiplier = Math.max(
+      0,
+      settingsOverride.formants.cascadePctByIPA?.[activeIpa] ?? 1,
+    );
     const cascadePct = clamp(cascadePctDefault * cascadePctMultiplier, 0, 1);
 
     if (activeFormants.length === 0) {
@@ -877,9 +906,9 @@ export function usePlayer(): PlayerState {
       runtime.audioContext,
       activeFormants,
       cascadePct,
-      settings.formants.compensation.on,
-      settings.formants.compensation.maxBoostDb,
-      settings.formants.compensation.maxCutDb,
+      settingsOverride.formants.compensation.on,
+      settingsOverride.formants.compensation.maxBoostDb,
+      settingsOverride.formants.compensation.maxCutDb,
     );
     formantsGain.gain.value = compensation.gain;
     if (compensation.bodyBoostDb <= 0) return formantsGain;

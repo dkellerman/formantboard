@@ -35,7 +35,7 @@ const HOME_API_SAMPLE = JSON.stringify(
 
 export function HomePage() {
   const settings = useAppStore((state) => state.settings);
-  const playerState = useAppStore((state) => state.player);
+  const aiStopMode = useAppStore((state) => state.player.isApiPlaying);
   const player = usePlayer();
   const [visType, setVisType] = useState<VisType>(settings.defaultVisType);
   const [apiModalOpen, setApiModalOpen] = useState(false);
@@ -45,7 +45,6 @@ export function HomePage() {
   const [showAIPrompt, setShowAIPrompt] = useState(false);
   const [mobileSettingsOpen, setMobileSettingsOpen] = useState(false);
   const [controlsMenuOpen, setControlsMenuOpen] = useState(false);
-  const aiStopMode = playerState.isApiPlaying;
   const viewport = useViewport();
   const isMobile = viewport.isMobile;
   const keyboardHeight = isMobile
@@ -205,7 +204,7 @@ export function HomePage() {
         ) : null}
         <Button
           variant={showAIPrompt || aiStopMode ? "secondary" : "ghost"}
-          className={cn("h-10 rounded-none px-3", !isMobile && "rounded-r-lg")}
+          className={cn("h-10 min-w-[96px] rounded-none px-3", !isMobile && "rounded-r-lg")}
           onClick={() => {
             if (aiStopMode) {
               cancelPromptGeneration();

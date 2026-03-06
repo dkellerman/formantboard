@@ -381,9 +381,6 @@ export function useAPI(player: PlayerState) {
       now: () => playerRef.current.now(),
       press: (note, velocity, atTime = 0, duration = 0.25, options) => {
         const requestedVowel = resolveVowel(options?.vowel ?? voiceRef.current.vowel);
-        if (requestedVowel) {
-          useAppStore.getState().setIPA(requestedVowel);
-        }
         const noteVelocity = clampToUnit(options?.volume, velocity ?? voiceRef.current.volume ?? 1);
         const formants = normalizeFormantOverrides(options?.formants ?? voiceRef.current.formants);
         playerRef.current.play(

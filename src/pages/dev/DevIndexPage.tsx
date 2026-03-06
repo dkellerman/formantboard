@@ -2,8 +2,7 @@ import { Link } from "react-router-dom";
 import { cn } from "@/lib/cn";
 
 const DEV_LINKS = [
-  { to: "/dev/analysis", label: "Analysis: realism A/B topics" },
-  { to: "/dev/naturalness", label: "Natural voice roadmap" },
+  { to: "/dev/sound", label: "Sound: high-impact vowel tone ideas" },
   { to: "/dev/response", label: "Response sandbox" },
   { to: "/dev/test", label: "Audio test bench" },
 ];
