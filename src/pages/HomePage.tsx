@@ -82,7 +82,8 @@ export function HomePage() {
     }
 
     try {
-      const api = (window as Window & { api?: API; fb?: API }).api ??
+      const api =
+        (window as Window & { api?: API; fb?: API }).api ??
         (window as Window & { api?: API; fb?: API }).fb;
       if (!api) {
         throw new Error("window.api is not available yet.");
@@ -208,7 +209,8 @@ export function HomePage() {
           onClick={() => {
             if (aiStopMode) {
               cancelPromptGeneration();
-              const api = (window as Window & { api?: API; fb?: API }).api ??
+              const api =
+                (window as Window & { api?: API; fb?: API }).api ??
                 (window as Window & { api?: API; fb?: API }).fb;
               if (api) {
                 api.stop();
@@ -331,8 +333,8 @@ export function HomePage() {
             </div>
             <p className={cn("mb-2 mt-0 text-sm text-popover-foreground")}>
               Paste payload JSON for <code>window.api.fromJSON</code>. See{" "}
-              <Link to="/api" className={cn("text-foreground underline")}>
-                /api instructions
+              <Link to="/apidocs" className={cn("text-foreground underline")}>
+                /apidocs instructions
               </Link>
               .
             </p>

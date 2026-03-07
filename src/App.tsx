@@ -64,7 +64,7 @@ export function App() {
           <Link to="/sandbox" className={cn("text-foreground no-underline hover:underline")}>
             Advanced sandbox
           </Link>
-          <Link to="/api" className={cn("text-foreground no-underline hover:underline")}>
+          <Link to="/apidocs" className={cn("text-foreground no-underline hover:underline")}>
             API / AI Instructions
           </Link>
           <a

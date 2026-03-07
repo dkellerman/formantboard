@@ -41,14 +41,14 @@ const spec = {
     "Always validate input first (validatePlay / validateFromJSON), then schedule notes. Keep note/time/dur stable; if you need formant control, target one formant at a time (F1/F2/F3). Keep looping off unless the user explicitly requests looping.",
   discovery: {
     docs: {
-      ui: "/api",
+      ui: "/apidocs",
       markdown: "/api.md",
       llms: "/llms.txt",
       agents: "/agents.txt",
     },
     startHere: [
       "Read /llms.txt (or /agents.txt).",
-      "If method details are needed, read /api.md or /api.",
+      "If method details are needed, read /api.md or /apidocs.",
       "Use window.api.validateFromJSON(payload) before window.api.fromJSON(payload).",
       "Keep loop off by default. Only set payload.loop or window.api.setLoop(...) when requested.",
     ],
@@ -69,8 +69,7 @@ const spec = {
       "you are generating ordinary melodies/rhythms",
     ],
   } as const,
-  goal:
-    "Perform expressive notes by coordinating pitch and vowel/formant shape over time.",
+  goal: "Perform expressive notes by coordinating pitch and vowel/formant shape over time.",
 } as const;
 
 const contract = {
@@ -224,10 +223,7 @@ type NormalizedLoopMode =
   | { kind: "count"; value: number }
   | { kind: "infinite"; value: "infinite" };
 
-function normalizeLoopSetting(
-  loop: LoopSetting | undefined,
-  label = "loop",
-): NormalizedLoopMode {
+function normalizeLoopSetting(loop: LoopSetting | undefined, label = "loop"): NormalizedLoopMode {
   if (loop === undefined || loop === false) {
     return { kind: "off", value: false };
   }

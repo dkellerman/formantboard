@@ -3,9 +3,19 @@ import { LoaderCircle, Play } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { Button } from "@/components/ui/button";
 
+const PROMPT_EXAMPLES = [
+  "Loop a C major scale up and down quickly, alternating between ee and ah sounds.",
+  "Play Twinkle Twinkle Little Star slowly with soft oo vowels.",
+  "Generate a short arpeggio in C major using ah, eh, ee, oh on each note.",
+  "Make a simple five-note melody that loops forever and alternates between ah and ee.",
+  "Play Happy Birthday in a medium tempo with mostly ah vowels.",
+  "Create a descending chromatic line with dark oo vowels and no loop.",
+  "Write a short call-and-response melody using bright ee vowels, then open ah vowels.",
+] as const;
+
 export interface AIPromptInputProps {
   isLoading?: boolean;
-  onSubmitPrompt: (prompt: string) => Promise<void> | void;
+  onSubmitPrompt: (prompt: string) => Promise<boolean> | boolean;
   onRequestClose: () => void;
 }
 
@@ -47,20 +57,20 @@ export function AIPromptInput({
           className={cn("flex flex-col")}
           onSubmit={(event) => {
             event.preventDefault();
-            if (isLoading) {
-              return;
-            }
+            if (isLoading) return;
             const trimmedPrompt = prompt.trim();
-            if (!trimmedPrompt) {
-              return;
-            }
+            if (!trimmedPrompt) return;
 
             void (async () => {
               try {
-                await onSubmitPrompt(trimmedPrompt);
-              } finally {
+                const shouldClose = await onSubmitPrompt(trimmedPrompt);
+                if (!shouldClose) {
+                  return;
+                }
                 setPrompt("");
                 onRequestClose();
+              } finally {
+                // Parent controls loading/error state.
               }
             })();
           }}
@@ -82,6 +92,30 @@ export function AIPromptInput({
               "Loop a C major scale up and down quickly, " + "alternating between ee and ah sounds"
             }
           />
+          <label className={cn("mt-2 block")}>
+            <select
+              className={cn(
+                "w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground",
+                "focus:outline-none focus:ring-1 focus:ring-ring",
+              )}
+              disabled={isLoading}
+              value=""
+              onChange={(event) => {
+                const nextPrompt = event.target.value;
+                if (!nextPrompt) return;
+                setPrompt(nextPrompt);
+              }}
+            >
+              <option value="" disabled>
+                or choose an example...
+              </option>
+              {PROMPT_EXAMPLES.map((example) => (
+                <option key={example} value={example}>
+                  {example}
+                </option>
+              ))}
+            </select>
+          </label>
           <div className={cn("mt-3 flex justify-end gap-2 border-t border-border pt-3")}>
             <Button type="button" variant="outline" onClick={onRequestClose}>
               Close

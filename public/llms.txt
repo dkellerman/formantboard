@@ -4,7 +4,7 @@ Machine-readable guidance for autonomous agents.
 
 ## Canonical Entrypoints
 - Runtime API: `window.fb`
-- Human docs: `/api`
+- Human docs: `/apidocs`
 - Machine docs (markdown): `/api.md`
 - JSON schema: `window.fb.getSchemaJson()` (or `window.fb.schemaJson`)
 

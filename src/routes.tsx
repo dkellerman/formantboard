@@ -11,7 +11,7 @@ export function AppRoutes() {
     <Routes>
       <Route element={<App />}>
         <Route path="/" element={<HomePage />} />
-        <Route path="/api" element={<ApiPage />} />
+        <Route path="/apidocs" element={<ApiPage />} />
         <Route path="/sandbox" element={<SandboxPage />} />
         <Route path="/vowels" element={<VowelsPage />} />
         {devRoutes}

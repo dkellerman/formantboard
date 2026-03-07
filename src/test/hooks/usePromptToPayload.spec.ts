@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { deriveLoopFromPrompt } from "@/hooks/usePromptToPayload";
+import { deriveLoopFromPrompt } from "@/ai";
 
 describe("deriveLoopFromPrompt", () => {
   it("returns undefined when loop is not requested", () => {
