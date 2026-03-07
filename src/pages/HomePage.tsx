@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { useAppStore } from "@/store";
 import { cn } from "@/lib/cn";
 import { usePlayer } from "@/hooks/usePlayer";
-import { usePromptToPayload } from "@/hooks/usePromptToPayload";
+import { usePrompt } from "@/hooks/usePrompt";
 import { useViewport } from "@/hooks/useViewport";
 import { VisType } from "@/constants";
 import { AIPromptInput } from "@/components/AIPromptInput";
@@ -60,7 +60,7 @@ export function HomePage() {
   const handlePromptStatusChange = useCallback((status: string) => {
     setAiPasteStatus(status);
   }, []);
-  const { llmGenerating, generateAndPlayFromPrompt, cancelPromptGeneration } = usePromptToPayload({
+  const { llmGenerating, generateAndPlayFromPrompt, cancelPromptGeneration } = usePrompt({
     onPayloadReady: handlePromptPayloadReady,
     onStatusChange: handlePromptStatusChange,
   });

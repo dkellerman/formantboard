@@ -1,4 +1,4 @@
-import { MUSIC_RESOURCES, type MusicResource } from "./lib/musicResources";
+import { MUSIC_RESOURCES, type MusicResource } from "./musicResources.js";
 
 export type ResponsesApiOutput = {
   output?: Array<{

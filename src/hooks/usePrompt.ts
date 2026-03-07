@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 import type { API, JSONPayload } from "@/types";
 
-interface UsePromptToPayloadOptions {
+interface UsePromptOptions {
   onPayloadReady: (prettyPayload: string) => void;
   onStatusChange: (status: string) => void;
 }
@@ -68,7 +68,7 @@ async function requestPayloadFromServer(params: {
   return data;
 }
 
-export function usePromptToPayload({ onPayloadReady, onStatusChange }: UsePromptToPayloadOptions) {
+export function usePrompt({ onPayloadReady, onStatusChange }: UsePromptOptions) {
   const [llmGenerating, setLlmGenerating] = useState(false);
   const activeRequestIdRef = useRef(0);
   const abortControllerRef = useRef<AbortController | undefined>(undefined);

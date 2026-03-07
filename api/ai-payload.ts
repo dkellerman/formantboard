@@ -11,12 +11,16 @@ import {
   toSelectedResources,
   type ResourceRoutingResult,
   type ResponsesApiOutput,
-} from "../src/ai";
-import { MUSIC_RESOURCES } from "../src/lib/musicResources";
-import type { JSONPayload } from "../src/types";
+} from "./ai.js";
+import { MUSIC_RESOURCES } from "./musicResources.js";
 
 type AiPayloadRequestBody = {
   prompt: string;
+};
+
+type JSONPayload = {
+  loop?: boolean | number | "infinite";
+  notes: Array<Record<string, unknown>>;
 };
 
 class RequestValidationError extends Error {}
