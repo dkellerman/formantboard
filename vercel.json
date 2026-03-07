@@ -3,5 +3,11 @@
   "framework": "vite",
   "devCommand": "vite --port $PORT",
   "buildCommand": "pnpm build",
-  "outputDirectory": "dist"
+  "outputDirectory": "dist",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
 }
