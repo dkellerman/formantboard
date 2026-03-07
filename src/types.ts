@@ -84,6 +84,12 @@ export interface PlayerData {
   activeNoteIds: string[];
   isPlaying: boolean;
   isApiPlaying: boolean;
+  loopStatus?: PlayerLoopStatus;
+}
+
+export interface PlayerLoopStatus {
+  current: number;
+  total: number | "infinite";
 }
 
 export interface PlayerRuntimeVoice {

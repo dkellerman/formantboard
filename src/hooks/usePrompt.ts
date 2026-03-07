@@ -27,7 +27,7 @@ async function requestPayloadFromServer(params: {
     promptChars: params.prompt.length,
   });
 
-  const response = await fetch("/api/ai-payload", {
+  const response = await fetch("/api/ai", {
     method: "POST",
     signal: params.signal,
     headers: {

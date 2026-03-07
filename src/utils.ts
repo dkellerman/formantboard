@@ -2,8 +2,8 @@
 import * as PIXI from "pixi.js";
 import type { Formant, IPASpec } from "@/types";
 import tinycolor from "tinycolor2";
-import type { WASMCallback } from "@/wasm";
-import { createWASMAudioWorkletNode } from "@/wasm";
+import type { WASMCallback } from "@/lib/wasm";
+import { createWASMAudioWorkletNode } from "@/lib/wasm";
 
 export const NOTE_RE = /^([a-gA-G])(#|b)?([0-8])?$/;
 export const CANONICAL_NOTES: Record<string, string> = {

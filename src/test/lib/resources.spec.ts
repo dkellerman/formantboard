@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { MUSIC_RESOURCE_CATEGORIES, MUSIC_RESOURCES } from "@/lib/musicResources";
+import { MUSIC_RESOURCE_CATEGORIES, MUSIC_RESOURCES } from "@/lib/resources";
 
-describe("musicResources registry", () => {
+describe("resources registry", () => {
   it("defines categories and resources", () => {
     expect(MUSIC_RESOURCE_CATEGORIES.length).toBeGreaterThan(8);
     expect(MUSIC_RESOURCES.length).toBeGreaterThan(20);

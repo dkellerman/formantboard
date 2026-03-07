@@ -11,7 +11,7 @@ Vocal synthesizer WIP
 
 ## AI Dev Setup
 
-The AI payload generator now runs through a Vercel Function at `/api/ai-payload`, so the OpenAI key stays server-side.
+The AI payload generator now runs through a Vercel Function at `/api/ai`, so the OpenAI key stays server-side.
 
 - Set `OPENAI_API_KEY` in Vercel project env vars for production.
 - Run `vercel pull --yes` once after linking the repo to a Vercel project so local dev/build picks up project settings.

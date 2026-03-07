@@ -32,6 +32,7 @@ function createInitialState() {
       activeNoteIds: [],
       isPlaying: false,
       isApiPlaying: false,
+      loopStatus: undefined,
     } as PlayerData,
     playerRuntimeRef: { current: null } as { current: PlayerRuntime | null },
   };

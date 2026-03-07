@@ -8,6 +8,7 @@ import type {
   LoopSetting,
   PlayOptions,
   PlayEvent,
+  PlayerLoopStatus,
   VoiceOptions,
   IPAType,
   PlayerState,
@@ -254,12 +255,25 @@ export function useAPI(player: PlayerState) {
     volume: 1,
   });
 
+  function setLoopStatus(loopStatus?: PlayerLoopStatus) {
+    useAppStore.getState().setPlayer((current) => {
+      const sameStatus =
+        current.loopStatus?.current === loopStatus?.current &&
+        current.loopStatus?.total === loopStatus?.total;
+      if (sameStatus) {
+        return current;
+      }
+      return { ...current, loopStatus };
+    });
+  }
+
   function stopLoopScheduler() {
     loopSequenceRef.current += 1;
     if (loopTimerRef.current !== undefined) {
       window.clearTimeout(loopTimerRef.current);
       loopTimerRef.current = undefined;
     }
+    setLoopStatus(undefined);
   }
 
   function setVowel(vowel: IPAType) {
@@ -446,11 +460,14 @@ export function useAPI(player: PlayerState) {
         const sequenceId = loopSequenceRef.current;
         const initialCycleStart = playerRef.current.now();
         const maxCycles = loop.kind === "count" ? loop.value : Number.POSITIVE_INFINITY;
+        const totalCycles = loop.kind === "count" ? loop.value : "infinite";
 
         const scheduleCycle = (cycleIndex: number, cycleStart: number) => {
           if (sequenceId !== loopSequenceRef.current) {
             return;
           }
+
+          setLoopStatus({ current: cycleIndex + 1, total: totalCycles });
 
           const offset = Math.max(0, cycleStart - playerRef.current.now());
           schedule(offset);

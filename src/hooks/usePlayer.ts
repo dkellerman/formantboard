@@ -333,7 +333,11 @@ export function usePlayer(): PlayerState {
     compressor.release.value = settingsOverride.compression.release;
   }
 
-  function updateCompressionRouting(useCompression: boolean, noteCount: number, settingsOverride = settings) {
+  function updateCompressionRouting(
+    useCompression: boolean,
+    noteCount: number,
+    settingsOverride = settings,
+  ) {
     applyCompressorSettings(noteCount, settingsOverride);
     if (runtime.compressionActive === useCompression) return;
     runtime.compressionActive = useCompression;
@@ -361,14 +365,22 @@ export function usePlayer(): PlayerState {
     }
 
     setPlayer((current) => {
+      const shouldClearLoopStatus = !isApiPlaying && current.loopStatus !== undefined;
       if (
         arraysEqual(current.activeNoteIds, activeNoteIds) &&
         current.isPlaying === isPlaying &&
-        current.isApiPlaying === isApiPlaying
+        current.isApiPlaying === isApiPlaying &&
+        !shouldClearLoopStatus
       ) {
         return current;
       }
-      return { ...current, activeNoteIds, isPlaying, isApiPlaying };
+      return {
+        ...current,
+        activeNoteIds,
+        isPlaying,
+        isApiPlaying,
+        loopStatus: shouldClearLoopStatus ? undefined : current.loopStatus,
+      };
     });
   }
 
@@ -806,7 +818,9 @@ export function usePlayer(): PlayerState {
 
   function applyFlutter(source: AudioScheduledSourceNode, settingsOverride = settings) {
     if (settingsOverride.flutter.on && source instanceof OscillatorNode) {
-      const flutterGain = new GainNode(runtime.audioContext, { gain: settingsOverride.flutter.amount });
+      const flutterGain = new GainNode(runtime.audioContext, {
+        gain: settingsOverride.flutter.amount,
+      });
       runtime.noise.connect(flutterGain);
       flutterGain.connect(source.frequency);
     }
@@ -819,7 +833,9 @@ export function usePlayer(): PlayerState {
   ) {
     let vibratoOsc: OscillatorNode | null = null;
     if (settingsOverride.vibrato.on && source instanceof OscillatorNode) {
-      vibratoOsc = new OscillatorNode(runtime.audioContext, { frequency: settingsOverride.vibrato.rate });
+      vibratoOsc = new OscillatorNode(runtime.audioContext, {
+        frequency: settingsOverride.vibrato.rate,
+      });
       const vibratoGain = new GainNode(runtime.audioContext, { gain: 0 });
       vibratoOsc.connect(vibratoGain);
       vibratoGain.connect(source.frequency);

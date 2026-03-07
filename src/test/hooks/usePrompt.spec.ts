@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { deriveLoopFromPrompt } from "../../../api/ai";
+import { deriveLoopFromPrompt } from "../../../api/ai-lib";
 
 describe("deriveLoopFromPrompt", () => {
   it("returns undefined when loop is not requested", () => {

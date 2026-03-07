@@ -23,6 +23,7 @@ describe("useAppStore core slices", () => {
     expect(metrics.timeData).toBeInstanceOf(Uint8Array);
     expect(player.volume).toBe(100);
     expect(player.rafId).toBeUndefined();
+    expect(player.loopStatus).toBeUndefined();
   });
 
   it("applies settings, metrics, and player updates via setStateAction", () => {
@@ -76,6 +77,7 @@ describe("useAppStore core slices", () => {
         activeNoteIds: ["C4"],
         isPlaying: true,
         isApiPlaying: true,
+        loopStatus: { current: 2, total: 4 },
       },
     });
 
@@ -89,6 +91,7 @@ describe("useAppStore core slices", () => {
     expect(useAppStore.getState().player.activeNoteIds).toEqual([]);
     expect(useAppStore.getState().player.isPlaying).toBe(false);
     expect(useAppStore.getState().player.isApiPlaying).toBe(false);
+    expect(useAppStore.getState().player.loopStatus).toBeUndefined();
     expect(useAppStore.getState().playerRuntimeRef.current).toBeNull();
   });
 });
